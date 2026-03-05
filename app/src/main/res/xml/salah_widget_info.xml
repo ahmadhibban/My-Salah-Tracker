@@ -3,7 +3,7 @@
     android:initialLayout="@layout/salah_widget"
     android:minWidth="280dp"
     android:minHeight="90dp"
-    android:previewImage="@drawable/icon"
+    android:previewImage="@drawable/app_icon"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen" />
