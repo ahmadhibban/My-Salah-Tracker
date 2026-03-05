@@ -5,11 +5,9 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -26,6 +24,8 @@ public class OnboardingHelper {
     private FrameLayout root;
     private Typeface[] appFonts;
 
+    private int currentPage = 0;
+
     public OnboardingHelper(Activity activity, float DENSITY, int[] themeColors, int colorAccent, LanguageEngine lang, UIComponents ui, SharedPreferences sp, FrameLayout root, Typeface[] appFonts) {
         this.activity = activity;
         this.DENSITY = DENSITY;
@@ -38,73 +38,120 @@ public class OnboardingHelper {
         this.appFonts = appFonts;
     }
 
-    private void applyFont(View v) {
-        if (v instanceof TextView) {
-            TextView tv = (TextView) v;
-            if (tv.getTypeface() != null && tv.getTypeface().isBold()) tv.setTypeface(appFonts[1]);
-            else tv.setTypeface(appFonts[0]);
-        } else if (v instanceof ViewGroup) {
-            ViewGroup vg = (ViewGroup) v;
-            for (int i = 0; i < vg.getChildCount(); i++) applyFont(vg.getChildAt(i));
-        }
-    }
-
     public void showOnboarding() {
-        final FrameLayout obRoot = new FrameLayout(activity);
-        obRoot.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
-        obRoot.setBackgroundColor(themeColors[0]);
-        obRoot.setClickable(true); 
-        if(Build.VERSION.SDK_INT >= 21) obRoot.setElevation(100f);
+        final FrameLayout overlay = new FrameLayout(activity);
+        overlay.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+        overlay.setBackgroundColor(themeColors[0]);
+        overlay.setClickable(true);
 
-        final LinearLayout obMain = new LinearLayout(activity);
-        obMain.setOrientation(LinearLayout.VERTICAL);
-        obMain.setGravity(Gravity.CENTER);
-        obMain.setPadding((int)(40*DENSITY), 0, (int)(40*DENSITY), 0);
+        final LinearLayout main = new LinearLayout(activity);
+        main.setOrientation(LinearLayout.VERTICAL);
+        main.setGravity(Gravity.CENTER);
+        main.setPadding((int) (30 * DENSITY), (int) (30 * DENSITY), (int) (30 * DENSITY), (int) (30 * DENSITY));
 
-        final View[] currentIcon = {null};
-        final TextView obTitle = new TextView(activity);
-        obTitle.setTextColor(themeColors[2]); obTitle.setTextSize(26); obTitle.setTypeface(Typeface.DEFAULT_BOLD); obTitle.setGravity(Gravity.CENTER); obTitle.setPadding(0, (int)(30*DENSITY), 0, (int)(15*DENSITY));
-        final TextView obDesc = new TextView(activity);
-        obDesc.setTextColor(themeColors[3]); obDesc.setTextSize(16); obDesc.setGravity(Gravity.CENTER); obDesc.setLineSpacing(0, 1.3f);
-        
-        final boolean isBn = sp.getString("app_lang", "en").equals("bn"); 
-        
-        final Button obNext = new Button(activity);
-        obNext.setText(isBn ? "পরবর্তী" : "Next"); obNext.setTextColor(Color.WHITE); obNext.setAllCaps(false); obNext.setTextSize(16);
-        GradientDrawable nBg = new GradientDrawable(); nBg.setColor(colorAccent); nBg.setCornerRadius(25f*DENSITY); obNext.setBackground(nBg);
-        LinearLayout.LayoutParams bnLp = new LinearLayout.LayoutParams(-1, (int)(55*DENSITY)); bnLp.setMargins(0, (int)(50*DENSITY), 0, 0); obNext.setLayoutParams(bnLp);
+        final FrameLayout iconContainer = new FrameLayout(activity);
+        LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int) (120 * DENSITY), (int) (120 * DENSITY));
+        icLp.setMargins(0, 0, 0, (int) (30 * DENSITY));
+        iconContainer.setLayoutParams(icLp);
 
-        final String[] titles = isBn ? new String[]{"সালাহ প্রো-তে স্বাগতম", "প্রতিদিনের নামাজ ট্র্যাক করুন", "কাজা নামাজ আর ভুলবেন না", "প্রিমিয়াম ট্রফি অর্জন করুন", "সিকিউর ক্লাউড ব্যাকআপ"} : new String[]{"Welcome to Salah Pro", "Track Daily Prayers", "Never Miss a Qaza", "Win Premium Trophies", "Secure Cloud Backup"};
-        final String[] descs = isBn ? new String[]{"আপনার ব্যক্তিগত, আধুনিক এবং অ্যাড-ফ্রি সঙ্গী, যা আপনাকে নিয়মিত নামাজ আদায়ে সাহায্য করবে।", "শুধুমাত্র একটি ট্যাপের মাধ্যমে সহজেই ফরজ এবং সুন্নাহ নামাজ মার্ক করুন।", "যেকোনো নামাজের উপর লং প্রেস করে সহজেই সেটিকে কাজা লিস্টে যোগ করুন।", "প্রতিদিন নামাজ আদায় করে আপনার স্ট্রিক বজায় রাখুন এবং সুন্দর ব্যাজ ও অর্জন আনলক করুন।", "আপনার ডাটা মোবাইলে বা ক্লাউডে নিরাপদে সেভ রাখুন। চলুন শুরু করি!"} : new String[]{"Your personal, modern, and ad-free companion to build a consistent prayer habit.", "Easily mark Fard and Sunnah prayers with a single tap.", "Long press any prayer to safely add it to your pending Qaza list.", "Maintain your daily streaks to unlock beautiful badges and achievements.", "Keep your data safe locally or sync it to the cloud. Let's begin!"};
-            
-        final String[] emojis = {"🕌", "✨", "⚠️", "🏆", "☁️"};
-        final int[] colorsH = {Color.parseColor("#8E2DE2"), Color.parseColor("#00D2FF"), Color.parseColor("#FF5252"), Color.parseColor("#FFB75E"), Color.parseColor("#4CA1AF")};
-        final int[] step = {0};
+        final TextView title = new TextView(activity);
+        title.setTextColor(themeColors[2]);
+        title.setTextSize(24);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, 0, 0, (int) (15 * DENSITY));
 
-        final Runnable updateSlide = new Runnable() {
-            @Override public void run() {
-                obMain.removeAllViews();
-                currentIcon[0] = ui.getPremiumIcon(emojis[step[0]], colorsH[step[0]], colorsH[step[0]], 120);
-                ((TextView)currentIcon[0]).setTextSize(60);
-                obTitle.setText(titles[step[0]]); obDesc.setText(descs[step[0]]);
-                if(step[0] == titles.length - 1) obNext.setText(isBn ? "শুরু করুন" : "Get Started"); 
-                obMain.addView(currentIcon[0]); obMain.addView(obTitle); obMain.addView(obDesc); obMain.addView(obNext);
-                applyFont(obMain); 
-                obMain.setAlpha(0f); obMain.setTranslationY(50f*DENSITY);
-                obMain.animate().alpha(1f).translationY(0).setDuration(400).setInterpolator(new OvershootInterpolator()).start();
+        final TextView desc = new TextView(activity);
+        desc.setTextColor(themeColors[3]);
+        desc.setTextSize(14);
+        desc.setGravity(Gravity.CENTER);
+        desc.setLineSpacing(0, 1.3f);
+        desc.setPadding(0, 0, 0, (int) (40 * DENSITY));
+
+        final Button nextBtn = new Button(activity);
+        nextBtn.setText(lang.get("Next"));
+        nextBtn.setTextColor(Color.WHITE);
+        nextBtn.setAllCaps(false);
+        nextBtn.setTextSize(16);
+        nextBtn.setTypeface(Typeface.DEFAULT_BOLD);
+        GradientDrawable btnBg = new GradientDrawable();
+        btnBg.setColor(colorAccent);
+        btnBg.setCornerRadius(25f * DENSITY);
+        nextBtn.setBackground(btnBg);
+        LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(-1, (int) (55 * DENSITY));
+        btnLp.setMargins(0, (int) (20 * DENSITY), 0, 0);
+        nextBtn.setLayoutParams(btnLp);
+
+        main.addView(iconContainer);
+        main.addView(title);
+        main.addView(desc);
+        main.addView(nextBtn);
+        overlay.addView(main);
+        root.addView(overlay);
+
+        // ✨ FIX: App Name corrected, language translations added, and Trophy page removed
+        final String[][] pages = {
+                {
+                        "img_mosque",
+                        sp.getString("app_lang", "en").equals("bn") ? "My Salah Tracker - এ স্বাগতম" : "Welcome to My Salah Tracker",
+                        sp.getString("app_lang", "en").equals("bn") ? "আপনার ব্যক্তিগত, আধুনিক এবং বিজ্ঞাপন-মুক্ত সালাহ ট্র্যাকার।" : "Your personal, modern, and ad-free companion to build a consistent prayer habit."
+                },
+                {
+                        "img_calender",
+                        sp.getString("app_lang", "en").equals("bn") ? "সহজ ট্র্যাকিং" : "Easy Tracking",
+                        sp.getString("app_lang", "en").equals("bn") ? "প্রতিদিনের নামাজগুলো খুব সহজেই মার্ক করুন। আপনার অগ্রগতি এবং কাজা নামাজের হিসেব রাখুন।" : "Mark your daily prayers with ease. Keep track of your progress and pending Qaza."
+                }
+        };
+
+        final Runnable updatePage = new Runnable() {
+            @Override
+            public void run() {
+                iconContainer.removeAllViews();
+                
+                // ✨ FIX: Transparent Background, Accent Tint applied directly
+                View icon = ui.getRoundImage(pages[currentPage][0], 0, Color.TRANSPARENT, colorAccent);
+                iconContainer.addView(icon);
+
+                title.setText(pages[currentPage][1]);
+                desc.setText(pages[currentPage][2]);
+                
+                if (currentPage == pages.length - 1) {
+                    nextBtn.setText(sp.getString("app_lang", "en").equals("bn") ? "শুরু করুন" : "Get Started");
+                }
             }
         };
-        
-        obNext.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if (step[0] < titles.length - 1) { step[0]++; updateSlide.run(); } 
-                else {
+
+        updatePage.run();
+
+        nextBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentPage < pages.length - 1) {
+                    currentPage++;
+                    updatePage.run();
+                } else {
                     sp.edit().putBoolean("is_first_run_tutorial", false).apply();
-                    obRoot.animate().alpha(0f).translationY(-100f*DENSITY).setDuration(500).withEndAction(new Runnable() { @Override public void run() { root.removeView(obRoot); } }).start();
+                    overlay.animate().alpha(0f).setDuration(300).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            root.removeView(overlay);
+                        }
+                    }).start();
                 }
             }
         });
 
-        updateSlide.run(); obRoot.addView(obMain); root.addView(obRoot);
+        applyFont(main, appFonts[0], appFonts[1]);
+    }
+
+    private void applyFont(View v, Typeface reg, Typeface bold) {
+        if (v instanceof TextView) {
+            TextView tv = (TextView) v;
+            if (tv.getTypeface() != null && tv.getTypeface().isBold()) tv.setTypeface(bold);
+            else tv.setTypeface(reg);
+        } else if (v instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) v;
+            for (int i = 0; i < vg.getChildCount(); i++) applyFont(vg.getChildAt(i), reg, bold);
+        }
     }
 }

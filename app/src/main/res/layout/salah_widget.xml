@@ -1,58 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#1C1C1E"
-    android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:id="@+id/widget_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="My Salah Tracker"
-        android:textColor="#FFFFFF"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="6">
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_fajr" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_fajr" />
-            <TextView android:id="@+id/t_fajr" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Fajr" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
+    android:padding="8dp">
+    <ImageView android:id="@+id/widget_root_bg" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_alignTop="@+id/widget_content" android:layout_alignBottom="@+id/widget_content" android:layout_alignStart="@+id/widget_content" android:layout_alignEnd="@+id/widget_content" android:src="@drawable/widget_round_bg" android:scaleType="fitXY" />
+    <LinearLayout android:id="@+id/widget_content" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentStart="true" android:layout_centerVertical="true">
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                    <ImageView android:id="@+id/widget_hijri_icon" android:layout_width="12dp" android:layout_height="12dp" android:layout_marginEnd="6dp" android:src="@drawable/img_moon" />
+                    <TextView android:id="@+id/widget_hijri_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" android:textStyle="bold" />
+                </LinearLayout>
+                <TextView android:id="@+id/widget_greg_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textSize="18sp" android:textStyle="bold" />
+            </LinearLayout>
+            <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true">
+                <ImageView android:id="@+id/widget_percent_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignTop="@+id/widget_percent_badge" android:layout_alignBottom="@+id/widget_percent_badge" android:layout_alignStart="@+id/widget_percent_badge" android:layout_alignEnd="@+id/widget_percent_badge" android:src="@drawable/widget_card_base" android:scaleType="fitXY" />
+                <TextView android:id="@+id/widget_percent_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:paddingStart="12dp" android:paddingTop="6dp" android:paddingEnd="12dp" android:paddingBottom="6dp" android:textSize="14sp" android:textStyle="bold" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <ImageView android:id="@+id/widget_progress_img" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginBottom="16dp" android:scaleType="fitXY" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3" android:layout_marginBottom="8dp">
+                <FrameLayout android:id="@+id/box_fajr" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+                <FrameLayout android:id="@+id/box_dhuhr" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+                <FrameLayout android:id="@+id/box_asr" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3">
+                <FrameLayout android:id="@+id/box_maghrib" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+                <FrameLayout android:id="@+id/box_isha" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+                <FrameLayout android:id="@+id/box_witr" android:layout_width="0dp" android:layout_height="80dp" android:layout_weight="1" />
+            </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_dhuhr" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_dhuhr" />
-            <TextView android:id="@+id/t_dhuhr" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Dhuhr" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_asr" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_asr" />
-            <TextView android:id="@+id/t_asr" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Asr" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_maghrib" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_maghrib" />
-            <TextView android:id="@+id/t_maghrib" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Maghrib" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_isha" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_isha" />
-            <TextView android:id="@+id/t_isha" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Isha" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
-            <ImageView android:id="@+id/i_witr" android:layout_width="26dp" android:layout_height="26dp" android:src="@drawable/img_witr" />
-            <TextView android:id="@+id/t_witr" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Witr" android:textColor="#A0A0A5" android:textSize="10sp" android:textStyle="bold" />
-        </LinearLayout>
-
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

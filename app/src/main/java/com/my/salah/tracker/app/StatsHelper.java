@@ -88,43 +88,135 @@ public class StatsHelper {
         BtnMaker bm = new BtnMaker();
         bm.add("Weekly Statistics", new Runnable() { @Override public void run() { showStats(true); } });
         bm.add("Monthly Statistics", new Runnable() { @Override public void run() { showStats(false); } });
-        bm.add("Share Report (Image)", new Runnable() { @Override public void run() { shareImageReport(); } });
+        bm.add("Share Report (Image)", new Runnable() { @Override public void run() { showShareTypeDialog(); } });
         bm.add("Export Premium PDF", new Runnable() { @Override public void run() { exportPdf(); } });
         
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp);
         applyFont(main, appFonts[0], appFonts[1]); ad.show();
     }
 
-    public void shareImageReport() {
+    // ✨ NEW: Dialog to choose Weekly or Monthly Report
+    private void showShareTypeDialog() {
+        FrameLayout wrap = new FrameLayout(activity); wrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+        final LinearLayout main = new LinearLayout(activity); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY));
+        GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); main.setBackground(gd);
+        
+        TextView title = new TextView(activity); title.setText((sp.getString("app_lang", "en").equals("bn") ? "রিপোর্টের ধরন নির্বাচন করুন" : "Select Report Type")); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); title.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(title);
+        
+        final AlertDialog ad = new AlertDialog.Builder(activity).setView(wrap).create(); 
+        ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(Gravity.CENTER);
+        
+        View.OnClickListener clicker = new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                ad.dismiss();
+                boolean isWeekly = (boolean) v.getTag();
+                shareImageReport(isWeekly);
+            }
+        };
+
+        LinearLayout btn1 = new LinearLayout(activity); btn1.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); btn1.setGravity(Gravity.CENTER);
+        GradientDrawable bg1 = new GradientDrawable(); bg1.setColor(colorAccent); bg1.setCornerRadius(15f*DENSITY); btn1.setBackground(bg1); btn1.setTag(true); btn1.setOnClickListener(clicker);
+        TextView t1 = new TextView(activity); t1.setText((sp.getString("app_lang", "en").equals("bn") ? "সাপ্তাহিক রিপোর্ট" : "Weekly Report")); t1.setTextColor(Color.WHITE); t1.setTypeface(Typeface.DEFAULT_BOLD); btn1.addView(t1); main.addView(btn1);
+
+        LinearLayout btn2 = new LinearLayout(activity); btn2.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); btn2.setGravity(Gravity.CENTER);
+        GradientDrawable bg2 = new GradientDrawable(); bg2.setColor(themeColors[4]); bg2.setCornerRadius(15f*DENSITY); btn2.setBackground(bg2); btn2.setTag(false); btn2.setOnClickListener(clicker);
+        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(-1, -2); lp2.setMargins(0, (int)(10*DENSITY), 0, 0); btn2.setLayoutParams(lp2);
+        TextView t2 = new TextView(activity); t2.setText((sp.getString("app_lang", "en").equals("bn") ? "মাসিক রিপোর্ট" : "Monthly Report")); t2.setTextColor(themeColors[2]); t2.setTypeface(Typeface.DEFAULT_BOLD); btn2.addView(t2); main.addView(btn2);
+
+        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp);
+        applyFont(main, appFonts[0], appFonts[1]); ad.show();
+    }
+
+    // ✨ NEW: Ultra HD Image Generator with all requested details
+    public void shareImageReport(boolean isWeekly) {
         try {
-            int width = 1080; int height = 1080; 
+            int width = 2160; int height = 2160; // Ultra HD 4K Square
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap); Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             
+            // Background
             paint.setColor(themeColors[0]); canvas.drawRect(0, 0, width, height, paint);
-            Path path = new Path(); path.moveTo(0,0); path.lineTo(width, 0); path.lineTo(width, 320); path.cubicTo(width/2f, 420, width/2f, 220, 0, 320); path.close();
+            
+            // Header Curve
+            Path path = new Path(); path.moveTo(0,0); path.lineTo(width, 0); path.lineTo(width, 550); 
+            path.cubicTo(width/2f, 750, width/2f, 350, 0, 550); path.close();
             paint.setColor(colorAccent); canvas.drawPath(path, paint);
             
+            // Header Texts
             paint.setColor(Color.WHITE); paint.setTextAlign(Paint.Align.CENTER);
-            paint.setTextSize(75); paint.setTypeface(Typeface.create(appFonts[1], Typeface.BOLD)); canvas.drawText(lang.get("My Salah Journey"), width/2f, 160, paint);
-            paint.setTextSize(40); paint.setTypeface(appFonts[0]); canvas.drawText(lang.get("Purity Achieved!"), width/2f, 240, paint);
+            paint.setTextSize(120); paint.setTypeface(Typeface.create(appFonts[1], Typeface.BOLD)); 
+            canvas.drawText("My Salah Tracker", width/2f, 220, paint);
+            
+            paint.setTextSize(60); paint.setTypeface(appFonts[0]); 
+            String email = sp.getString("user_email", "guest@salah.com");
+            canvas.drawText(email, width/2f, 320, paint);
+            
+            paint.setTextSize(70); paint.setTypeface(appFonts[1]);
+            String reportTitle = isWeekly ? (sp.getString("app_lang", "en").equals("bn") ? "সাপ্তাহিক রিপোর্ট" : "Weekly Report") : (sp.getString("app_lang", "en").equals("bn") ? "মাসিক রিপোর্ট" : "Monthly Report");
+            canvas.drawText(reportTitle, width/2f, 440, paint);
 
-            Calendar cal = Calendar.getInstance(); cal.set(Calendar.DAY_OF_MONTH, 1);
-            int totalDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH); int totalDone = 0, totalMissed = 0, totalExcused = 0;
-            Calendar loopCal = (Calendar) cal.clone(); SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-            for(int i=0; i<totalDays; i++) {
-                String dKey = sdf.format(loopCal.getTime()); if(loopCal.after(Calendar.getInstance())) break;
-                for(String p : prayers) { String stat = sp.getString(dKey+"_"+p, "no"); if(stat.equals("yes")) totalDone++; else if(stat.equals("excused")) totalExcused++; else totalMissed++; } loopCal.add(Calendar.DATE, 1);
+            // Date Calculations
+            Calendar endCal = Calendar.getInstance(); 
+            Calendar startCal = Calendar.getInstance();
+            if (isWeekly) { startCal.add(Calendar.DATE, -6); } 
+            else { startCal.set(Calendar.DAY_OF_MONTH, 1); endCal.set(Calendar.DAY_OF_MONTH, startCal.getActualMaximum(Calendar.DAY_OF_MONTH)); if(endCal.after(Calendar.getInstance())) endCal = Calendar.getInstance(); }
+
+            SimpleDateFormat sdfGreg = new SimpleDateFormat("dd MMM, yyyy", Locale.US);
+            SimpleDateFormat sdfKey = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdfDay = new SimpleDateFormat("EEEE", Locale.US);
+
+            String gregDateRange = lang.getShortGreg(startCal.getTime()) + " - " + lang.getShortGreg(endCal.getTime());
+            String hijriDateRange = ui.getHijriDate(startCal.getTime(), sp.getInt("hijri_offset", 0)) + " - " + ui.getHijriDate(endCal.getTime(), sp.getInt("hijri_offset", 0));
+            
+            String startDay = lang.get(sdfDay.format(startCal.getTime())); String endDay = lang.get(sdfDay.format(endCal.getTime()));
+            if(lang.get("Fajr").equals("ফজর")) { 
+                String[] enDays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+                String[] bnDays = {"রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"};
+                startDay = bnDays[startCal.get(Calendar.DAY_OF_WEEK)-1]; endDay = bnDays[endCal.get(Calendar.DAY_OF_WEEK)-1];
             }
+            String dayRange = startDay + " - " + endDay;
+
+            // Draw Dates Info
+            paint.setColor(themeColors[2]); paint.setTextSize(55); paint.setTypeface(appFonts[1]);
+            canvas.drawText(gregDateRange, width/2f, 750, paint);
+            paint.setColor(themeColors[3]); paint.setTextSize(45); paint.setTypeface(appFonts[0]);
+            canvas.drawText(hijriDateRange, width/2f, 830, paint);
+            canvas.drawText(dayRange, width/2f, 900, paint);
+
+            // Calculate Stats
+            int totalDays = 0, totalDone = 0, totalMissed = 0, totalExcused = 0, totalQaza = 0;
+            Calendar loopCal = (Calendar) startCal.clone();
+            while(!loopCal.after(endCal)) {
+                totalDays++; String dKey = sdfKey.format(loopCal.getTime());
+                for(String p : prayers) { 
+                    String stat = sp.getString(dKey+"_"+p, "no"); 
+                    boolean isQaza = sp.getBoolean(dKey+"_"+p+"_qaza", false);
+                    if(stat.equals("yes")) totalDone++; 
+                    else if(stat.equals("excused")) totalExcused++; 
+                    else {
+                        if(isQaza) totalQaza++; else totalMissed++;
+                    }
+                } 
+                loopCal.add(Calendar.DATE, 1);
+            }
+
+            // Draw Stats Grid
+            float startY = 1050; float padding = 80; float cardW = (width - (padding*3)) / 2f; float cardH = 280;
+            
+            drawReportCard(canvas, paint, padding, startY, cardW, cardH, colorAccent, (sp.getString("app_lang", "en").equals("bn") ? "মোট দিন" : "Total Days"), lang.bnNum(totalDays));
+            drawReportCard(canvas, paint, padding*2 + cardW, startY, cardW, cardH, Color.parseColor("#3B82F6"), lang.get("Prayers Done"), lang.bnNum(totalDone));
+            
+            drawReportCard(canvas, paint, padding, startY + cardH + 60, cardW, cardH, Color.parseColor("#FF5252"), lang.get("Missed"), lang.bnNum(totalMissed));
+            drawReportCard(canvas, paint, padding*2 + cardW, startY + cardH + 60, cardW, cardH, Color.parseColor("#FF9500"), (sp.getString("app_lang", "en").equals("bn") ? "অপেক্ষমান কাজা" : "Pending Qaza"), lang.bnNum(totalQaza));
+            
+            drawReportCard(canvas, paint, padding, startY + (cardH*2) + 120, cardW, cardH, Color.parseColor("#FF4081"), lang.get("Excused Mode"), lang.bnNum(totalExcused));
             int streak = ui.calculateStreak(sp, prayers);
+            drawReportCard(canvas, paint, padding*2 + cardW, startY + (cardH*2) + 120, cardW, cardH, Color.parseColor("#9B59B6"), lang.get("Current Streak"), lang.bnNum(streak));
 
-            paint.setTextAlign(Paint.Align.LEFT);
-            paint.setColor(themeColors[1]); canvas.drawRoundRect(new RectF(70, 420, 70+440, 420+180), 30, 30, paint); paint.setColor(colorAccent); canvas.drawRoundRect(new RectF(70, 420, 70+25, 420+180), 30, 30, paint); canvas.drawRect(70+15, 420, 70+25, 420+180, paint); paint.setColor(themeColors[3]); paint.setTextSize(32); paint.setTypeface(appFonts[0]); canvas.drawText(lang.get("Prayers Done"), 70+60, 420+70, paint); paint.setColor(colorAccent); paint.setTextSize(65); paint.setTypeface(appFonts[1]); canvas.drawText(lang.bnNum(totalDone), 70+60, 420+145, paint);
-            int cMissed = Color.parseColor("#FF5252"); paint.setColor(themeColors[1]); canvas.drawRoundRect(new RectF(570, 420, 570+440, 420+180), 30, 30, paint); paint.setColor(cMissed); canvas.drawRoundRect(new RectF(570, 420, 570+25, 420+180), 30, 30, paint); canvas.drawRect(570+15, 420, 570+25, 420+180, paint); paint.setColor(themeColors[3]); paint.setTextSize(32); paint.setTypeface(appFonts[0]); canvas.drawText(lang.get("Missed"), 570+60, 420+70, paint); paint.setColor(cMissed); paint.setTextSize(65); paint.setTypeface(appFonts[1]); canvas.drawText(lang.bnNum(totalMissed), 570+60, 420+145, paint);
-            int cExcused = Color.parseColor("#FF4081"); paint.setColor(themeColors[1]); canvas.drawRoundRect(new RectF(70, 640, 70+440, 640+180), 30, 30, paint); paint.setColor(cExcused); canvas.drawRoundRect(new RectF(70, 640, 70+25, 640+180), 30, 30, paint); canvas.drawRect(70+15, 640, 70+25, 640+180, paint); paint.setColor(themeColors[3]); paint.setTextSize(32); paint.setTypeface(appFonts[0]); canvas.drawText(lang.get("Excused Mode"), 70+60, 640+70, paint); paint.setColor(cExcused); paint.setTextSize(65); paint.setTypeface(appFonts[1]); canvas.drawText(lang.bnNum(totalExcused), 70+60, 640+145, paint);
-            int cStreak = Color.parseColor("#FFD700"); paint.setColor(themeColors[1]); canvas.drawRoundRect(new RectF(570, 640, 570+440, 640+180), 30, 30, paint); paint.setColor(cStreak); canvas.drawRoundRect(new RectF(570, 640, 570+25, 640+180), 30, 30, paint); canvas.drawRect(570+15, 640, 570+25, 640+180, paint); paint.setColor(themeColors[3]); paint.setTextSize(32); paint.setTypeface(appFonts[0]); canvas.drawText(lang.get("Current Streak"), 570+60, 640+70, paint); paint.setColor(cStreak); paint.setTextSize(65); paint.setTypeface(appFonts[1]); canvas.drawText(lang.bnNum(streak), 570+60, 640+145, paint);
+            paint.setColor(themeColors[3]); paint.setTextAlign(Paint.Align.CENTER); paint.setTextSize(45); 
+            canvas.drawText((sp.getString("app_lang", "en").equals("bn") ? "My Salah Tracker দ্বারা তৈরি" : "Generated by My Salah Tracker"), width/2f, 2050, paint);
 
-            paint.setColor(themeColors[3]); paint.setTextAlign(Paint.Align.CENTER); paint.setTextSize(35); canvas.drawText(lang.get("Tracked with My Salah Tracker"), width/2f, 980, paint);
+            // Save and Share
             File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS); if (!dir.exists()) dir.mkdirs();
             File file = new File(dir, "Salah_Report_" + System.currentTimeMillis() + ".png"); FileOutputStream fos = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos); fos.flush(); fos.close();
@@ -132,9 +224,23 @@ public class StatsHelper {
             Intent intent = new Intent(Intent.ACTION_SEND); intent.setType("image/png");
             intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file)); intent.putExtra(Intent.EXTRA_TEXT, "Alhamdulillah! Check out my Salah progress.");
             activity.startActivity(Intent.createChooser(intent, "Share via"));
-        } catch (Exception e) { FrameLayout root = activity.findViewById(android.R.id.content); ui.showSmartBanner(root, lang.get("Share Failed"), lang.get("Storage permission required."), "img_warning", colorAccent, null); }
+        } catch (Exception e) { 
+            FrameLayout root = activity.findViewById(android.R.id.content); 
+            ui.showSmartBanner(root, lang.get("Share Failed"), lang.get("Storage permission required."), "img_warning", colorAccent, null); 
+        }
     }
 
+    private void drawReportCard(Canvas canvas, Paint paint, float x, float y, float w, float h, int accentColor, String title, String value) {
+        paint.setColor(themeColors[1]); canvas.drawRoundRect(new RectF(x, y, x+w, y+h), 50, 50, paint); 
+        paint.setColor(accentColor); canvas.drawRoundRect(new RectF(x, y, x+40, y+h), 50, 50, paint); canvas.drawRect(x+20, y, x+40, y+h, paint); 
+        paint.setColor(themeColors[3]); paint.setTextAlign(Paint.Align.LEFT); paint.setTextSize(50); paint.setTypeface(appFonts[0]); 
+        canvas.drawText(title, x+90, y+110, paint); 
+        paint.setColor(accentColor); paint.setTextSize(110); paint.setTypeface(appFonts[1]); 
+        canvas.drawText(value, x+90, y+230, paint);
+    }
+
+    // --- (Keeping existing showStats, renderStats, and exportPdf methods intact below) ---
+    
     public void showStats(final boolean isWeekly) {
         statsCalPointer.setTime(new Date()); 
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -169,7 +275,6 @@ public class StatsHelper {
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         int daysPassed = 0; int totalCompleted = 0; int totalExcused = 0; Calendar calcCal = (Calendar) startCal.clone(); String todayStr = sdf.format(now.getTime());
         
-        // ✨ MPAndroidChart Implementation
         java.util.ArrayList<com.github.mikephil.charting.data.BarEntry> entries = new java.util.ArrayList<>();
         java.util.ArrayList<Integer> colors = new java.util.ArrayList<>();
         String[] labelsArr = new String[totalDays];
@@ -192,10 +297,10 @@ public class StatsHelper {
             float total = count + excCount;
             entries.add(new com.github.mikephil.charting.data.BarEntry((float)i, total));
             
-            if (calcCal.after(now) && !dK.equals(todayStr)) { colors.add(themeColors[4]); } // Future
-            else if (total == 0) { colors.add(Color.parseColor("#FF5252")); } // Missed
-            else if (excCount > 0) { colors.add(Color.parseColor("#FF4081")); } // Excused
-            else { colors.add(colorAccent); } // Done
+            if (calcCal.after(now) && !dK.equals(todayStr)) { colors.add(themeColors[4]); } 
+            else if (total == 0) { colors.add(Color.parseColor("#FF5252")); } 
+            else if (excCount > 0) { colors.add(Color.parseColor("#FF4081")); } 
+            else { colors.add(colorAccent); } 
             
             labelsArr[i] = lang.bnNum(i+1);
             calcCal.add(Calendar.DATE, 1); 
@@ -265,7 +370,7 @@ public class StatsHelper {
             
             String monthName = new SimpleDateFormat("MMMM yyyy", Locale.US).format(statsCalPointer.getTime());
             if(lang.get("Fajr").equals("ফজর")) { monthName = lang.get(new SimpleDateFormat("MMMM", Locale.US).format(statsCalPointer.getTime())) + " " + lang.bnNum(statsCalPointer.get(Calendar.YEAR)); }
-            canvas.drawText(lang.get("Monthly Report") + " • " + monthName, 595/2f, 75, paint);
+            canvas.drawText((sp.getString("app_lang", "en").equals("bn") ? "মাসিক রিপোর্ট" : "Monthly Report") + " • " + monthName, 595/2f, 75, paint);
             
             String email = sp.getString("user_email", "");
             if(!email.isEmpty()) { paint.setTextSize(12); paint.setAlpha(220); canvas.drawText(email, 595/2f, 95, paint); paint.setAlpha(255); }

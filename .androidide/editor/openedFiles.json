@@ -1,92 +1,17 @@
 {
   "allFiles": [
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/MainActivity.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 58729,
-          "line": 537
-        },
-        "start": {
-          "column": 1,
-          "index": 58729,
-          "line": 537
-        }
-      }
-    },
-    {
       "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/StatsHelper.java",
       "selection": {
         "end": {
           "column": 1,
-          "index": 27138,
-          "line": 336
+          "index": 32758,
+          "line": 441
         },
         "start": {
           "column": 1,
-          "index": 27138,
-          "line": 336
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/CalendarHelper.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 25901,
-          "line": 305
-        },
-        "start": {
-          "column": 1,
-          "index": 25901,
-          "line": 305
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/UIComponents.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 10625,
-          "line": 130
-        },
-        "start": {
-          "column": 1,
-          "index": 10625,
-          "line": 130
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/BackupHelper.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 12657,
-          "line": 176
-        },
-        "start": {
-          "column": 1,
-          "index": 12657,
-          "line": 176
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/LanguageEngine.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 7828,
-          "line": 95
-        },
-        "start": {
-          "column": 1,
-          "index": 7828,
-          "line": 95
+          "index": 32758,
+          "line": 441
         }
       }
     },
@@ -94,29 +19,29 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/res/layout/salah_widget.xml",
       "selection": {
         "end": {
-          "column": 15,
-          "index": 4430,
-          "line": 57
+          "column": 0,
+          "index": 4954,
+          "line": 36
         },
         "start": {
-          "column": 15,
-          "index": 4430,
-          "line": 57
+          "column": 0,
+          "index": 4954,
+          "line": 36
         }
       }
     },
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/res/xml/salah_widget_info.xml",
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/res/layout/widget_prayer_item.xml",
       "selection": {
         "end": {
-          "column": 43,
-          "index": 396,
-          "line": 8
+          "column": 0,
+          "index": 1111,
+          "line": 13
         },
         "start": {
-          "column": 43,
-          "index": 396,
-          "line": 8
+          "column": 0,
+          "index": 1111,
+          "line": 13
         }
       }
     },
@@ -124,44 +49,14 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/SalahWidget.java",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 3539,
-          "line": 76
+          "column": 0,
+          "index": 8292,
+          "line": 122
         },
         "start": {
-          "column": 1,
-          "index": 3539,
-          "line": 76
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/AndroidManifest.xml",
-      "selection": {
-        "end": {
-          "column": 11,
-          "index": 1598,
-          "line": 40
-        },
-        "start": {
-          "column": 11,
-          "index": 1598,
-          "line": 40
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/AppConstants.java",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 564,
-          "line": 15
-        },
-        "start": {
-          "column": 1,
-          "index": 564,
-          "line": 15
+          "column": 0,
+          "index": 8292,
+          "line": 122
         }
       }
     },
@@ -170,58 +65,28 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 6353,
-          "line": 109
+          "index": 6427,
+          "line": 156
         },
         "start": {
           "column": 1,
-          "index": 6353,
-          "line": 109
+          "index": 6427,
+          "line": 156
         }
       }
     },
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/build.gradle.kts",
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/MainActivity.java",
       "selection": {
         "end": {
-          "column": 54,
-          "index": 1168,
-          "line": 49
+          "column": 1,
+          "index": 58883,
+          "line": 537
         },
         "start": {
-          "column": 54,
-          "index": 1168,
-          "line": 49
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /settings.gradle.kts",
-      "selection": {
-        "end": {
-          "column": 31,
-          "index": 276,
-          "line": 13
-        },
-        "start": {
-          "column": 31,
-          "index": 276,
-          "line": 13
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /gradle.properties",
-      "selection": {
-        "end": {
-          "column": 27,
-          "index": 1385,
-          "line": 23
-        },
-        "start": {
-          "column": 27,
-          "index": 1385,
-          "line": 23
+          "column": 1,
+          "index": 58883,
+          "line": 537
         }
       }
     }

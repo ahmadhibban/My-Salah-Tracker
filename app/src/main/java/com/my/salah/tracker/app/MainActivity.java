@@ -189,8 +189,8 @@ public class MainActivity extends Activity {
         LinearLayout leftHeader = new LinearLayout(this); leftHeader.setOrientation(LinearLayout.VERTICAL); leftHeader.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f)); leftHeader.setGravity(Gravity.CENTER_VERTICAL);
         int streakCount = ui.calculateStreak(sp, AppConstants.PRAYERS);
         TextView streakBadge = new TextView(this); streakBadge.setTextSize(11); streakBadge.setTypeface(Typeface.DEFAULT_BOLD); streakBadge.setPadding((int)(10*DENSITY), (int)(4*DENSITY), (int)(10*DENSITY), (int)(4*DENSITY));
-        GradientDrawable badgeBg = new GradientDrawable(); badgeBg.setCornerRadius(15f * DENSITY); badgeBg.setColor(themeColors[4]); badgeBg.setStroke((int)(1f*DENSITY), colorAccent);
-        streakBadge.setTextColor(themeColors[2]); streakBadge.setText(streakCount >= 365 ? lang.get("1 YEAR STREAK") : lang.bnNum(streakCount) + " " + lang.get("DAYS STREAK"));
+        GradientDrawable badgeBg = new GradientDrawable(); badgeBg.setCornerRadius(15f * DENSITY); badgeBg.setColor(colorAccent); badgeBg.setStroke(0, android.graphics.Color.TRANSPARENT);
+        streakBadge.setTextColor(android.graphics.Color.WHITE); streakBadge.setText(streakCount >= 365 ? lang.get("1 YEAR STREAK") : lang.bnNum(streakCount) + " " + lang.get("DAYS STREAK"));
         LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(-2, -2); badgeLp.setMargins(0, 0, 0, (int)(10*DENSITY)); streakBadge.setLayoutParams(badgeLp); streakBadge.setBackground(badgeBg); leftHeader.addView(streakBadge);
         
         LinearLayout hijriRow = new LinearLayout(this); hijriRow.setOrientation(LinearLayout.HORIZONTAL); hijriRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -273,7 +273,7 @@ public class MainActivity extends Activity {
             View mIcon = ui.getRoundImage("img_trophy", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); markAllBtn.addView(mIcon); markAllBtn.addView(markAllTxt);
             markAllBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showUnmarkOptions(); } }); 
         }
-        actionRow.addView(markAllBtn);
+        markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); for(String p : AppConstants.PRAYERS) { sp.edit().putBoolean(selectedDate[0]+"_"+p+"_qaza", true).putString(selectedDate[0]+"_"+p, "no").apply(); fbHelper.save(selectedDate[0], p, "no"); } ui.showSmartBanner(root, sp.getString("app_lang", "en").equals("bn") ? "কাজা সেভ হয়েছে" : "Qaza Saved", sp.getString("app_lang", "en").equals("bn") ? "সবগুলো কাজা তালিকায় যুক্ত হয়েছে।" : "Entire day marked as pending Qaza.", "img_warning", colorAccent, null); loadTodayPage(); refreshWidget(); return true; } }); actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(6*DENSITY), 0, 0, 0); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD); 
@@ -317,7 +317,7 @@ public class MainActivity extends Activity {
             cLp.setMargins(0, 0, 0, i==5 ? 0 : (int)(cardMarB*DENSITY)); 
             card.setLayoutParams(cLp);
             
-            View iconView = ui.getRoundImage(pImgs[i], pPaddings[i], themeColors[5], colorAccent); 
+            View iconView = ui.getRoundImage(pImgs[i], pPaddings[i], android.graphics.Color.TRANSPARENT, colorAccent); 
             LinearLayout.LayoutParams icCardLp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY)); 
             icCardLp.setMargins(0,0,(int)(15*DENSITY),0); iconView.setLayoutParams(icCardLp); card.addView(iconView);
             
@@ -336,7 +336,7 @@ public class MainActivity extends Activity {
                 int doneSunnahs = 0; for(String sName : AppConstants.SUNNAHS[i]) { if (sp.getString(selectedDate[0]+"_"+name+"_Sunnah_"+sName, "no").equals("yes")) doneSunnahs++; }
                 String sText = AppConstants.SUNNAHS[i].length > 1 ? (lang.get("Extras") + " (" + lang.bnNum(doneSunnahs) + "/" + lang.bnNum(AppConstants.SUNNAHS[i].length) + ")") : (i == 5 ? lang.get("Tahajjud") : lang.get("Sunnah"));
                 sunnahBtn.setText(sText); sunnahBtn.setTextSize(11); sunnahBtn.setSingleLine(true);
-                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); customSunnahBg.setColor(themeColors[5]); sunnahBtn.setTextColor(themeColors[2]); 
+                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); if(doneSunnahs > 0){customSunnahBg.setColor(colorAccent);sunnahBtn.setTextColor(android.graphics.Color.WHITE);}else{customSunnahBg.setColor(themeColors[5]);sunnahBtn.setTextColor(themeColors[2]);} 
                 sunnahBtn.setPadding((int)(10*DENSITY), (int)(5*DENSITY), (int)(10*DENSITY), (int)(5*DENSITY)); sunnahBtn.setBackground(customSunnahBg); LinearLayout.LayoutParams customSunnahLp = new LinearLayout.LayoutParams(-2, -2); customSunnahLp.setMargins(0, 0, (int)(15*DENSITY), 0); sunnahBtn.setLayoutParams(customSunnahLp);
                 sunnahBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showSunnahDialog(name, AppConstants.SUNNAHS[finalI]); } }); card.addView(sunnahBtn);
             }
