@@ -36,6 +36,21 @@ public class StatsHelper {
         this.activity = activity; this.DENSITY = DENSITY; this.themeColors = themeColors; this.colorAccent = colorAccent; this.lang = lang; this.ui = ui; this.sp = sp; this.prayers = prayers; this.appFonts = appFonts; this.statsCalPointer = Calendar.getInstance();
     }
 
+    // ✨ ROOM DATABASE HELPERS FOR SUPERFAST STATS ✨
+    private SalahRecord getRoomRecord(String date) {
+        return SalahDatabase.getDatabase(activity).salahDao().getRecordByDate(date);
+    }
+    
+    private String getFardStat(SalahRecord r, String p) {
+        if(r==null) return "no";
+        switch(p){ case "Fajr":return r.fajr; case "Dhuhr":return r.dhuhr; case "Asr":return r.asr; case "Maghrib":return r.maghrib; case "Isha":return r.isha; case "Witr":return r.witr; default:return "no";}
+    }
+    
+    private boolean getQazaStat(SalahRecord r, String p) {
+        if(r==null) return false;
+        switch(p){ case "Fajr":return r.fajr_qaza; case "Dhuhr":return r.dhuhr_qaza; case "Asr":return r.asr_qaza; case "Maghrib":return r.maghrib_qaza; case "Isha":return r.isha_qaza; case "Witr":return r.witr_qaza; default:return false;}
+    }
+
     private void applyFont(View v, Typeface reg, Typeface bold) {
         if (v instanceof TextView) { TextView tv = (TextView) v; if (tv.getTypeface() != null && tv.getTypeface().isBold()) tv.setTypeface(bold); else tv.setTypeface(reg); } 
         else if (v instanceof ViewGroup) { ViewGroup vg = (ViewGroup) v; for (int i = 0; i < vg.getChildCount(); i++) applyFont(vg.getChildAt(i), reg, bold); }
@@ -61,8 +76,8 @@ public class StatsHelper {
         BtnMaker bm = new BtnMaker();
         bm.add(isBn ? "সাপ্তাহিক পরিসংখ্যান" : "Weekly Statistics", new Runnable() { @Override public void run() { showStats(true); } });
         bm.add(isBn ? "মাসিক পরিসংখ্যান" : "Monthly Statistics", new Runnable() { @Override public void run() { showStats(false); } });
-        bm.add(isBn ? "রিপোর্ট শেয়ার (ছবি)" : "Share Report (Image)", new Runnable() { @Override public void run() { showShareTypeDialog(); } });
-        bm.add(isBn ? "প্রিমিয়াম পিডিএফ এক্সপোর্ট" : "Export Premium PDF", new Runnable() { @Override public void run() { exportPdf(); } });
+        bm.add(isBn ? "রিপোর্ট শেয়ার (ছবি)" : "Share Report (Image)", new Runnable() { @Override public void run() { showShareTypeDialog(); } });
+        bm.add(isBn ? "প্রিমিয়াম পিডিএফ এক্সপোর্ট" : "Export Premium PDF", new Runnable() { @Override public void run() { exportPdf(); } });
         
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); ad.show();
     }
@@ -109,14 +124,27 @@ public class StatsHelper {
             paint.setColor(themeColors[2]); paint.setTextSize(55); paint.setTypeface(appFonts[1]); canvas.drawText(gregDateRange, width/2f, 750, paint); paint.setColor(themeColors[3]); paint.setTextSize(45); paint.setTypeface(appFonts[0]); canvas.drawText(hijriDateRange, width/2f, 830, paint); canvas.drawText(startDay + " - " + endDay, width/2f, 900, paint);
             
             int totalDays = 0, totalDone = 0, totalMissed = 0, totalExcused = 0, totalQaza = 0; Calendar loopCal = (Calendar) startCal.clone();
-            while(!loopCal.after(endCal)) { totalDays++; String dKey = sdfKey.format(loopCal.getTime()); for(String p : prayers) { String stat = sp.getString(dKey+"_"+p, "no"); boolean isQaza = sp.getBoolean(dKey+"_"+p+"_qaza", false); if(stat.equals("yes")) totalDone++; else if(stat.equals("excused")) totalExcused++; else { if(isQaza) totalQaza++; else totalMissed++; } } loopCal.add(Calendar.DATE, 1); }
+            
+            // ✨ Fast DB Read Loop ✨
+            while(!loopCal.after(endCal)) { 
+                totalDays++; String dKey = sdfKey.format(loopCal.getTime()); 
+                SalahRecord r = getRoomRecord(dKey);
+                for(String p : prayers) { 
+                    String stat = getFardStat(r, p); 
+                    boolean isQaza = getQazaStat(r, p); 
+                    if(stat.equals("yes")) totalDone++; 
+                    else if(stat.equals("excused")) totalExcused++; 
+                    else { if(isQaza) totalQaza++; else totalMissed++; } 
+                } 
+                loopCal.add(Calendar.DATE, 1); 
+            }
             
             float startY = 1050; float padding = 80; float cardW = (width - (padding*3)) / 2f; float cardH = 280;
             drawReportCard(canvas, paint, padding, startY, cardW, cardH, colorAccent, isBn?"মোট দিন":"Total Days", lang.bnNum(totalDays));
-            drawReportCard(canvas, paint, padding*2 + cardW, startY, cardW, cardH, Color.parseColor("#3B82F6"), isBn?"আদায়কৃত নামাজ":"Prayers Done", lang.bnNum(totalDone));
-            drawReportCard(canvas, paint, padding, startY + cardH + 60, cardW, cardH, Color.parseColor("#FF5252"), isBn?"কাজা হয়েছে":"Missed", lang.bnNum(totalMissed));
+            drawReportCard(canvas, paint, padding*2 + cardW, startY, cardW, cardH, Color.parseColor("#3B82F6"), isBn?"আদায়কৃত নামাজ":"Prayers Done", lang.bnNum(totalDone));
+            drawReportCard(canvas, paint, padding, startY + cardH + 60, cardW, cardH, Color.parseColor("#FF5252"), isBn?"কাজা হয়েছে":"Missed", lang.bnNum(totalMissed));
             drawReportCard(canvas, paint, padding*2 + cardW, startY + cardH + 60, cardW, cardH, Color.parseColor("#FF9500"), isBn?"অপেক্ষমান কাজা":"Pending Qaza", lang.bnNum(totalQaza));
-            drawReportCard(canvas, paint, padding, startY + (cardH*2) + 120, cardW, cardH, Color.parseColor("#FF4081"), isBn?"পিরিয়ড / ছুটির মোড":"Excused Mode", lang.bnNum(totalExcused));
+            drawReportCard(canvas, paint, padding, startY + (cardH*2) + 120, cardW, cardH, Color.parseColor("#FF4081"), isBn?"পিরিয়ড / ছুটির মোড":"Excused Mode", lang.bnNum(totalExcused));
             drawReportCard(canvas, paint, padding*2 + cardW, startY + (cardH*2) + 120, cardW, cardH, Color.parseColor("#9B59B6"), isBn?"বর্তমান স্ট্রিক":"Current Streak", lang.bnNum(ui.calculateStreak(sp, prayers)));
             
             paint.setColor(themeColors[3]); paint.setTextAlign(Paint.Align.CENTER); paint.setTextSize(45); canvas.drawText(isBn ? "My Salah Tracker অ্যাপের মাধ্যমে তৈরি" : "Generated by My Salah Tracker", width/2f, 2050, paint);
@@ -135,11 +163,10 @@ public class StatsHelper {
         paint.setColor(accentColor); paint.setTextSize(110); paint.setTypeface(appFonts[1]); canvas.drawText(value, x+90, y+230, paint);
     }
 
-    // ✨ THE NEW "LONG INFOGRAPHIC" PDF ENGINE ✨
+    // ✨ THE SUPERFAST PDF ENGINE WITH ROOM ✨
     public void exportPdf() {
         boolean isBn = sp.getString("app_lang", "en").equals("bn");
         try {
-            // PDF Width is 650, Height is 1600 (Much longer, lots of breathing room!)
             int pdfWidth = 650;
             int pdfHeight = 1600;
             
@@ -175,23 +202,25 @@ public class StatsHelper {
                 cal.set(Calendar.DAY_OF_MONTH, i); String dKey = sdf.format(cal.getTime());
                 if(cal.after(now) && !dKey.equals(sdf.format(now.getTime()))) continue;
                 totalDaysPassed++;
+                
+                SalahRecord r = getRoomRecord(dKey);
                 for(String p : prayers) {
-                    String stat = sp.getString(dKey+"_"+p, "no"); boolean isQaza = sp.getBoolean(dKey+"_"+p+"_qaza", false);
+                    String stat = getFardStat(r, p); boolean isQaza = getQazaStat(r, p);
                     if(stat.equals("yes")) totalDone++; else if(stat.equals("excused")) totalExcused++; else { if(isQaza) totalQaza++; else totalMissed++; }
                 }
             }
 
-            // 3 Columns Cards Layout (Bigger and more spacious)
+            // 3 Columns Cards Layout
             float startY = 200; float padding = 30; float cardW = (pdfWidth - (padding*4)) / 3f; float cardH = 75;
             drawPdfCardBig(canvas, paint, padding, startY, cardW, cardH, colorAccent, isBn?"মোট দিন":"Total Days", lang.bnNum(totalDaysPassed));
-            drawPdfCardBig(canvas, paint, padding*2 + cardW, startY, cardW, cardH, Color.parseColor("#3B82F6"), isBn?"আদায়কৃত":"Prayers Done", lang.bnNum(totalDone));
-            drawPdfCardBig(canvas, paint, padding*3 + cardW*2, startY, cardW, cardH, Color.parseColor("#FF5252"), isBn?"কাজা হয়েছে":"Missed", lang.bnNum(totalMissed));
+            drawPdfCardBig(canvas, paint, padding*2 + cardW, startY, cardW, cardH, Color.parseColor("#3B82F6"), isBn?"আদায়কৃত":"Prayers Done", lang.bnNum(totalDone));
+            drawPdfCardBig(canvas, paint, padding*3 + cardW*2, startY, cardW, cardH, Color.parseColor("#FF5252"), isBn?"কাজা হয়েছে":"Missed", lang.bnNum(totalMissed));
             
             drawPdfCardBig(canvas, paint, padding, startY + cardH + 20, cardW, cardH, Color.parseColor("#FF9500"), isBn?"অপেক্ষমান কাজা":"Pending Qaza", lang.bnNum(totalQaza));
-            drawPdfCardBig(canvas, paint, padding*2 + cardW, startY + cardH + 20, cardW, cardH, Color.parseColor("#FF4081"), isBn?"পিরিয়ড/ছুটি":"Excused Mode", lang.bnNum(totalExcused));
+            drawPdfCardBig(canvas, paint, padding*2 + cardW, startY + cardH + 20, cardW, cardH, Color.parseColor("#FF4081"), isBn?"পিরিয়ড/ছুটি":"Excused Mode", lang.bnNum(totalExcused));
             drawPdfCardBig(canvas, paint, padding*3 + cardW*2, startY + cardH + 20, cardW, cardH, Color.parseColor("#9B59B6"), isBn?"বর্তমান স্ট্রিক":"Current Streak", lang.bnNum(ui.calculateStreak(sp, prayers)));
 
-            // 1. Centered Monthly Calendar Grid (Big and Clean)
+            // 1. Centered Monthly Calendar Grid
             float calStartY = startY + (cardH*2) + 70;
             paint.setColor(Color.parseColor("#333333")); paint.setTextSize(22); paint.setTypeface(Typeface.create(appFonts[1], Typeface.BOLD)); paint.setTextAlign(Paint.Align.LEFT);
             canvas.drawText(isBn ? "মাসিক ক্যালেন্ডার ওভারভিউ" : "Monthly Calendar Overview", padding, calStartY, paint);
@@ -211,8 +240,9 @@ public class StatsHelper {
                 float cx = calX + (c*colW) + (colW/2f); float cy = gridY + (r*rowH);
                 cal.set(Calendar.DAY_OF_MONTH, i); String dKey = sdf.format(cal.getTime());
                 
+                SalahRecord rec = getRoomRecord(dKey);
                 boolean allDone = true; boolean hasMissed = false; boolean hasExcused = false;
-                for(String p : prayers) { String st = sp.getString(dKey+"_"+p, "no"); if(st.equals("no")) { allDone = false; hasMissed = true; } if(st.equals("excused")) hasExcused = true; }
+                for(String p : prayers) { String st = getFardStat(rec, p); if(st.equals("no")) { allDone = false; hasMissed = true; } if(st.equals("excused")) hasExcused = true; }
                 
                 float radius = 18f;
                 if(cal.after(now) && !dKey.equals(sdf.format(now.getTime()))) { 
@@ -235,14 +265,13 @@ public class StatsHelper {
             canvas.drawText(isBn ? "সাপ্তাহিক বিস্তারিত (ফজর থেকে বিতর)" : "Weekly Detail (Fard & Sunnah)", padding, weekStartY, paint);
 
             float wY = weekStartY + 30; 
-            float weekCardH = 120f; // Tall box for clear charts!
+            float weekCardH = 120f; 
             float barGap = 20f;
             
             for(int w=1; w<=totalRows; w++) {
                 int sDay = (w==1) ? 1 : ((w-1)*7 - offset + 1); int eDay = Math.min(w*7 - offset, totalDaysInMonth);
                 if(sDay > totalDaysInMonth) break;
 
-                // Title Format
                 Calendar tempS = (Calendar) statsCalPointer.clone(); tempS.set(Calendar.DAY_OF_MONTH, sDay);
                 Calendar tempE = (Calendar) statsCalPointer.clone(); tempE.set(Calendar.DAY_OF_MONTH, eDay);
                 SimpleDateFormat sdfMMM = new SimpleDateFormat("MMM", Locale.US);
@@ -250,25 +279,23 @@ public class StatsHelper {
                 String eDateStr = isBn ? (lang.bnNum(eDay) + " " + lang.get(sdfMMM.format(tempE.getTime()))) : (sdfMMM.format(tempE.getTime()) + " " + String.format("%02d", eDay));
                 String wTitle = (isBn ? "সপ্তাহ " : "Week ") + lang.bnNum(w) + " (" + sDateStr + " - " + eDateStr + ")";
 
-                // Draw Box
                 paint.setColor(Color.parseColor("#FAFAFC")); canvas.drawRoundRect(new RectF(padding, wY, pdfWidth-padding, wY+weekCardH), 15, 15, paint);
-
-                // Draw Title inside box top left
                 paint.setColor(Color.parseColor("#555555")); paint.setTextSize(14); paint.setTypeface(Typeface.create(appFonts[1], Typeface.BOLD)); paint.setTextAlign(Paint.Align.LEFT);
                 canvas.drawText(wTitle, padding+20, wY+30, paint);
 
-                // Draw Mini Bar Charts 
                 float chartAreaW = pdfWidth - (padding * 2) - 40; float colW_Chart = chartAreaW / 7f; float chartXStart = padding + 20;
                 
                 for(int d=sDay; d<=eDay; d++) {
-                    cal.set(Calendar.DAY_OF_MONTH, d); int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1; // 0=Sun
+                    cal.set(Calendar.DAY_OF_MONTH, d); int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1; 
                     String dK = sdf.format(cal.getTime());
                     float cx = chartXStart + (dayOfWeek * colW_Chart) + (colW_Chart/2f);
                     
                     int fardDone = 0; int sunnahDone = 0;
                     if(cal.before(now) || dK.equals(sdf.format(now.getTime()))) {
+                        SalahRecord r = getRoomRecord(dK);
                         for(int p=0; p<prayers.length; p++) { 
-                            if(sp.getString(dK+"_"+prayers[p], "no").equals("yes") || sp.getString(dK+"_"+prayers[p], "no").equals("excused")) fardDone++; 
+                            String fardSt = getFardStat(r, prayers[p]);
+                            if(fardSt.equals("yes") || fardSt.equals("excused")) fardDone++; 
                             for(String sName : AppConstants.SUNNAHS[p]) { if(sp.getString(dK+"_"+prayers[p]+"_Sunnah_"+sName, "no").equals("yes")) sunnahDone++; }
                         }
                     }
@@ -282,12 +309,9 @@ public class StatsHelper {
 
                     float baseLineY = wY + 90f;
 
-                    // Left Bar (Fard)
                     paint.setColor(leftColor); canvas.drawRoundRect(new RectF(cx - 8, baseLineY - leftH, cx - 2, baseLineY), 3f, 3f, paint);
-                    // Right Bar (Sunnah)
                     paint.setColor(rightColor); canvas.drawRoundRect(new RectF(cx + 2, baseLineY - rightH, cx + 8, baseLineY), 3f, 3f, paint);
                     
-                    // Day Text below bar
                     paint.setColor(Color.parseColor("#AAAAAA")); paint.setTextSize(10); paint.setTypeface(appFonts[0]); paint.setTextAlign(Paint.Align.CENTER);
                     String dayLabel = daysStr[dayOfWeek] + " " + lang.bnNum(d); canvas.drawText(dayLabel, cx, baseLineY + 18, paint);
                 }
@@ -301,7 +325,7 @@ public class StatsHelper {
             File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS); if (!dir.exists()) dir.mkdirs();
             File file = new File(dir, "Salah_Report_" + System.currentTimeMillis() + ".pdf"); document.writeTo(new FileOutputStream(file)); document.close();
             FrameLayout root = activity.findViewById(android.R.id.content);
-            ui.showSmartBanner(root, isBn?"সফল":"Success", isBn?"পিডিএফ সেভ হয়েছে":"PDF Saved successfully.", "img_tick", colorAccent, null);
+            ui.showSmartBanner(root, isBn?"সফল":"Success", isBn?"পিডিএফ সেভ হয়েছে":"PDF Saved successfully.", "img_tick", colorAccent, null);
         } catch(Exception e) { FrameLayout root = activity.findViewById(android.R.id.content); ui.showSmartBanner(root, "Error", "Storage permission required.", "img_warning", colorAccent, null); }
     }
 
@@ -350,7 +374,8 @@ public class StatsHelper {
             String dK = sdf.format(calcCal.getTime()); int count = 0; int excCount = 0;
             if(calcCal.before(now) || dK.equals(todayStr)) { 
                 daysPassed++; 
-                for(String p : prayers) { String st = sp.getString(dK+"_"+p, "no"); if(st.equals("yes")) count++; else if(st.equals("excused")) excCount++; } 
+                SalahRecord r = getRoomRecord(dK);
+                for(String p : prayers) { String st = getFardStat(r, p); if(st.equals("yes")) count++; else if(st.equals("excused")) excCount++; } 
                 totalCompleted += count; totalExcused += excCount;
             } 
             float total = count + excCount; entries.add(new com.github.mikephil.charting.data.BarEntry((float)i, total));

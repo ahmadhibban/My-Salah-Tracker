@@ -51,6 +51,36 @@ public class MainActivity extends Activity {
     private LinearLayout contentArea;
     private SimpleDateFormat sdf;
 
+    // ✨ ROOM DATABASE HELPERS ✨
+    private SalahRecord getRoomRecord(String date) {
+        SalahDao dao = SalahDatabase.getDatabase(this).salahDao();
+        SalahRecord r = dao.getRecordByDate(date);
+        if (r == null) { r = new SalahRecord(date); dao.insertRecord(r); }
+        return r;
+    }
+    
+    private void updateRoomRecord(SalahRecord r) {
+        SalahDatabase.getDatabase(this).salahDao().updateRecord(r);
+    }
+    
+    private String getFardStat(SalahRecord r, String p) {
+        if(r==null) return "no";
+        switch(p){ case "Fajr":return r.fajr; case "Dhuhr":return r.dhuhr; case "Asr":return r.asr; case "Maghrib":return r.maghrib; case "Isha":return r.isha; case "Witr":return r.witr; default:return "no";}
+    }
+    
+    private void setFardStat(SalahRecord r, String p, String s) {
+        switch(p){ case "Fajr":r.fajr=s;break; case "Dhuhr":r.dhuhr=s;break; case "Asr":r.asr=s;break; case "Maghrib":r.maghrib=s;break; case "Isha":r.isha=s;break; case "Witr":r.witr=s;break; }
+    }
+    
+    private boolean getQazaStat(SalahRecord r, String p) {
+        if(r==null) return false;
+        switch(p){ case "Fajr":return r.fajr_qaza; case "Dhuhr":return r.dhuhr_qaza; case "Asr":return r.asr_qaza; case "Maghrib":return r.maghrib_qaza; case "Isha":return r.isha_qaza; case "Witr":return r.witr_qaza; default:return false;}
+    }
+    
+    private void setQazaStat(SalahRecord r, String p, boolean q) {
+        switch(p){ case "Fajr":r.fajr_qaza=q;break; case "Dhuhr":r.dhuhr_qaza=q;break; case "Asr":r.asr_qaza=q;break; case "Maghrib":r.maghrib_qaza=q;break; case "Isha":r.isha_qaza=q;break; case "Witr":r.witr_qaza=q;break; }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +104,10 @@ public class MainActivity extends Activity {
 
         DENSITY = getResources().getDisplayMetrics().density;
         sp = getSharedPreferences("salah_pro_final", MODE_PRIVATE);
+        
+        // ✨ অটোমেটিক মাইগ্রেশন স্ক্রিপ্ট ✨
+        DataMigrationHelper.migrateOldDataToRoom(this);
+
         sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         selectedDate[0] = sdf.format(new Date());
         calendarViewPointer = Calendar.getInstance();
@@ -133,6 +167,7 @@ public class MainActivity extends Activity {
         loadTodayPage();
         refreshWidget();
         setupMidnightRefresh();
+        MidnightWorker.scheduleNextMidnight(MainActivity.this);
         
         if (sp.getBoolean("is_first_run_tutorial", true)) { 
             new OnboardingHelper(this, DENSITY, themeColors, colorAccent, lang, ui, sp, root, appFonts).showOnboarding();
@@ -169,7 +204,8 @@ public class MainActivity extends Activity {
             @Override public void run() {
                 selectedDate[0] = sdf.format(new Date()); 
                 calendarViewPointer.setTime(new Date());
-                loadTodayPage(); refreshWidget(); setupMidnightRefresh(); 
+                loadTodayPage(); refreshWidget(); setupMidnightRefresh();
+        MidnightWorker.scheduleNextMidnight(MainActivity.this); 
             }
         }, delay);
     }
@@ -183,6 +219,9 @@ public class MainActivity extends Activity {
 
         boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         int headPadT = 15; int pCardPadV = 18; int pCardMarB = 10; int weekNavPadB = 8; int actionMarB = 10; int cardPadV = 12; int cardMarB = 8; 
+
+        // ✨ Get Today's Room Record
+        SalahRecord todayRec = getRoomRecord(selectedDate[0]);
 
         LinearLayout header = new LinearLayout(this); header.setOrientation(LinearLayout.HORIZONTAL); header.setGravity(Gravity.CENTER_VERTICAL); header.setPadding((int)(20*DENSITY), (int)(headPadT*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY));
         
@@ -222,7 +261,11 @@ public class MainActivity extends Activity {
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
         GradientDrawable pcBg = new GradientDrawable(GradientDrawable.Orientation.BR_TL, pColors); pcBg.setCornerRadius(20f * DENSITY); pCard.setBackground(pcBg);
         
-        int countCompleted = 0; for(String p : AppConstants.PRAYERS) if(sp.getString(selectedDate[0]+"_"+p, "no").equals("yes") || sp.getString(selectedDate[0]+"_"+p, "no").equals("excused")) countCompleted++;
+        int countCompleted = 0; 
+        for(String p : AppConstants.PRAYERS) {
+            String status = getFardStat(todayRec, p);
+            if(status.equals("yes") || status.equals("excused")) countCompleted++;
+        }
         String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Halfway there!"), lang.get("Almost done!"), lang.get("Almost done!"), lang.get("Purity Achieved!")};
         
         LinearLayout left = new LinearLayout(this); left.setOrientation(LinearLayout.VERTICAL); left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1.2f)); 
@@ -239,11 +282,20 @@ public class MainActivity extends Activity {
         LinearLayout weekBox = new LinearLayout(this); weekBox.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f)); weekBox.setGravity(Gravity.CENTER);
         Calendar cal = (Calendar) selectedCalArr[0].clone(); while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) { cal.add(Calendar.DATE, -1); }
         int circleSize = (int)(36 * DENSITY); 
+        
+        SalahDao dDao = SalahDatabase.getDatabase(this).salahDao();
         for(int i=0; i<7; i++) {
             final String dKey = sdf.format(cal.getTime()); final boolean isSel = dKey.equals(selectedDate[0]); final boolean isFuture = cal.after(now);
             String dLabel = new SimpleDateFormat("EEEE", Locale.US).format(cal.getTime()).substring(0,1); 
             if (sp.getString("app_lang", "en").equals("bn")) { String[] bnD = {"র", "সো", "ম", "বু", "বৃ", "শু", "শ"}; dLabel = bnD[cal.get(Calendar.DAY_OF_WEEK) - 1]; }
-            boolean isAllDone = true; for(String p : AppConstants.PRAYERS) { if(!sp.getString(dKey+"_"+p, "no").equals("yes") && !sp.getString(dKey+"_"+p, "no").equals("excused")) { isAllDone = false; break; } }
+            
+            SalahRecord dRec = dDao.getRecordByDate(dKey);
+            boolean isAllDone = true; 
+            for(String p : AppConstants.PRAYERS) { 
+                String s = getFardStat(dRec, p);
+                if(!s.equals("yes") && !s.equals("excused")) { isAllDone = false; break; } 
+            }
+            
             FrameLayout cell = new FrameLayout(this); cell.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
             TextView t = new TextView(this); t.setText(dLabel); t.setTypeface(Typeface.DEFAULT_BOLD); t.setTextSize(13); t.setGravity(Gravity.CENTER); FrameLayout.LayoutParams textLp = new FrameLayout.LayoutParams(circleSize, circleSize); textLp.gravity = Gravity.CENTER; t.setLayoutParams(textLp);
             GradientDrawable dayBg = new GradientDrawable(); dayBg.setShape(GradientDrawable.OVAL); 
@@ -251,6 +303,7 @@ public class MainActivity extends Activity {
             t.setBackground(dayBg);
             cell.addView(t); cell.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(isFuture) { ui.showPremiumLocked(colorAccent); } else { selectedDate[0] = dKey; loadTodayPage(); } } }); weekBox.addView(cell); cal.add(Calendar.DATE, 1);
         }
+        
         TextView nextW = new TextView(this); nextW.setText("❯"); nextW.setTextSize(16); nextW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); nextW.setTextColor(themeColors[2]); nextW.setGravity(Gravity.CENTER); nextW.setBackground(navBg); 
         Calendar weekStartNow = (Calendar) now.clone(); while (weekStartNow.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) { weekStartNow.add(Calendar.DATE, -1); }
         final boolean isCurrentWeekArr = !selectedCalArr[0].before(weekStartNow); nextW.setAlpha(isCurrentWeekArr ? 0.3f : 1.0f);
@@ -267,13 +320,23 @@ public class MainActivity extends Activity {
             markAllTxt.setText(lang.get("Mark All")); markAllTxt.setTextColor(themeColors[2]); 
             View mIcon = ui.getRoundImage("img_tick", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); markAllBtn.addView(mIcon); markAllBtn.addView(markAllTxt);
             markAllBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showMarkOptions(); } });
-            markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); for(String p : AppConstants.PRAYERS) { sp.edit().putBoolean(selectedDate[0]+"_"+p+"_qaza", true).putString(selectedDate[0]+"_"+p, "no").apply(); fbHelper.save(selectedDate[0], p, "no"); } ui.showSmartBanner(root, lang.get("Qaza Saved"), lang.get("Entire day marked as pending Qaza."), "img_warning", colorAccent, null); loadTodayPage(); refreshWidget(); return true; } });
+            markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { 
+                v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(String p : AppConstants.PRAYERS) { 
+                    setQazaStat(r, p, true); setFardStat(r, p, "no");
+                    sp.edit().putBoolean(selectedDate[0]+"_"+p+"_qaza", true).putString(selectedDate[0]+"_"+p, "no").apply(); 
+                    fbHelper.save(selectedDate[0], p, "no"); 
+                } 
+                updateRoomRecord(r);
+                ui.showSmartBanner(root, lang.get("Qaza Saved"), lang.get("Entire day marked as pending Qaza."), "img_warning", colorAccent, null); loadTodayPage(); refreshWidget(); return true; 
+            } });
         } else {
             markAllTxt.setText(lang.get("All Done")); markAllTxt.setTextColor(themeColors[2]); 
             View mIcon = ui.getRoundImage("img_trophy", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); markAllBtn.addView(mIcon); markAllBtn.addView(markAllTxt);
             markAllBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showUnmarkOptions(); } }); 
         }
-        markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); for(String p : AppConstants.PRAYERS) { sp.edit().putBoolean(selectedDate[0]+"_"+p+"_qaza", true).putString(selectedDate[0]+"_"+p, "no").apply(); fbHelper.save(selectedDate[0], p, "no"); } ui.showSmartBanner(root, sp.getString("app_lang", "en").equals("bn") ? "কাজা সেভ হয়েছে" : "Qaza Saved", sp.getString("app_lang", "en").equals("bn") ? "সবগুলো কাজা তালিকায় যুক্ত হয়েছে।" : "Entire day marked as pending Qaza.", "img_warning", colorAccent, null); loadTodayPage(); refreshWidget(); return true; } }); actionRow.addView(markAllBtn);
+        actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(6*DENSITY), 0, 0, 0); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD); 
@@ -304,8 +367,8 @@ public class MainActivity extends Activity {
         
         for(int i=0; i<6; i++) {
             final String name = AppConstants.PRAYERS[i]; final String key = selectedDate[0]+"_"+name; 
-            final String stat = sp.getString(key, "no"); final boolean checked = stat.equals("yes") || stat.equals("excused");
-            final boolean isQaza = sp.getBoolean(key+"_qaza", false);
+            final String stat = getFardStat(todayRec, name); final boolean checked = stat.equals("yes") || stat.equals("excused");
+            final boolean isQaza = getQazaStat(todayRec, name);
             
             LinearLayout card = new LinearLayout(this); card.setPadding((int)(15*DENSITY), (int)(cardPadV*DENSITY), (int)(20*DENSITY), (int)(cardPadV*DENSITY)); card.setGravity(Gravity.CENTER_VERTICAL); 
             GradientDrawable cb = new GradientDrawable(); 
@@ -344,20 +407,41 @@ public class MainActivity extends Activity {
             final View chk = ui.getPremiumCheckbox(stat, colorAccent); card.addView(chk);
             card.setOnClickListener(new View.OnClickListener() { 
                 @Override public void onClick(final View v) {
-                    if (stat.equals("excused")) { sp.edit().putString(key, "no").apply(); fbHelper.save(selectedDate[0], name, "no"); loadTodayPage(); refreshWidget(); return; }
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean currentStatus = stat.equals("yes"); String newVal = !currentStatus ? "yes" : "no"; 
-                    if(newVal.equals("yes") && sp.getBoolean(key+"_qaza", false)) { sp.edit().putBoolean(key+"_qaza", false).apply(); }
+                    if (stat.equals("excused")) { 
+                        SalahRecord r = getRoomRecord(selectedDate[0]); setFardStat(r, name, "no"); updateRoomRecord(r);
+                        sp.edit().putString(key, "no").apply(); fbHelper.save(selectedDate[0], name, "no"); loadTodayPage(); refreshWidget(); return; 
+                    }
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); 
+                    boolean currentStatus = stat.equals("yes"); String newVal = !currentStatus ? "yes" : "no"; 
+                    
+                    SalahRecord r = getRoomRecord(selectedDate[0]);
+                    if(newVal.equals("yes") && getQazaStat(r, name)) { setQazaStat(r, name, false); sp.edit().putBoolean(key+"_qaza", false).apply(); }
+                    setFardStat(r, name, newVal); updateRoomRecord(r);
                     sp.edit().putString(key, newVal).apply(); fbHelper.save(selectedDate[0], name, newVal); 
+                    
                     v.animate().scaleX(0.95f).scaleY(0.95f).alpha(0.8f).setDuration(100).withEndAction(new Runnable() { @Override public void run() { v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(250).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); } }).start();
-                    if (!currentStatus) { int count = 0; for(String p : AppConstants.PRAYERS) if(sp.getString(selectedDate[0]+"_"+p, "no").equals("yes") || sp.getString(selectedDate[0]+"_"+p, "no").equals("excused")) count++; if (count == 6) { showSuccessSequence(); } }
+                    if (!currentStatus) { 
+                        int count = 0; for(String p : AppConstants.PRAYERS) { String s = getFardStat(r, p); if(s.equals("yes") || s.equals("excused")) count++; } 
+                        if (count == 6) { showSuccessSequence(); } 
+                    }
                     v.postDelayed(new Runnable() { @Override public void run() { loadTodayPage(); refreshWidget(); }}, 150);
                 }
             });
             card.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override public boolean onLongClick(View v) {
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); boolean wasQaza = sp.getBoolean(key+"_qaza", false);
-                    if(!wasQaza) { sp.edit().putBoolean(key+"_qaza", true).putString(key, "no").apply(); fbHelper.save(selectedDate[0], name, "no"); ui.showSmartBanner(root, lang.get("Qaza Saved"), lang.get("Entire day marked as pending Qaza."), "img_warning", colorAccent, null); } 
-                    else { sp.edit().putBoolean(key+"_qaza", false).apply(); ui.showSmartBanner(root, lang.get("Qaza Removed"), lang.get("Name removed from Qaza list."), "img_tick", colorAccent, null); }
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); 
+                    SalahRecord r = getRoomRecord(selectedDate[0]);
+                    boolean wasQaza = getQazaStat(r, name);
+                    if(!wasQaza) { 
+                        setQazaStat(r, name, true); setFardStat(r, name, "no"); updateRoomRecord(r);
+                        sp.edit().putBoolean(key+"_qaza", true).putString(key, "no").apply(); fbHelper.save(selectedDate[0], name, "no"); 
+                        ui.showSmartBanner(root, lang.get("Qaza Saved"), lang.get("Entire day marked as pending Qaza."), "img_warning", colorAccent, null); 
+                    } 
+                    else { 
+                        setQazaStat(r, name, false); updateRoomRecord(r);
+                        sp.edit().putBoolean(key+"_qaza", false).apply(); 
+                        ui.showSmartBanner(root, lang.get("Qaza Removed"), lang.get("Name removed from Qaza list."), "img_tick", colorAccent, null); 
+                    }
                     loadTodayPage(); refreshWidget(); return true;
                 }
             });
@@ -374,7 +458,10 @@ public class MainActivity extends Activity {
         View iconView = ui.getRoundImage("img_period", 12, Color.parseColor(isDarkTheme ? "#331520" : "#FCE4EC"), Color.parseColor("#D81B60"));
         LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(55*DENSITY), (int)(55*DENSITY)); icLp.gravity = Gravity.CENTER_HORIZONTAL; iconView.setLayoutParams(icLp); main.addView(iconView); 
         TextView title = new TextView(this); title.setText(lang.get("Excused Mode")); title.setTextColor(colorAccent); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); title.setPadding(0, (int)(15*DENSITY), 0, (int)(10*DENSITY)); main.addView(title); 
-        boolean isAlreadyExcused = true; for(String p : AppConstants.PRAYERS) { if(!sp.getString(selectedDate[0]+"_"+p, "no").equals("excused")) { isAlreadyExcused = false; break; } } 
+        
+        SalahRecord todayRec = getRoomRecord(selectedDate[0]);
+        boolean isAlreadyExcused = true; for(String p : AppConstants.PRAYERS) { if(!getFardStat(todayRec, p).equals("excused")) { isAlreadyExcused = false; break; } } 
+        
         TextView sub = new TextView(this); sub.setText(lang.get(isAlreadyExcused ? "Prayers are currently marked as excused." : "Mark today's prayers as excused. Streak will not break.")); sub.setGravity(Gravity.CENTER); sub.setTextColor(themeColors[3]); sub.setTextSize(12); sub.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(sub); 
         Button actionBtn = new Button(this); actionBtn.setText(lang.get(isAlreadyExcused ? "Remove Excused Status" : "Mark Today as Excused")); actionBtn.setAllCaps(false); actionBtn.setTextColor(Color.WHITE); actionBtn.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable btnBg = new GradientDrawable(); btnBg.setColor(colorAccent); btnBg.setCornerRadius(20f * DENSITY); actionBtn.setBackground(btnBg); 
@@ -385,7 +472,20 @@ public class MainActivity extends Activity {
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); 
         ad.getWindow().setGravity(Gravity.CENTER); 
         
-        final boolean finalIsExcused = isAlreadyExcused; actionBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { String newVal = finalIsExcused ? "no" : "excused"; for(String p : AppConstants.PRAYERS) { sp.edit().putString(selectedDate[0]+"_"+p, newVal).apply(); fbHelper.save(selectedDate[0], p, newVal); } ad.dismiss(); loadTodayPage(); refreshWidget(); } }); 
+        final boolean finalIsExcused = isAlreadyExcused; 
+        actionBtn.setOnClickListener(new View.OnClickListener() { 
+            @Override public void onClick(View v) { 
+                String newVal = finalIsExcused ? "no" : "excused"; 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(String p : AppConstants.PRAYERS) { 
+                    setFardStat(r, p, newVal);
+                    sp.edit().putString(selectedDate[0]+"_"+p, newVal).apply(); 
+                    fbHelper.save(selectedDate[0], p, newVal); 
+                } 
+                updateRoomRecord(r);
+                ad.dismiss(); loadTodayPage(); refreshWidget(); 
+            } 
+        }); 
         applyFont(main, appFonts[0], appFonts[1]); ad.show(); 
     }
 
@@ -446,21 +546,32 @@ public class MainActivity extends Activity {
         
         ScrollView scroll = new ScrollView(this); final LinearLayout list = new LinearLayout(this); list.setOrientation(LinearLayout.VERTICAL); list.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), 0);
         Calendar cal = Calendar.getInstance(); int qazaCount = 0;
+        
+        SalahDao dao = SalahDatabase.getDatabase(this).salahDao();
+
         for(int i=0; i<365; i++) { 
             final String dK = sdf.format(cal.getTime());
-            for(final String p : AppConstants.PRAYERS) {
-                if(sp.getBoolean(dK+"_"+p+"_qaza", false) && sp.getString(dK+"_"+p, "no").equals("no")) {
-                    qazaCount++; final LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL); row.setGravity(Gravity.CENTER_VERTICAL); row.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY));
-                    GradientDrawable bg = new GradientDrawable(); bg.setColor(themeColors[4]); bg.setCornerRadius(15f*DENSITY); row.setBackground(bg);
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 0, 0, (int)(10*DENSITY)); row.setLayoutParams(lp);
-                    LinearLayout tLay = new LinearLayout(this); tLay.setOrientation(LinearLayout.VERTICAL); tLay.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-                    TextView t1 = new TextView(this); t1.setText(lang.get(p)); t1.setTextColor(themeColors[2]); t1.setTextSize(16); t1.setTypeface(Typeface.DEFAULT_BOLD);
-                    TextView t2 = new TextView(this); t2.setText(lang.getShortGreg(cal.getTime())); t2.setTextColor(themeColors[3]); t2.setTextSize(12);
-                    tLay.addView(t1); tLay.addView(t2); row.addView(tLay);
-                    TextView btn = new TextView(this); btn.setText(lang.get("Done")); btn.setTextColor(colorAccent); btn.setTypeface(Typeface.DEFAULT_BOLD); btn.setPadding((int)(15*DENSITY), (int)(8*DENSITY), (int)(15*DENSITY), (int)(8*DENSITY));
-                    GradientDrawable bBg = new GradientDrawable(); bBg.setColor(themeColors[5]); bBg.setCornerRadius(10f*DENSITY); btn.setBackground(bBg); row.addView(btn);
-                    btn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putBoolean(dK+"_"+p+"_qaza", false).putString(dK+"_"+p, "yes").apply(); list.removeView(row); loadTodayPage(); refreshWidget(); } });
-                    list.addView(row);
+            final SalahRecord r = dao.getRecordByDate(dK);
+            
+            if (r != null) {
+                for(final String p : AppConstants.PRAYERS) {
+                    if(getQazaStat(r, p) && getFardStat(r, p).equals("no")) {
+                        qazaCount++; final LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL); row.setGravity(Gravity.CENTER_VERTICAL); row.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY));
+                        GradientDrawable bg = new GradientDrawable(); bg.setColor(themeColors[4]); bg.setCornerRadius(15f*DENSITY); row.setBackground(bg);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 0, 0, (int)(10*DENSITY)); row.setLayoutParams(lp);
+                        LinearLayout tLay = new LinearLayout(this); tLay.setOrientation(LinearLayout.VERTICAL); tLay.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+                        TextView t1 = new TextView(this); t1.setText(lang.get(p)); t1.setTextColor(themeColors[2]); t1.setTextSize(16); t1.setTypeface(Typeface.DEFAULT_BOLD);
+                        TextView t2 = new TextView(this); t2.setText(lang.getShortGreg(cal.getTime())); t2.setTextColor(themeColors[3]); t2.setTextSize(12);
+                        tLay.addView(t1); tLay.addView(t2); row.addView(tLay);
+                        TextView btn = new TextView(this); btn.setText(lang.get("Done")); btn.setTextColor(colorAccent); btn.setTypeface(Typeface.DEFAULT_BOLD); btn.setPadding((int)(15*DENSITY), (int)(8*DENSITY), (int)(15*DENSITY), (int)(8*DENSITY));
+                        GradientDrawable bBg = new GradientDrawable(); bBg.setColor(themeColors[5]); bBg.setCornerRadius(10f*DENSITY); btn.setBackground(bBg); row.addView(btn);
+                        btn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { 
+                            setQazaStat(r, p, false); setFardStat(r, p, "yes"); updateRoomRecord(r);
+                            sp.edit().putBoolean(dK+"_"+p+"_qaza", false).putString(dK+"_"+p, "yes").apply(); 
+                            list.removeView(row); loadTodayPage(); refreshWidget(); 
+                        } });
+                        list.addView(row);
+                    }
                 }
             }
             cal.add(Calendar.DATE, -1);
@@ -487,8 +598,30 @@ public class MainActivity extends Activity {
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); 
         ad.getWindow().setGravity(Gravity.CENTER); 
         
-        t1.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { for(String p : AppConstants.PRAYERS) { sp.edit().putString(selectedDate[0]+"_"+p, "yes").apply(); fbHelper.save(selectedDate[0], p, "yes"); } ad.dismiss(); loadTodayPage(); refreshWidget(); ui.showSmartBanner(root, lang.get("Success"), lang.get("Prayers marked."), "img_tick", colorAccent, null); } }); 
-        t2.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { for(int i=0; i<AppConstants.PRAYERS.length; i++) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "yes"); for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes"); } } ad.dismiss(); loadTodayPage(); refreshWidget(); ui.showSmartBanner(root, lang.get("Success"), lang.get("All marked."), "img_tick", colorAccent, null); } }); applyFont(main, appFonts[0], appFonts[1]); ad.show();
+        t1.setOnClickListener(new View.OnClickListener() { 
+            @Override public void onClick(View v) { 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(String p : AppConstants.PRAYERS) { 
+                    setFardStat(r, p, "yes");
+                    sp.edit().putString(selectedDate[0]+"_"+p, "yes").apply(); 
+                    fbHelper.save(selectedDate[0], p, "yes"); 
+                } 
+                updateRoomRecord(r);
+                ad.dismiss(); loadTodayPage(); refreshWidget(); ui.showSmartBanner(root, lang.get("Success"), lang.get("Prayers marked."), "img_tick", colorAccent, null); 
+            } 
+        }); 
+        t2.setOnClickListener(new View.OnClickListener() { 
+            @Override public void onClick(View v) { 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(int i=0; i<AppConstants.PRAYERS.length; i++) { 
+                    setFardStat(r, AppConstants.PRAYERS[i], "yes");
+                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "yes"); 
+                    for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes"); } 
+                } 
+                updateRoomRecord(r);
+                ad.dismiss(); loadTodayPage(); refreshWidget(); ui.showSmartBanner(root, lang.get("Success"), lang.get("All marked."), "img_tick", colorAccent, null); 
+            } 
+        }); applyFont(main, appFonts[0], appFonts[1]); ad.show();
     }
 
     private void showUnmarkOptions() {
@@ -501,11 +634,32 @@ public class MainActivity extends Activity {
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); 
         ad.getWindow().setGravity(Gravity.CENTER); 
         
-        t1.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { for(String p : AppConstants.PRAYERS) { sp.edit().putString(selectedDate[0]+"_"+p, "no").apply(); fbHelper.save(selectedDate[0], p, "no"); } ad.dismiss(); loadTodayPage(); refreshWidget(); } }); 
-        t2.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { for(int i=0; i<AppConstants.PRAYERS.length; i++) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "no"); for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no"); } } ad.dismiss(); loadTodayPage(); refreshWidget(); } }); applyFont(main, appFonts[0], appFonts[1]); ad.show();
+        t1.setOnClickListener(new View.OnClickListener() { 
+            @Override public void onClick(View v) { 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(String p : AppConstants.PRAYERS) { 
+                    setFardStat(r, p, "no");
+                    sp.edit().putString(selectedDate[0]+"_"+p, "no").apply(); 
+                    fbHelper.save(selectedDate[0], p, "no"); 
+                } 
+                updateRoomRecord(r);
+                ad.dismiss(); loadTodayPage(); refreshWidget(); 
+            } 
+        }); 
+        t2.setOnClickListener(new View.OnClickListener() { 
+            @Override public void onClick(View v) { 
+                SalahRecord r = getRoomRecord(selectedDate[0]);
+                for(int i=0; i<AppConstants.PRAYERS.length; i++) { 
+                    setFardStat(r, AppConstants.PRAYERS[i], "no");
+                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "no"); 
+                    for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no"); } 
+                } 
+                updateRoomRecord(r);
+                ad.dismiss(); loadTodayPage(); refreshWidget(); 
+            } 
+        }); applyFont(main, appFonts[0], appFonts[1]); ad.show();
     }
 
-    // ✨ FIX: Restored the Premium Glowing Diamond Animation (Crash-Proof Native Code)
     private void showSuccessSequence() { 
         final LinearLayout main = new LinearLayout(this); main.setOrientation(LinearLayout.VERTICAL); main.setGravity(Gravity.CENTER); main.setPadding((int)(30*DENSITY), (int)(45*DENSITY), (int)(30*DENSITY), (int)(45*DENSITY)); 
         GradientDrawable gd = new GradientDrawable(); gd.setColor(colorAccent); gd.setCornerRadius(30f * DENSITY); main.setBackground(gd); 

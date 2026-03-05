@@ -40,10 +40,34 @@ public class SalahWidget extends AppWidgetProvider {
         return bmp;
     }
 
-    // ✨ বাংলা তারিখের গ্রামার লজিক (১লা, ২রা, ৫ই, ১৯শে) ✨
     public static String getBnSuffix(int d) {
         if(d == 1) return "লা"; if(d == 2 || d == 3) return "রা"; if(d == 4) return "ঠা";
         if(d >= 5 && d <= 18) return "ই"; return "শে";
+    }
+
+    // ✨ ম্যাজিক লজিক: নামের ওপর ভিত্তি করে Room ডেটাবেস আপডেট করা ✨
+    private void toggleStatInRoom(SalahRecord record, String prayerName) {
+        switch(prayerName) {
+            case "Fajr": record.fajr = record.fajr.equals("yes") ? "no" : "yes"; break;
+            case "Dhuhr": record.dhuhr = record.dhuhr.equals("yes") ? "no" : "yes"; break;
+            case "Asr": record.asr = record.asr.equals("yes") ? "no" : "yes"; break;
+            case "Maghrib": record.maghrib = record.maghrib.equals("yes") ? "no" : "yes"; break;
+            case "Isha": record.isha = record.isha.equals("yes") ? "no" : "yes"; break;
+            case "Witr": record.witr = record.witr.equals("yes") ? "no" : "yes"; break;
+        }
+    }
+
+    private static String getStatFromRoom(SalahRecord record, String prayerName) {
+        if (record == null) return "no";
+        switch(prayerName) {
+            case "Fajr": return record.fajr;
+            case "Dhuhr": return record.dhuhr;
+            case "Asr": return record.asr;
+            case "Maghrib": return record.maghrib;
+            case "Isha": return record.isha;
+            case "Witr": return record.witr;
+            default: return "no";
+        }
     }
 
     @Override
@@ -57,11 +81,19 @@ public class SalahWidget extends AppWidgetProvider {
         if (ACTION_TOGGLE.equals(intent.getAction())) {
             String prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME);
             if (prayerName != null) {
-                SharedPreferences sp = context.getSharedPreferences("salah_pro_final", Context.MODE_PRIVATE);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                String todayKey = sdf.format(new Date());
-                String currentStatus = sp.getString(todayKey + "_" + prayerName, "no");
-                sp.edit().putString(todayKey + "_" + prayerName, currentStatus.equals("yes") ? "no" : "yes").apply();
+                // ✨ এখন আমরা SharedPreferences এর বদলে সরাসরি Room Database-এ সেভ করছি! ✨
+                String todayKey = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+                SalahDao dao = SalahDatabase.getDatabase(context).salahDao();
+                
+                SalahRecord record = dao.getRecordByDate(todayKey);
+                if (record == null) {
+                    record = new SalahRecord(todayKey);
+                    dao.insertRecord(record);
+                }
+                
+                toggleStatInRoom(record, prayerName);
+                dao.updateRecord(record);
+
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 onUpdate(context, appWidgetManager, appWidgetManager.getAppWidgetIds(new ComponentName(context, SalahWidget.class)));
             }
@@ -126,9 +158,12 @@ public class SalahWidget extends AppWidgetProvider {
         views.setInt(context.getResources().getIdentifier("widget_hijri_icon", "id", context.getPackageName()), "setColorFilter", subTextColor);
         views.setImageViewBitmap(context.getResources().getIdentifier("widget_greg_date_img", "id", context.getPackageName()), buildTextBitmap(context, gregText, mainTextColor, 18f, appFontBold));
         
-        // ✨ পার্সেন্টেজ বক্স ডিজাইন (বর্ডার কালারফুল, ভেতরটা সাদা/কালো) ✨
         views.setInt(context.getResources().getIdentifier("widget_percent_border", "id", context.getPackageName()), "setColorFilter", colorAccent);
         views.setInt(context.getResources().getIdentifier("widget_percent_inner", "id", context.getPackageName()), "setColorFilter", mainBgColor);
+
+        // ✨ Room Database থেকে আজকের দিনের ডেটা আনা হচ্ছে ✨
+        SalahDao dao = SalahDatabase.getDatabase(context).salahDao();
+        SalahRecord todayRecord = dao.getRecordByDate(todayKey);
 
         int countCompleted = 0;
         String[] pNames = AppConstants.PRAYERS;
@@ -136,7 +171,7 @@ public class SalahWidget extends AppWidgetProvider {
         String[] boxIds = {"box_fajr", "box_dhuhr", "box_asr", "box_maghrib", "box_isha", "box_witr"};
 
         for (int i = 0; i < 6; i++) {
-            String stat = sp.getString(todayKey + "_" + pNames[i], "no");
+            String stat = getStatFromRoom(todayRecord, pNames[i]);
             boolean isDone = stat.equals("yes") || stat.equals("excused");
             if (isDone) countCompleted++;
 
@@ -148,7 +183,6 @@ public class SalahWidget extends AppWidgetProvider {
 
             RemoteViews prayerBox = new RemoteViews(context.getPackageName(), context.getResources().getIdentifier("widget_prayer_item", "layout", context.getPackageName()));
 
-            // ✨ নামাজের ফন্ট কালার সবসময় ধ্রুবক (সাদা/কালো) থাকবে ✨
             prayerBox.setImageViewBitmap(textId, buildTextBitmap(context, lang.get(pNames[i]), mainTextColor, 14f, appFontBold));
 
             prayerBox.setInt(innerId, "setColorFilter", mainBgColor);
@@ -166,7 +200,6 @@ public class SalahWidget extends AppWidgetProvider {
         }
 
         int percent = (int) ((countCompleted / 6f) * 100);
-        // পার্সেন্টেজ লেখাও সাদা/কালো হবে
         views.setImageViewBitmap(context.getResources().getIdentifier("widget_percent_badge_img", "id", context.getPackageName()), buildTextBitmap(context, lang.bnNum(percent) + "%", mainTextColor, 14f, appFontBold));
 
         try {

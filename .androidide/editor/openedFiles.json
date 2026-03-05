@@ -5,13 +5,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 36972,
-          "line": 376
+          "index": 37829,
+          "line": 401
         },
         "start": {
           "column": 1,
-          "index": 36972,
-          "line": 376
+          "index": 37829,
+          "line": 401
         }
       }
     },
@@ -35,12 +35,12 @@
       "selection": {
         "end": {
           "column": 0,
-          "index": 1111,
+          "index": 1229,
           "line": 13
         },
         "start": {
           "column": 0,
-          "index": 1111,
+          "index": 1229,
           "line": 13
         }
       }
@@ -50,13 +50,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 12018,
-          "line": 184
+          "index": 13334,
+          "line": 217
         },
         "start": {
           "column": 1,
-          "index": 12018,
-          "line": 184
+          "index": 13334,
+          "line": 217
         }
       }
     },
@@ -64,14 +64,14 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/OnboardingHelper.java",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 6427,
-          "line": 156
+          "column": 0,
+          "index": 5267,
+          "line": 59
         },
         "start": {
-          "column": 1,
-          "index": 6427,
-          "line": 156
+          "column": 0,
+          "index": 5267,
+          "line": 59
         }
       }
     },
@@ -80,16 +80,151 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 58883,
-          "line": 537
+          "index": 63900,
+          "line": 689
         },
         "start": {
           "column": 1,
-          "index": 58883,
-          "line": 537
+          "index": 63900,
+          "line": 689
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/build.gradle.kts",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 1601,
+          "line": 57
+        },
+        "start": {
+          "column": 1,
+          "index": 1601,
+          "line": 57
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/SalahRecord.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 976,
+          "line": 33
+        },
+        "start": {
+          "column": 1,
+          "index": 976,
+          "line": 33
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/SalahDao.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 1099,
+          "line": 31
+        },
+        "start": {
+          "column": 1,
+          "index": 1099,
+          "line": 31
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/SalahDatabase.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 1519,
+          "line": 36
+        },
+        "start": {
+          "column": 1,
+          "index": 1519,
+          "line": 36
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/DataMigrationHelper.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 2828,
+          "line": 61
+        },
+        "start": {
+          "column": 1,
+          "index": 2828,
+          "line": 61
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/MidnightWorker.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 2440,
+          "line": 62
+        },
+        "start": {
+          "column": 1,
+          "index": 2440,
+          "line": 62
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/FirebaseManager.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 8734,
+          "line": 165
+        },
+        "start": {
+          "column": 1,
+          "index": 8734,
+          "line": 165
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /build.gradle.kts",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /gradle.properties",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "index": 0,
+          "line": 0
         }
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/SalahWidget.java"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/StatsHelper.java"
 }

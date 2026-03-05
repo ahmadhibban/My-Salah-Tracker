@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Room Database Rules
+-keep class com.my.salah.tracker.app.SalahRecord { *; }
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.**
