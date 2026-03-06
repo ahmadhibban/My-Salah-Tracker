@@ -5,12 +5,12 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 37829,
+          "index": 32597,
           "line": 401
         },
         "start": {
           "column": 1,
-          "index": 37829,
+          "index": 32597,
           "line": 401
         }
       }
@@ -50,13 +50,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 13334,
-          "line": 217
+          "index": 12935,
+          "line": 209
         },
         "start": {
           "column": 1,
-          "index": 13334,
-          "line": 217
+          "index": 12935,
+          "line": 209
         }
       }
     },
@@ -65,12 +65,12 @@
       "selection": {
         "end": {
           "column": 0,
-          "index": 5267,
+          "index": 5502,
           "line": 59
         },
         "start": {
           "column": 0,
-          "index": 5267,
+          "index": 5502,
           "line": 59
         }
       }
@@ -80,13 +80,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 63900,
-          "line": 689
+          "index": 65097,
+          "line": 783
         },
         "start": {
           "column": 1,
-          "index": 63900,
-          "line": 689
+          "index": 65097,
+          "line": 783
         }
       }
     },
@@ -95,12 +95,12 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 1601,
+          "index": 1658,
           "line": 57
         },
         "start": {
           "column": 1,
-          "index": 1601,
+          "index": 1658,
           "line": 57
         }
       }
@@ -224,7 +224,37 @@
           "line": 0
         }
       }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/LanguageEngine.java",
+      "selection": {
+        "end": {
+          "column": 82,
+          "index": 3894,
+          "line": 52
+        },
+        "start": {
+          "column": 82,
+          "index": 3894,
+          "line": 52
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/BackupHelper.java",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 14228,
+          "line": 222
+        },
+        "start": {
+          "column": 1,
+          "index": 14228,
+          "line": 222
+        }
+      }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/StatsHelper.java"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/My Salah Tracker /app/src/main/java/com/my/salah/tracker/app/LanguageEngine.java"
 }

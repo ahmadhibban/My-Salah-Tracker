@@ -29,8 +29,11 @@ public class OnboardingHelper {
 
         boolean isBn = sp.getString("app_lang", "en").equals("bn");
         final String[][] pages = {
-                { "img_moon", isBn ? "My Salah Tracker - এ স্বাগতম" : "Welcome to My Salah Tracker", isBn ? "আপনার ব্যক্তিগত, আধুনিক এবং বিজ্ঞাপন-মুক্ত সালাহ ট্র্যাকার।" : "Your personal, modern, and ad-free companion to build a consistent prayer habit." },
-                { "img_calender", isBn ? "সহজ ট্র্যাকিং" : "Easy Tracking", isBn ? "প্রতিদিনের নামাজগুলো খুব সহজেই মার্ক করুন। আপনার অগ্রগতি এবং কাজা নামাজের হিসেব রাখুন।" : "Mark your daily prayers with ease. Keep track of your progress and pending Qaza." }
+                { "img_moon", isBn ? "স্বাগতম" : "Welcome", isBn ? "আপনার ব্যক্তিগত বিজ্ঞাপন-মুক্ত সালাহ ট্র্যাকার।" : "Your personal ad-free Salah companion." },
+                { "img_calender", isBn ? "সহজ ট্র্যাকিং" : "Easy Tracking", isBn ? "প্রতিদিনের নামাজ ও কাজা নামাজের হিসাব রাখুন সহজে।" : "Track daily prayers and Qaza with ease." },
+                { "img_cloud", isBn ? "ক্লাউড ব্যাকআপ" : "Cloud Sync", isBn ? "আপনার ডাটা কখনোই হারাবে না, গুগল ক্লাউডে সেভ থাকবে।" : "Never lose data; sync securely with Google Cloud." },
+                { "img_stats", isBn ? "বিস্তারিত রিপোর্ট" : "Advanced Stats", isBn ? "সাপ্তাহিক ও মাসিক প্রগতি দেখুন আকর্ষণীয় চার্টে।" : "Analyze your progress with weekly & monthly charts." },
+                { "img_settings", isBn ? "কাস্টমাইজেশন" : "Customization", isBn ? "ডার্ক মোড, একাধিক থিম এবং বাংলা ভাষা ব্যবহারের সুবিধা।" : "Dark mode, multiple themes, and Bengali support." }
         };
 
         final Runnable updatePage = new Runnable() {

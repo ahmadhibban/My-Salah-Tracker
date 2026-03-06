@@ -41,11 +41,13 @@ public class SalahWidget extends AppWidgetProvider {
     }
 
     public static String getBnSuffix(int d) {
-        if(d == 1) return "লা"; if(d == 2 || d == 3) return "রা"; if(d == 4) return "ঠা";
-        if(d >= 5 && d <= 18) return "ই"; return "শে";
+        if(d == 1) return "লা";
+        if(d == 2 || d == 3) return "রা"; 
+        if(d == 4) return "ঠা";
+        if(d >= 5 && d <= 18) return "ই"; 
+        return "শে";
     }
 
-    // ✨ ম্যাজিক লজিক: নামের ওপর ভিত্তি করে Room ডেটাবেস আপডেট করা ✨
     private void toggleStatInRoom(SalahRecord record, String prayerName) {
         switch(prayerName) {
             case "Fajr": record.fajr = record.fajr.equals("yes") ? "no" : "yes"; break;
@@ -81,7 +83,6 @@ public class SalahWidget extends AppWidgetProvider {
         if (ACTION_TOGGLE.equals(intent.getAction())) {
             String prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME);
             if (prayerName != null) {
-                // ✨ এখন আমরা SharedPreferences এর বদলে সরাসরি Room Database-এ সেভ করছি! ✨
                 String todayKey = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
                 SalahDao dao = SalahDatabase.getDatabase(context).salahDao();
                 
@@ -104,11 +105,9 @@ public class SalahWidget extends AppWidgetProvider {
         SharedPreferences sp = context.getSharedPreferences("salah_pro_final", Context.MODE_PRIVATE);
         LanguageEngine lang = new LanguageEngine(sp.getString("app_lang", "en"));
         RemoteViews views = new RemoteViews(context.getPackageName(), context.getResources().getIdentifier("salah_widget", "layout", context.getPackageName()));
-
         boolean systemDark = (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         boolean isDarkTheme = sp.getBoolean("is_dark_mode", systemDark);
         boolean isBn = sp.getString("app_lang", "en").equals("bn");
-
         int mainBgColor = isDarkTheme ? Color.parseColor("#1C1C1E") : Color.parseColor("#FFFFFF");
         int cardEmptyBorderColor = isDarkTheme ? Color.parseColor("#38383A") : Color.parseColor("#E2E8F0");
         int mainTextColor = isDarkTheme ? Color.WHITE : Color.parseColor("#141416");
@@ -130,7 +129,6 @@ public class SalahWidget extends AppWidgetProvider {
 
         SimpleDateFormat sdfKey = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         String todayKey = sdfKey.format(new Date());
-        
         String hijriText = "";
         try {
             if (Build.VERSION.SDK_INT >= 24) {
@@ -161,7 +159,6 @@ public class SalahWidget extends AppWidgetProvider {
         views.setInt(context.getResources().getIdentifier("widget_percent_border", "id", context.getPackageName()), "setColorFilter", colorAccent);
         views.setInt(context.getResources().getIdentifier("widget_percent_inner", "id", context.getPackageName()), "setColorFilter", mainBgColor);
 
-        // ✨ Room Database থেকে আজকের দিনের ডেটা আনা হচ্ছে ✨
         SalahDao dao = SalahDatabase.getDatabase(context).salahDao();
         SalahRecord todayRecord = dao.getRecordByDate(todayKey);
 
@@ -169,7 +166,6 @@ public class SalahWidget extends AppWidgetProvider {
         String[] pNames = AppConstants.PRAYERS;
         String[] pImgs = {"img_fajr", "img_dhuhr", "img_asr", "img_maghrib", "img_isha", "img_witr"};
         String[] boxIds = {"box_fajr", "box_dhuhr", "box_asr", "box_maghrib", "box_isha", "box_witr"};
-
         for (int i = 0; i < 6; i++) {
             String stat = getStatFromRoom(todayRecord, pNames[i]);
             boolean isDone = stat.equals("yes") || stat.equals("excused");
@@ -184,7 +180,6 @@ public class SalahWidget extends AppWidgetProvider {
             RemoteViews prayerBox = new RemoteViews(context.getPackageName(), context.getResources().getIdentifier("widget_prayer_item", "layout", context.getPackageName()));
 
             prayerBox.setImageViewBitmap(textId, buildTextBitmap(context, lang.get(pNames[i]), mainTextColor, 14f, appFontBold));
-
             prayerBox.setInt(innerId, "setColorFilter", mainBgColor);
             if (isDone) prayerBox.setInt(borderId, "setColorFilter", colorAccent);
             else prayerBox.setInt(borderId, "setColorFilter", cardEmptyBorderColor);
@@ -196,14 +191,15 @@ public class SalahWidget extends AppWidgetProvider {
             toggleIntent.setAction(ACTION_TOGGLE); toggleIntent.putExtra(EXTRA_PRAYER_NAME, pNames[i]);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, i, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
             prayerBox.setOnClickPendingIntent(context.getResources().getIdentifier("content_box", "id", context.getPackageName()), pendingIntent);
-            views.removeAllViews(boxId); views.addView(boxId, prayerBox); views.setOnClickPendingIntent(boxId, pendingIntent);
+            views.removeAllViews(boxId);
+            views.addView(boxId, prayerBox); views.setOnClickPendingIntent(boxId, pendingIntent);
         }
 
         int percent = (int) ((countCompleted / 6f) * 100);
         views.setImageViewBitmap(context.getResources().getIdentifier("widget_percent_badge_img", "id", context.getPackageName()), buildTextBitmap(context, lang.bnNum(percent) + "%", mainTextColor, 14f, appFontBold));
-
         try {
-            Bitmap progressBmp = Bitmap.createBitmap(1000, 30, Bitmap.Config.ARGB_8888); Canvas canvas = new Canvas(progressBmp); Paint p = new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(progressBgColor);
+            Bitmap progressBmp = Bitmap.createBitmap(1000, 30, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(progressBmp); Paint p = new Paint(Paint.ANTI_ALIAS_FLAG); p.setColor(progressBgColor);
             canvas.drawRoundRect(new RectF(0, 0, 1000, 30), 15, 15, p);
             if (countCompleted > 0) { p.setColor(colorAccent); canvas.drawRoundRect(new RectF(0, 0, (countCompleted / 6f) * 1000f, 30), 15, 15, p); }
             views.setImageViewBitmap(context.getResources().getIdentifier("widget_progress_img", "id", context.getPackageName()), progressBmp);
@@ -212,7 +208,6 @@ public class SalahWidget extends AppWidgetProvider {
         Intent appIntent = new Intent(context, MainActivity.class);
         PendingIntent appPendingIntent = PendingIntent.getActivity(context, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
         views.setOnClickPendingIntent(context.getResources().getIdentifier("widget_content", "id", context.getPackageName()), appPendingIntent);
-
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 }
