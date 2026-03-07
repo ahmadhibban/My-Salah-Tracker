@@ -51,6 +51,16 @@ public class StatsHelper {
         switch(p){ case "Fajr":return r.fajr_qaza; case "Dhuhr":return r.dhuhr_qaza; case "Asr":return r.asr_qaza; case "Maghrib":return r.maghrib_qaza; case "Isha":return r.isha_qaza; case "Witr":return r.witr_qaza; default:return false;}
     }
 
+    private int getTotalExtras(String dKey) {
+        int c = 0; for(int p=0; p<prayers.length; p++) { 
+            String pr = prayers[p];
+            for(String sn : AppConstants.SUNNAHS[p]) if("yes".equals(sp.getString(dKey+"_"+pr+"_Sunnah_"+sn, "no"))) c++; 
+            String cStr = sp.getString("custom_nafl_" + pr, "");
+            if(!cStr.isEmpty()) { for(String cN : cStr.split(",")) { if(cN.contains(":")) cN = cN.split(":")[0]; if("yes".equals(sp.getString(dKey+"_"+pr+"_Custom_"+cN, "no"))) c++; } }
+        }
+        return c;
+    }
+
     private void applyFont(View v, Typeface reg, Typeface bold) {
         if (v instanceof TextView) { TextView tv = (TextView) v; if (tv.getTypeface() != null && tv.getTypeface().isBold()) tv.setTypeface(bold); else tv.setTypeface(reg); } 
         else if (v instanceof ViewGroup) { ViewGroup vg = (ViewGroup) v; for (int i = 0; i < vg.getChildCount(); i++) applyFont(vg.getChildAt(i), reg, bold); }
@@ -58,122 +68,41 @@ public class StatsHelper {
 
     
     public void exportXls() {
-        boolean isBn = sp.getString("app_lang", "en").equals("bn");
-        try {
-            java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
-            if (!dir.exists()) dir.mkdirs();
-            java.io.File file = new java.io.File(dir, "Salah_Premium_Report_" + System.currentTimeMillis() + ".xls");
-            java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(file), "UTF-8"));
-            
-            int tDays = 0, tDone = 0, tMissed = 0, tExcused = 0, tQaza = 0;
-            java.util.Calendar sumCal = (java.util.Calendar) statsCalPointer.clone(); sumCal.set(java.util.Calendar.DAY_OF_MONTH, 1);
-            int mDays = sumCal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH);
-            java.util.Calendar nowSum = java.util.Calendar.getInstance();
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
-            
-            for(int j=1; j<=mDays; j++) {
-                sumCal.set(java.util.Calendar.DAY_OF_MONTH, j);
-                String dk = sdf.format(sumCal.getTime());
-                if(sumCal.after(nowSum) && !dk.equals(sdf.format(nowSum.getTime()))) continue;
-                tDays++;
-                SalahRecord rec = getRoomRecord(dk);
-                for(String p : prayers) {
-                    String st = getFardStat(rec, p); boolean isQz = getQazaStat(rec, p);
-                    if(st.equals("yes")) tDone++; else if(st.equals("excused")) tExcused++; else { if(isQz) tQaza++; else tMissed++; }
-                }
-            }
-            int streak = ui.calculateStreak(sp, prayers);
-            String title = (isBn ? "মাসিক রিপোর্ট • " : "Monthly Report • ") + new java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US).format(statsCalPointer.getTime());
-            
-            StringBuilder xml = new StringBuilder();
-            xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            xml.append("<?mso-application progid=\"Excel.Sheet\"?>");
-            xml.append("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">");
-            
-            xml.append("<Styles>");
-            xml.append("<Style ss:ID=\"Default\" ss:Name=\"Normal\"><Alignment ss:Vertical=\"Center\"/></Style>");
-            xml.append("<Style ss:ID=\"sTitle\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"20\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#FF9800\" ss:Pattern=\"Solid\"/></Style>");
-            xml.append("<Style ss:ID=\"sSumH\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#5F6368\"/><Interior ss:Color=\"#F8F9FA\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sSumV\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"16\" ss:Bold=\"1\" ss:Color=\"#202124\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"2\" ss:Color=\"#FF9800\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"13\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#3C4043\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"2\" ss:Color=\"#202124\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sDate\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#3C4043\"/><Interior ss:Color=\"#F1F3F4\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sYes\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#137333\"/><Interior ss:Color=\"#E6F4EA\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sNo\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#C5221F\"/><Interior ss:Color=\"#FCE8E6\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("<Style ss:ID=\"sExc\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#B80672\"/><Interior ss:Color=\"#FCE4EC\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
-            xml.append("</Styles>");
-            
-            xml.append("<Worksheet ss:Name=\"Report\"><Table>");
-            
-            xml.append("<Column ss:Width=\"140\"/>");
-            for(int i=0; i<6; i++) xml.append("<Column ss:Width=\"110\"/>");
-            xml.append("<Column ss:Width=\"150\"/>");
-            
-            xml.append("<Row ss:Height=\"60\"><Cell ss:MergeAcross=\"7\" ss:StyleID=\"sTitle\"><Data ss:Type=\"String\">" + title + "</Data></Cell></Row>");
-            String em=sp.getString("user_email","guest@salah.com"); xml.append("<Row ss:Height=\"25\"><Cell ss:MergeAcross=\"7\" ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+em+"</Data></Cell></Row><Row ss:Height=\"15\"><Cell><Data ss:Type=\"String\"></Data></Cell></Row>");
-            
-            xml.append("<Row ss:Height=\"35\">");
-            xml.append("<Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"মোট দিন":"Total Days") + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"আদায়কৃত":"Done") + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"কাজা":"Missed") + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"অপেক্ষমান কাজা":"Pending Qaza") + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"ছুটি":"Excused") + "</Data></Cell>");
-            xml.append("<Cell ss:MergeAcross=\"2\" ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">" + (isBn?"স্ট্রিক":"Streak") + "</Data></Cell>");
-            xml.append("</Row>");
-            
-            xml.append("<Row ss:Height=\"45\">");
-            xml.append("<Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(tDays) + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(tDone) + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(tMissed) + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(tQaza) + "</Data></Cell>");
-            xml.append("<Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(tExcused) + "</Data></Cell>");
-            xml.append("<Cell ss:MergeAcross=\"2\" ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">" + lang.bnNum(streak) + " ★</Data></Cell>");
-            xml.append("</Row>");
-            xml.append("<Row ss:Height=\"25\"><Cell><Data ss:Type=\"String\"></Data></Cell></Row>");
-
-            xml.append("<Row ss:Height=\"40\">");
-            String[] headers = isBn ? new String[]{"তারিখ", "ফজর", "যোহর", "আসর", "মাগরিব", "এশা", "বিতর", "সারসংক্ষেপ"} : new String[]{"Date", "Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", "Witr", "Status"};
-            for(String h : headers) xml.append("<Cell ss:StyleID=\"sHead\"><Data ss:Type=\"String\">" + h + "</Data></Cell>");
-            xml.append("</Row>");
-            
-            java.util.Calendar cal = (java.util.Calendar) statsCalPointer.clone(); cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
-            for(int i=1; i<=mDays; i++) {
-                cal.set(java.util.Calendar.DAY_OF_MONTH, i);
-                String dKey = sdf.format(cal.getTime());
-                SalahRecord r = getRoomRecord(dKey);
-                
-                String dateDisplay = isBn ? lang.bnNum(i) + " " + lang.get(new java.text.SimpleDateFormat("MMM", java.util.Locale.US).format(cal.getTime())) + ", " + lang.bnNum(cal.get(java.util.Calendar.YEAR)) : dKey;
-                
-                xml.append("<Row ss:Height=\"35\">");
-                xml.append("<Cell ss:StyleID=\"sDate\"><Data ss:Type=\"String\">" + dateDisplay + "</Data></Cell>");
-                
-                boolean allDone = true;
-                for(String p : prayers) {
-                    String s = getFardStat(r, p);
-                    String style = s.equals("yes") ? "sYes" : (s.equals("excused") ? "sExc" : "sNo");
-                    String txt = s.equals("yes") ? "\u2713 " + (isBn?"সম্পন্ন":"Done") : (s.equals("excused") ? "\u273F " + (isBn?"ছুটি":"Excused") : "\u2715 " + (isBn?"কাজা":"Missed"));
-                    xml.append("<Cell ss:StyleID=\"" + style + "\"><Data ss:Type=\"String\">" + txt + "</Data></Cell>");
-                    if(!s.equals("yes") && !s.equals("excused")) allDone = false;
-                }
-                String sStyle = allDone ? "sYes" : "sNo";
-                String sTxt = allDone ? (isBn ? "★ আলহামদুলিল্লাহ" : "★ Perfect") : (isBn ? "⚠ অসম্পূর্ণ" : "⚠ Incomplete");
-                xml.append("<Cell ss:StyleID=\"" + sStyle + "\"><Data ss:Type=\"String\">" + sTxt + "</Data></Cell>");
-                xml.append("</Row>");
-            }
-            xml.append("</Table></Worksheet></Workbook>");
-            pw.write(xml.toString());
-            pw.close();
-            
-            final java.io.File finalFile = file;
-            ui.showSmartBanner((android.widget.FrameLayout) activity.findViewById(android.R.id.content), isBn?"সফল":"Success", isBn?"XLS ফাইল সেভ হয়েছে (ওপেন করতে ক্লিক)":"XLS Saved (Click to open)", "img_tick", colorAccent, new Runnable() {
-                @Override public void run() {
-                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-                    android.net.Uri uri = androidx.core.content.FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", finalFile);
-                    intent.setDataAndType(uri, "application/vnd.ms-excel");
-                    intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    activity.startActivity(android.content.Intent.createChooser(intent, "Open with..."));
-                }
-            });
-        } catch(Exception e) {}
+        boolean isBn=sp.getString("app_lang","en").equals("bn");
+        try{
+            java.io.File dir=android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists()) dir.mkdirs();
+            java.io.File file=new java.io.File(dir,"Salah_Premium_Report_"+System.currentTimeMillis()+".xls"); java.io.PrintWriter pw=new java.io.PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(file),"UTF-8"));
+            int tD=0,tDn=0,tM=0,tE=0,tQ=0,tExt=0; java.util.Calendar sumCal=(java.util.Calendar)statsCalPointer.clone(); sumCal.set(5,1);
+            int mDays=sumCal.getActualMaximum(5); java.util.Calendar nowSum=java.util.Calendar.getInstance(); java.text.SimpleDateFormat sdf=new java.text.SimpleDateFormat("yyyy-MM-dd",java.util.Locale.US);
+            for(int j=1;j<=mDays;j++){sumCal.set(5,j); String dk=sdf.format(sumCal.getTime()); if(sumCal.after(nowSum)&&!dk.equals(sdf.format(nowSum.getTime())))continue;
+            tD++; SalahRecord rec=getRoomRecord(dk); if(rec!=null){for(String p:prayers){String st=getFardStat(rec,p); if(st.equals("yes"))tDn++; else if(st.equals("excused"))tE++; else{if(getQazaStat(rec,p))tQ++; else tM++;}}} tExt+=getTotalExtras(dk);}
+            int streak=ui.calculateStreak(sp,prayers); String title=(isBn?"মাসিক রিপোর্ট • ":"Monthly Report • ")+new java.text.SimpleDateFormat("MMMM yyyy",java.util.Locale.US).format(statsCalPointer.getTime());
+            StringBuilder xml=new StringBuilder(); xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><?mso-application progid=\"Excel.Sheet\"?><Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"><Styles><Style ss:ID=\"Default\" ss:Name=\"Normal\"><Alignment ss:Vertical=\"Center\"/></Style>");
+            xml.append("<Style ss:ID=\"sTitle\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"22\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#10B981\" ss:Pattern=\"Solid\"/></Style>");
+            xml.append("<Style ss:ID=\"sSumH\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"13\" ss:Bold=\"1\" ss:Color=\"#5F6368\"/><Interior ss:Color=\"#F8F9FA\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sSumV\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"16\" ss:Bold=\"1\" ss:Color=\"#202124\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"2\" ss:Color=\"#10B981\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sHead\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"14\" ss:Bold=\"1\" ss:Color=\"#FFFFFF\"/><Interior ss:Color=\"#334155\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"2\" ss:Color=\"#0F172A\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E0E0E0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sDate\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#334155\"/><Interior ss:Color=\"#F8FAFC\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Top\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sYes\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#059669\"/><Interior ss:Color=\"#D1FAE5\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sNo\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#DC2626\"/><Interior ss:Color=\"#FEE2E2\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sExc\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#7C3AED\"/><Interior ss:Color=\"#EDE9FE\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/></Borders></Style>");
+            xml.append("<Style ss:ID=\"sExt\"><Alignment ss:Horizontal=\"Center\" ss:Vertical=\"Center\"/><Font ss:FontName=\"Segoe UI\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#D97706\"/><Interior ss:Color=\"#FEF3C7\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Left\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/><Border ss:Position=\"Right\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\" ss:Color=\"#E2E8F0\"/></Borders></Style>");
+            xml.append("</Styles><Worksheet ss:Name=\"Report\"><Table><Column ss:Width=\"150\"/>");
+            for(int i=0;i<6;i++)xml.append("<Column ss:Width=\"115\"/>"); xml.append("<Column ss:Width=\"130\"/><Column ss:Width=\"160\"/>");
+            xml.append("<Row ss:Height=\"70\"><Cell ss:MergeAcross=\"8\" ss:StyleID=\"sTitle\"><Data ss:Type=\"String\">"+title+"</Data></Cell></Row>");
+            String em=sp.getString("user_email","guest@salah.com"); xml.append("<Row ss:Height=\"30\"><Cell ss:MergeAcross=\"8\" ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+em+"</Data></Cell></Row><Row ss:Height=\"20\"><Cell><Data ss:Type=\"String\"></Data></Cell></Row>");
+            xml.append("<Row ss:Height=\"40\"><Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"মোট দিন":"Total Days")+"</Data></Cell><Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"আদায়কৃত":"Done")+"</Data></Cell><Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"কাজা":"Missed")+"</Data></Cell><Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"অপেক্ষমান কাজা":"Pending Qaza")+"</Data></Cell><Cell ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"ছুটি":"Excused")+"</Data></Cell><Cell ss:MergeAcross=\"1\" ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"নফল/সুন্নাহ":"Extras")+"</Data></Cell><Cell ss:MergeAcross=\"1\" ss:StyleID=\"sSumH\"><Data ss:Type=\"String\">"+(isBn?"স্ট্রিক":"Streak")+"</Data></Cell></Row>");
+            xml.append("<Row ss:Height=\"50\"><Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tD)+"</Data></Cell><Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tDn)+"</Data></Cell><Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tM)+"</Data></Cell><Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tQ)+"</Data></Cell><Cell ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tE)+"</Data></Cell><Cell ss:MergeAcross=\"1\" ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(tExt)+"</Data></Cell><Cell ss:MergeAcross=\"1\" ss:StyleID=\"sSumV\"><Data ss:Type=\"String\">"+lang.bnNum(streak)+" ★</Data></Cell></Row><Row ss:Height=\"25\"><Cell><Data ss:Type=\"String\"></Data></Cell></Row>");
+            xml.append("<Row ss:Height=\"45\">"); String[] hdrs=isBn?new String[]{"তারিখ","ফজর","যোহর","আসর","মাগরিব","এশা","বিতর","অতিরিক্ত (নফল)","সারসংক্ষেপ"}:new String[]{"Date","Fajr","Dhuhr","Asr","Maghrib","Isha","Witr","Extras (Nafl)","Status"};
+            for(String h:hdrs)xml.append("<Cell ss:StyleID=\"sHead\"><Data ss:Type=\"String\">"+h+"</Data></Cell>"); xml.append("</Row>");
+            java.util.Calendar cal=(java.util.Calendar)statsCalPointer.clone(); cal.set(5,1);
+            for(int i=1;i<=mDays;i++){cal.set(5,i); String dK=sdf.format(cal.getTime()); SalahRecord r=getRoomRecord(dK); String dDisp=isBn?lang.bnNum(i)+" "+lang.get(new java.text.SimpleDateFormat("MMM",java.util.Locale.US).format(cal.getTime()))+", "+lang.bnNum(cal.get(1)):dK;
+            xml.append("<Row ss:Height=\"40\"><Cell ss:StyleID=\"sDate\"><Data ss:Type=\"String\">"+dDisp+"</Data></Cell>"); boolean aD=true; for(String p:prayers){String s=getFardStat(r,p); String sty=s.equals("yes")?"sYes":(s.equals("excused")?"sExc":"sNo"); String txt=s.equals("yes")?"\u2713 "+(isBn?"সম্পন্ন":"Done"):(s.equals("excused")?"\u273F "+(isBn?"ছুটি":"Excused"):"\u2715 "+(isBn?"কাজা":"Missed")); xml.append("<Cell ss:StyleID=\""+sty+"\"><Data ss:Type=\"String\">"+txt+"</Data></Cell>"); if(!s.equals("yes")&&!s.equals("excused"))aD=false;}
+            int dEx=getTotalExtras(dK); String exTxt=dEx>0?"+ "+lang.bnNum(dEx):"-"; xml.append("<Cell ss:StyleID=\"sExt\"><Data ss:Type=\"String\">"+exTxt+"</Data></Cell>");
+            String sSt=aD?"sYes":"sNo"; String sTxt=aD?(isBn?"★ আলহামদুলিল্লাহ":"★ Perfect"):(isBn?"⚠ অসম্পূর্ণ":"⚠ Incomplete"); xml.append("<Cell ss:StyleID=\""+sSt+"\"><Data ss:Type=\"String\">"+sTxt+"</Data></Cell></Row>");}
+            xml.append("</Table></Worksheet></Workbook>"); pw.write(xml.toString()); pw.close();
+            final java.io.File fF=file; ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content),isBn?"সফল":"Success",isBn?"XLS ফাইল সেভ হয়েছে (ওপেন করতে ক্লিক)":"XLS Saved","img_tick",colorAccent,()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW); i.setDataAndType(androidx.core.content.FileProvider.getUriForFile(activity,activity.getPackageName()+".provider",fF),"application/vnd.ms-excel"); i.addFlags(1); activity.startActivity(android.content.Intent.createChooser(i,"Open with..."));});
+        }catch(Exception e){}
     }
 
     public void showStatsOptionsDialog() {
@@ -245,7 +174,7 @@ public class StatsHelper {
             java.util.ArrayList<Float> dFV=new java.util.ArrayList<>(), dSV=new java.util.ArrayList<>(); java.util.ArrayList<Integer> dC=new java.util.ArrayList<>(); java.util.ArrayList<String> dL=new java.util.ArrayList<>();
             while(!lC.after(eC)){
                 tD++; String dK=sk.format(lC.getTime()); SalahRecord r=getRoomRecord(dK); int dyDn=0, dyE=0, sC_cnt=0;
-                if(r!=null){for(int p=0;p<prayers.length;p++){String st=getFardStat(r,prayers[p]); if(st.equals("yes")){tDn++;dyDn++;}else if(st.equals("excused")){tE++;dyE++;}else{if(getQazaStat(r,prayers[p]))tQ++;else tM++;} if(isWeekly)for(String sN:AppConstants.SUNNAHS[p])if("yes".equals(sp.getString(dK+"_"+prayers[p]+"_Sunnah_"+sN,"no")))sC_cnt++;}}
+                if(r!=null){for(int p=0;p<prayers.length;p++){String st=getFardStat(r,prayers[p]); if(st.equals("yes")){tDn++;dyDn++;}else if(st.equals("excused")){tE++;dyE++;}else{if(getQazaStat(r,prayers[p]))tQ++;else tM++;}} if(isWeekly) sC_cnt += getTotalExtras(dK);}
                 dFV.add((float)(dyDn+dyE)); dSV.add((float)sC_cnt);
                 if(lC.after(now)&&!dK.equals(sk.format(now.getTime()))) dC.add(android.graphics.Color.TRANSPARENT); else if(dyDn+dyE==0) dC.add(android.graphics.Color.TRANSPARENT); else if(dyE>0) dC.add(android.graphics.Color.parseColor("#8B5CF6")); else dC.add(android.graphics.Color.parseColor("#22C55E"));
                 dL.add(isWeekly?lang.get(sd.format(lC.getTime())).substring(0,3):lang.bnNum(lC.get(5))); lC.add(5,1);
@@ -326,7 +255,7 @@ public class StatsHelper {
                 float cAW=pw-(pd*2)-40, cCW=cAW/7f, cXS=pd+20;
                 for(int d=sD;d<=eD;d++){
                     cal.set(5,d); int dw=cal.get(7)-1; String dK=sdf.format(cal.getTime()); float cx=cXS+(dw*cCW)+(cCW/2f); int fD=0, sD_cnt=0; boolean hB=false;
-                    if(cal.before(now)||dK.equals(sdf.format(now.getTime()))){ SalahRecord rec=getRoomRecord(dK); if(rec!=null){for(int p=0;p<prayers.length;p++){String fS=getFardStat(rec,prayers[p]); if(fS.equals("yes"))fD++; else if(fS.equals("excused")){fD++;hB=true;} for(String sN:AppConstants.SUNNAHS[p])if("yes".equals(sp.getString(dK+"_"+prayers[p]+"_Sunnah_"+sN,"no")))sD_cnt++;}} }
+                    if(cal.before(now)||dK.equals(sdf.format(now.getTime()))){ SalahRecord rec=getRoomRecord(dK); if(rec!=null){for(int p=0;p<prayers.length;p++){String fS=getFardStat(rec,prayers[p]); if(fS.equals("yes"))fD++; else if(fS.equals("excused")){fD++;hB=true;}} sD_cnt += getTotalExtras(dK);} }
                     float mBH=90f, lH=(fD/6f)*mBH, rH_b=(sD_cnt/12f)*mBH, bY=wY+135f;
                     if(!(cal.after(now)&&!dK.equals(sdf.format(now.getTime())))){
                         if(fD>0){pt.setColor(hB?android.graphics.Color.parseColor("#8B5CF6"):android.graphics.Color.parseColor("#22C55E")); cv.drawRoundRect(new android.graphics.RectF(cx-10,bY-lH,cx-1,bY),3f,3f,pt);}
@@ -389,8 +318,8 @@ public class StatsHelper {
             String dK = sdf.format(startCal.getTime()); int d=0, e=0, s=0; SalahRecord sR = getRoomRecord(dK);
             if(startCal.before(now) || dK.equals(sdf.format(now.getTime()))) {
                 daysPassed++;
-                if(sR!=null){ for(int j=0; j<6; j++){ String st=getFardStat(sR, prayers[j]); if("yes".equals(st)) d++; else if("excused".equals(st)) e++;
-                if(isWeekly) for(String sn : AppConstants.SUNNAHS[j]) if("yes".equals(sp.getString(dK+"_"+prayers[j]+"_Sunnah_"+sn, "no"))) s++; } }
+                if(sR!=null){ for(int j=0; j<6; j++){ String st=getFardStat(sR, prayers[j]); if("yes".equals(st)) d++; else if("excused".equals(st)) e++; } 
+                if(isWeekly) s += getTotalExtras(dK); }
                 tDone+=d; tExc+=e; tSun+=s;
             }
             float fVal = d+e;
