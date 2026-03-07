@@ -92,7 +92,8 @@ public class MainActivity extends Activity {
         try {
             requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            if (Build.VERSION.SDK_INT >= 21) { getWindow().setStatusBarColor(Color.TRANSPARENT); getWindow().setNavigationBarColor(themeColors[0]); }
             if (getActionBar() != null) getActionBar().hide();
             
             Configuration conf = getResources().getConfiguration();
@@ -104,7 +105,7 @@ public class MainActivity extends Activity {
                 metrics.scaledDensity = conf.fontScale * metrics.density;
                 getBaseContext().getResources().updateConfiguration(conf, metrics);
             }
-        } catch (Exception e) {}
+        } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
 
         DENSITY = getResources().getDisplayMetrics().density;
         sp = getSharedPreferences("salah_pro_final", MODE_PRIVATE);
@@ -149,7 +150,7 @@ public class MainActivity extends Activity {
             appFonts[1] = Typeface.createFromAsset(getAssets(), "fonts/hind_bold.ttf"); } 
             else { appFonts[0] = Typeface.createFromAsset(getAssets(), "fonts/poppins_reg.ttf");
             appFonts[1] = Typeface.createFromAsset(getAssets(), "fonts/poppins_bold.ttf"); }
-        } catch(Exception e){}
+        } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
         
         root.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { 
             @Override public void onGlobalLayout() { applyFont(root, appFonts[0], appFonts[1]); } 
@@ -191,7 +192,7 @@ public class MainActivity extends Activity {
             int[] ids = android.appwidget.AppWidgetManager.getInstance(MainActivity.this).getAppWidgetIds(new android.content.ComponentName(MainActivity.this, com.my.salah.tracker.app.SalahWidget.class)); 
             intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids); 
             sendBroadcast(intent);
-        } catch(Exception e){} 
+        } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); } 
     }
 
     private void setupMidnightRefresh() {
@@ -207,6 +208,19 @@ public class MainActivity extends Activity {
         MidnightWorker.scheduleNextMidnight(MainActivity.this); 
             }
         }, delay);
+    }
+
+    public int getStatusColor(String k) {
+        if(k==null) return themeColors[4]; SalahRecord r = getRoomRecord(k); int d=0, e=0;
+        for(String p : AppConstants.PRAYERS){ String s=getFardStat(r, p); if("yes".equals(s)) d++; else if("excused".equals(s)) e++; }
+        if(d+e==0) return android.graphics.Color.TRANSPARENT; if(e==6) return android.graphics.Color.parseColor("#8B5CF6");
+        return d==6 ? android.graphics.Color.parseColor("#22C55E") : android.graphics.Color.parseColor("#10B981");
+    }
+    public android.graphics.drawable.Drawable getProgressBorder(String k, boolean s) {
+        int c = getStatusColor(k); int d=0; SalahRecord r = getRoomRecord(k);
+        for(String p : AppConstants.PRAYERS){ String st=getFardStat(r, p); if("yes".equals(st)||"excused".equals(st)) d++; }
+        if(s){ android.graphics.drawable.GradientDrawable gd=new android.graphics.drawable.GradientDrawable(); gd.setShape(android.graphics.drawable.GradientDrawable.OVAL); gd.setColor(colorAccent); return gd; }
+        return new UIComponents.ProgressDrawable(d, 6, c==0?themeColors[4]:c, themeColors[4], DENSITY);
     }
 
     private void loadTodayPage() {
@@ -252,7 +266,7 @@ public class MainActivity extends Activity {
         TextView themeToggleBtn = new TextView(this); themeToggleBtn.setText(isDarkTheme ? "🌙" : "☀️"); themeToggleBtn.setGravity(Gravity.CENTER); themeToggleBtn.setTextSize(16);
         GradientDrawable tBg = new GradientDrawable(GradientDrawable.Orientation.BR_TL, isDarkTheme ? new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")} : new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")}); tBg.setCornerRadius(100f); themeToggleBtn.setBackground(tBg);
         LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); tLp.setMargins(0,0,(int)(8*DENSITY),0); themeToggleBtn.setLayoutParams(tLp);
-        themeToggleBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putBoolean("is_dark_mode", !isDarkTheme).apply(); recreate(); } }); rightHeader.addView(themeToggleBtn);
+        themeToggleBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putBoolean("is_dark_mode", !isDarkTheme).apply(); finish(); overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); startActivity(getIntent()); } }); rightHeader.addView(themeToggleBtn);
         View periodBtn = ui.getRoundImage("img_period", 6, themeColors[5], colorAccent); LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); pLp.setMargins(0,0,(int)(8*DENSITY),0); periodBtn.setLayoutParams(pLp);
         periodBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showExcuseDialog(); } }); rightHeader.addView(periodBtn); 
 
@@ -283,19 +297,19 @@ public class MainActivity extends Activity {
         pCard.addView(left); pCard.addView(artDisplay); contentArea.addView(pCard);
 
         final Calendar now = Calendar.getInstance(); final Calendar[] selectedCalArr = { Calendar.getInstance() };
-        try { selectedCalArr[0].setTime(sdf.parse(selectedDate[0])); } catch(Exception e){}
+        try { selectedCalArr[0].setTime(sdf.parse(selectedDate[0])); } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
         LinearLayout weekNavBox = new LinearLayout(this); weekNavBox.setGravity(Gravity.CENTER_VERTICAL);
         weekNavBox.setPadding((int)(15*DENSITY), (int)(5*DENSITY), (int)(15*DENSITY), (int)(weekNavPadB*DENSITY));
         TextView prevW = new TextView(this); prevW.setText("❮"); prevW.setTextSize(16); prevW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); prevW.setTextColor(themeColors[2]); prevW.setGravity(Gravity.CENTER);
         GradientDrawable navBg = new GradientDrawable(); navBg.setColor(themeColors[1]); navBg.setCornerRadius(12f * DENSITY); navBg.setStroke((int)(1.5f*DENSITY), themeColors[4]); prevW.setBackground(navBg);
-        prevW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { Calendar checkLimit = (Calendar) selectedCalArr[0].clone(); checkLimit.add(Calendar.DATE, -7); if(checkLimit.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { Calendar cL = (Calendar) selectedCalArr[0].clone(); cL.add(Calendar.DATE, -7); if(cL.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { selectedCalArr[0].add(Calendar.DATE, -7); } } else { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } });
+        prevW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { Calendar chk = (Calendar) selectedCalArr[0].clone(); chk.add(Calendar.DATE, -7); if(chk.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { selectedCalArr[0].add(Calendar.DATE, -7); selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } else { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } } });
         LinearLayout weekBox = new LinearLayout(this); weekBox.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f)); weekBox.setGravity(Gravity.CENTER);
         Calendar cal = (Calendar) selectedCalArr[0].clone();
         while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) { cal.add(Calendar.DATE, -1); }
         int circleSize = (int)(36 * DENSITY);
         SalahDao dDao = SalahDatabase.getDatabase(this).salahDao();
         for(int i=0; i<7; i++) {
-            final String dKey = sdf.format(cal.getTime());
+            final String dKey = sdf.format(cal.getTime()); final boolean isTooOld = cal.get(Calendar.YEAR) < now.get(Calendar.YEAR) - 100;
             final boolean isSel = dKey.equals(selectedDate[0]); final boolean isFuture = cal.after(now);
             String dLabel = new SimpleDateFormat("EEEE", Locale.US).format(cal.getTime()).substring(0,1);
             if (sp.getString("app_lang", "en").equals("bn")) { String[] bnD = {"র", "সো", "ম", "বু", "বৃ", "শু", "শ"}; dLabel = bnD[cal.get(Calendar.DAY_OF_WEEK) - 1];
@@ -312,13 +326,10 @@ public class MainActivity extends Activity {
             cell.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
             TextView t = new TextView(this); t.setText(dLabel); t.setTypeface(Typeface.DEFAULT_BOLD); t.setTextSize(13); t.setGravity(Gravity.CENTER); FrameLayout.LayoutParams textLp = new FrameLayout.LayoutParams(circleSize, circleSize);
             textLp.gravity = Gravity.CENTER; t.setLayoutParams(textLp);
-            GradientDrawable dayBg = new GradientDrawable(); dayBg.setShape(GradientDrawable.OVAL); 
-            if(isSel) { dayBg.setColor(colorAccent); t.setTextColor(Color.WHITE);
-            } else if (isAllDone && !isFuture) { dayBg.setColor(themeColors[5]); t.setTextColor(colorAccent); } else { dayBg.setColor(themeColors[1]); dayBg.setStroke((int)(1.5f*DENSITY), themeColors[4]); t.setTextColor(isFuture ? themeColors[4] : themeColors[3]);
-            } 
-            t.setBackground(dayBg);
+            t.setTextColor(isSel ? android.graphics.Color.WHITE : (isFuture ? themeColors[4] : themeColors[3]));
+            t.setBackground(getProgressBorder(dKey, isSel));
             cell.addView(t);
-            cell.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(isFuture) { ui.showPremiumLocked(colorAccent); } else { selectedDate[0] = dKey; loadTodayPage(); } } });
+            cell.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(isFuture) { ui.showPremiumLocked(colorAccent); } else if(isTooOld) { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } else { selectedDate[0] = dKey; loadTodayPage(); } } });
             weekBox.addView(cell); cal.add(Calendar.DATE, 1);
         }
         
@@ -385,7 +396,7 @@ public class MainActivity extends Activity {
             todayBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { selectedDate[0] = sdf.format(new Date()); selectedCalArr[0].setTime(new Date()); calendarViewPointer.setTime(new Date()); loadTodayPage(); } });
         } 
         else { todayTxt.setText(lang.get("This Week"));
-            todayBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){} statsHelper.showStats(true); } });
+            todayBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); } statsHelper.showStats(true); } });
         }
         todayBtn.addView(tIcon); todayBtn.addView(todayTxt); actionRow.addView(todayBtn); 
         contentArea.addView(actionRow);
@@ -608,7 +619,7 @@ public class MainActivity extends Activity {
         mr.addImg("Change Language", "img_lang", new Runnable() { @Override public void run() { String nextL = sp.getString("app_lang", "en").equals("en") ? "bn" : "en"; sp.edit().putString("app_lang", nextL).apply(); recreate(); }});
         mr.addImg("Backup & Sync", "img_cloud", new Runnable() { @Override public void run() { backupHelper.showProfileDialog(new Runnable() { @Override public void run() { loadTodayPage(); refreshWidget(); }}); }});
         mr.addImg("View Qaza List", "img_custom_qaza", new Runnable() { @Override public void run() { showQazaListDialog(); }});
-        mr.addImg("Advanced Statistics", "img_stats", new Runnable() { @Override public void run() { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){} statsHelper.showStatsOptionsDialog(); }});
+        mr.addImg("Advanced Statistics", "img_stats", new Runnable() { @Override public void run() { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); } statsHelper.showStatsOptionsDialog(); }});
 
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(320*DENSITY), -2);
         flp.gravity = Gravity.CENTER; wrap.addView(mainLayout, flp);
@@ -665,8 +676,7 @@ public class MainActivity extends Activity {
         }
         
         if(qazaCount == 0) { 
-            TextView mosqueIcon = new TextView(this);
-            mosqueIcon.setText("🕌"); mosqueIcon.setTextSize(60); mosqueIcon.setGravity(Gravity.CENTER); mosqueIcon.setPadding(0, (int)(20*DENSITY), 0, (int)(10*DENSITY)); list.addView(mosqueIcon);
+            View customEmptyIcon = ui.getRoundImage("img_empty_qaza", 0, android.graphics.Color.TRANSPARENT, 0); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(80*DENSITY), (int)(80*DENSITY)); icLp.gravity = Gravity.CENTER; icLp.setMargins(0, (int)(20*DENSITY), 0, (int)(10*DENSITY)); customEmptyIcon.setLayoutParams(icLp); list.addView(customEmptyIcon);
             TextView empty = new TextView(this); empty.setText(lang.get("Alhamdulillah! No pending Qaza.")); empty.setTextColor(themeColors[3]); empty.setGravity(Gravity.CENTER);
             empty.setPadding(0, 0, 0, (int)(20*DENSITY)); list.addView(empty); 
         }

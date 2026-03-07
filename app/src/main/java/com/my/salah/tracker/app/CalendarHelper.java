@@ -52,7 +52,7 @@ public class CalendarHelper {
         this.monthOnlyF = new SimpleDateFormat("MMMM", sp.getString("app_lang", "en").equals("bn") ? new Locale("bn") : Locale.US);
                 this.hijriViewCal = Calendar.getInstance();
         tfReg = android.graphics.Typeface.DEFAULT; tfBold = android.graphics.Typeface.DEFAULT_BOLD;
-        try { if (sp.getString("app_lang", "en").equals("bn")) { tfReg = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/hind_reg.ttf"); tfBold = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/hind_bold.ttf"); } else { tfReg = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_reg.ttf"); tfBold = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_bold.ttf"); } } catch(Exception e){}
+        try { if (sp.getString("app_lang", "en").equals("bn")) { tfReg = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/hind_reg.ttf"); tfBold = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/hind_bold.ttf"); } else { tfReg = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_reg.ttf"); tfBold = android.graphics.Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_bold.ttf"); } } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
     }
 
     
@@ -95,7 +95,7 @@ public class CalendarHelper {
                 Calendar check = (Calendar) calendarViewPointer.clone(); check.add(Calendar.MONTH, -1);
                 if(check.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { 
                     calendarViewPointer.add(Calendar.MONTH, -1); renderGregorian(card, dialog); 
-                }
+                } else { ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); }
             } 
         });
         
@@ -121,7 +121,7 @@ public class CalendarHelper {
             for (int col = 0; col < 7; col++) {
                 FrameLayout cell = new FrameLayout(activity); cell.setLayoutParams(new LinearLayout.LayoutParams(0, cellHeight, 1f));
                 if (!((row == 0 && col < offset) || currentDay > totalDays)) {
-                    final int dayNum = currentDay; temp.set(Calendar.DAY_OF_MONTH, dayNum); final String dKey = sdf.format(temp.getTime()); final boolean isFuture = temp.after(now);
+                    final int dayNum = currentDay; temp.set(Calendar.DAY_OF_MONTH, dayNum); final String dKey = sdf.format(temp.getTime()); final boolean isFuture = temp.after(now); final boolean isTooOld = temp.get(Calendar.YEAR) < now.get(Calendar.YEAR) - 100;
                     TextView tv = new TextView(activity); tv.setText(lang.bnNum(dayNum)); tv.setTextColor(isFuture ? Color.LTGRAY : themeColors[2]); tv.setTextSize(13); tv.setGravity(Gravity.CENTER);
                     FrameLayout.LayoutParams boxLp = new FrameLayout.LayoutParams(boxSize, boxSize); boxLp.gravity = Gravity.CENTER; tv.setLayoutParams(boxLp);
                     boolean isAllDone = true;
@@ -141,13 +141,13 @@ public class CalendarHelper {
                     
                     tv.setTextColor(dKey.equals(selectedDate[0]) ? android.graphics.Color.WHITE : (isFuture ? themeColors[4] : (isDayCompleted ? colorAccent : themeColors[2])));
                     GradientDrawable bgD = new GradientDrawable(); bgD.setShape(GradientDrawable.OVAL);
-                    if (dKey.equals(selectedDate[0])) { bgD.setColor(colorAccent); tv.setBackground(bgD); }
-                    else if (isDayCompleted && !isFuture) { bgD.setColor(themeColors[5]); tv.setBackground(bgD); }
-                    else { bgD.setColor(android.graphics.Color.TRANSPARENT); tv.setBackground(bgD); }
+                    if (dKey.equals(selectedDate[0])) { bgD.setColor(colorAccent); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
+                    else if (isDayCompleted && !isFuture) { bgD.setColor(themeColors[5]); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
+                    else { bgD.setColor(android.graphics.Color.TRANSPARENT); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
                     cell.addView(tv);
                     cell.setOnClickListener(new View.OnClickListener() { 
                         @Override public void onClick(View v) { 
-                            if(isFuture) { ui.showPremiumLocked(colorAccent); } else { selectedDate[0] = dKey; dialog.dismiss(); if(onDateSelected!=null) onDateSelected.run(); } 
+                            if(isFuture) { ui.showPremiumLocked(colorAccent); } else if(isTooOld) { ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } else { selectedDate[0] = dKey; dialog.dismiss(); if(onDateSelected!=null) onDateSelected.run(); } 
                         } 
                     });
                     currentDay++;
@@ -189,16 +189,16 @@ public class CalendarHelper {
 
     public void showHijri() {
         if (Build.VERSION.SDK_INT < 24) return;
-        try { hijriViewCal.setTime(sdf.parse(selectedDate[0])); } catch(Exception e){}
+        try { hijriViewCal.setTime(sdf.parse(selectedDate[0])); } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
         FrameLayout wrap = new FrameLayout(activity); wrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
         
-        final LinearLayout main = new LinearLayout(activity); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(15*DENSITY), (int)(20*DENSITY), (int)(15*DENSITY), (int)(10*DENSITY));
-        GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(20f * DENSITY); main.setBackground(gd);
+        final LinearLayout main = new LinearLayout(activity); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(20*DENSITY), (int)(25*DENSITY), (int)(20*DENSITY), (int)(25*DENSITY));
+        GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); gd.setStroke((int)(1.5f*DENSITY), themeColors[4]); main.setBackground(gd);
         
         final TextView yearChip = new TextView(activity); 
         yearChip.setTextColor(colorAccent); yearChip.setTextSize(14); yearChip.setTypeface(Typeface.DEFAULT_BOLD); 
-        yearChip.setPadding((int)(16*DENSITY), (int)(6*DENSITY), (int)(16*DENSITY), (int)(6*DENSITY));
-        GradientDrawable yBg = new GradientDrawable(); yBg.setColor(themeColors[4]); yBg.setCornerRadius(15f * DENSITY); yearChip.setBackground(yBg);
+        yearChip.setPadding((int)(25*DENSITY), (int)(8*DENSITY), (int)(25*DENSITY), (int)(8*DENSITY));
+        GradientDrawable yBg = new GradientDrawable(); yBg.setColor(colorAccent & 0x15FFFFFF); yBg.setCornerRadius(15f * DENSITY); yearChip.setBackground(yBg);
         LinearLayout.LayoutParams yLp = new LinearLayout.LayoutParams(-2, -2); yLp.gravity = Gravity.CENTER_HORIZONTAL; yLp.setMargins(0, 0, 0, (int)(15*DENSITY)); yearChip.setLayoutParams(yLp);
         main.addView(yearChip);
 
@@ -216,7 +216,7 @@ public class CalendarHelper {
         final LinearLayout grid = new LinearLayout(activity); grid.setOrientation(LinearLayout.VERTICAL); main.addView(grid);
         
         LinearLayout footer = new LinearLayout(activity); footer.setOrientation(LinearLayout.HORIZONTAL); footer.setGravity(Gravity.CENTER); footer.setPadding(0, (int)(15*DENSITY), 0, (int)(15*DENSITY));
-        TextView cancelBtn = new TextView(activity); cancelBtn.setText(lang.get("CANCEL")); cancelBtn.setTextColor(colorAccent); cancelBtn.setTextSize(14); cancelBtn.setTypeface(Typeface.DEFAULT_BOLD); cancelBtn.setPadding((int)(16*DENSITY), (int)(8*DENSITY), (int)(16*DENSITY), (int)(8*DENSITY));
+        TextView cancelBtn = new TextView(activity); cancelBtn.setText(lang.get("CLOSE")); cancelBtn.setTextColor(themeColors[3]); cancelBtn.setTextSize(14); cancelBtn.setTypeface(Typeface.DEFAULT_BOLD); cancelBtn.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(5*DENSITY));
         footer.addView(cancelBtn); main.addView(footer);
 
         final AlertDialog ad = new AlertDialog.Builder(activity).setView(wrap).create(); 
@@ -229,8 +229,8 @@ public class CalendarHelper {
         yearChip.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 FrameLayout yWrap = new FrameLayout(activity); yWrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
-                LinearLayout yMain = new LinearLayout(activity); yMain.setOrientation(LinearLayout.VERTICAL); yMain.setPadding(0, (int)(20*DENSITY), 0, (int)(20*DENSITY));
-                GradientDrawable yGd = new GradientDrawable(); yGd.setColor(themeColors[1]); yGd.setCornerRadius(25f * DENSITY); yMain.setBackground(yGd);
+                LinearLayout yMain = new LinearLayout(activity); yMain.setOrientation(LinearLayout.VERTICAL); yMain.setPadding((int)(25*DENSITY), (int)(25*DENSITY), (int)(25*DENSITY), (int)(25*DENSITY));
+                GradientDrawable yGd = new GradientDrawable(); yGd.setColor(themeColors[1]); yGd.setCornerRadius(30f * DENSITY); yGd.setStroke((int)(1.5f*DENSITY), themeColors[4]); yMain.setBackground(yGd);
                 TextView yTitle = new TextView(activity); yTitle.setText(lang.get("Select Year")); yTitle.setTextColor(themeColors[2]); yTitle.setTextSize(20); yTitle.setTypeface(Typeface.DEFAULT_BOLD); yTitle.setGravity(Gravity.CENTER); yTitle.setPadding(0, 0, 0, (int)(15*DENSITY)); yMain.addView(yTitle);
                 
                 ScrollView sv = new ScrollView(activity);
@@ -253,7 +253,7 @@ public class CalendarHelper {
                     yt.setText(lang.bnNum(y) + " " + lang.get("AH")); 
                     yt.setTextSize(18); yt.setPadding(0, (int)(15*DENSITY), 0, (int)(15*DENSITY)); yt.setGravity(Gravity.CENTER); yt.setTypeface(y == viewHYear ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
                     yt.setTextColor(y == viewHYear ? colorAccent : themeColors[2]);
-                    if(y == viewHYear) { GradientDrawable bg = new GradientDrawable(); bg.setColor(themeColors[5]); bg.setCornerRadius(15f*DENSITY); yt.setBackground(bg); }
+                    
                     
                     yt.setOnClickListener(new View.OnClickListener() { 
                         @Override public void onClick(View view) { 
@@ -268,8 +268,8 @@ public class CalendarHelper {
                     });
                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0,0,0,(int)(5*DENSITY)); yt.setLayoutParams(lp); list.addView(yt);
                 }
-                sv.addView(list); yMain.addView(sv, new LinearLayout.LayoutParams(-1, (int)(380*DENSITY)));
-                FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(280*DENSITY), -2); flp.gravity = Gravity.CENTER; yWrap.addView(yMain, flp);
+                sv.addView(list); yMain.addView(sv, new LinearLayout.LayoutParams(-1, (int)(350*DENSITY)));
+                FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; yWrap.addView(yMain, flp);
                 applyFont(yWrap); yAd.show();
             }
         });
@@ -300,19 +300,20 @@ public class CalendarHelper {
                             IslamicCalendar cellIc = (IslamicCalendar) ic.clone(); cellIc.set(IslamicCalendar.DAY_OF_MONTH, currentDay);
                             Calendar realGregorian = Calendar.getInstance(); realGregorian.setTime(cellIc.getTime()); realGregorian.add(Calendar.DATE, -offset);
                             final String cellDateKey = sdf.format(realGregorian.getTime()); final boolean isSelected = cellDateKey.equals(selectedDate[0]);
-                            final boolean isFutureDate = realGregorian.getTime().after(todayCal.getTime()) && !cellDateKey.equals(sdf.format(todayCal.getTime()));
+                            final boolean isFutureDate = realGregorian.getTime().after(todayCal.getTime()) && !cellDateKey.equals(sdf.format(todayCal.getTime())); final boolean isTooOld = realGregorian.get(Calendar.YEAR) < todayCal.get(Calendar.YEAR) - 100;
                             
                             boolean isAllDone = true; for(String p : prayers) { if(!sp.getString(cellDateKey+"_"+p, "no").equals("yes") && !sp.getString(cellDateKey+"_"+p, "no").equals("excused")) { isAllDone = false; break; } }
                             dTv.setTextColor(isSelected ? Color.WHITE : (isFutureDate ? themeColors[4] : (isAllDone ? colorAccent : themeColors[2])));
                             
                             GradientDrawable sBg = new GradientDrawable(); sBg.setShape(GradientDrawable.OVAL);
-                            if (isSelected) { sBg.setColor(colorAccent); dTv.setBackground(sBg); } 
-                            else if (isAllDone && !isFutureDate) { sBg.setColor(themeColors[5]); dTv.setBackground(sBg); }
+                            if (isSelected) { sBg.setColor(colorAccent); dTv.setBackground(((MainActivity)activity).getProgressBorder(cellDateKey, isSelected)); } 
+                            else if (isAllDone && !isFutureDate) { sBg.setColor(themeColors[5]); dTv.setBackground(((MainActivity)activity).getProgressBorder(cellDateKey, isSelected)); }
                             
                             cell.addView(dTv); 
                             cell.setOnClickListener(new View.OnClickListener() { 
                                 @Override public void onClick(View v) { 
                                     if (isFutureDate) ui.showPremiumLocked(colorAccent); 
+                                    else if(isTooOld) { ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); }
                                     else { selectedDate[0] = cellDateKey; ad.dismiss(); if(onDateSelected!=null) onDateSelected.run(); } 
                                 } 
                             }); dayNum++;
@@ -324,9 +325,9 @@ public class CalendarHelper {
             }
         };
         
-        prev.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { hijriViewCal.add(Calendar.DATE, -29); renderHolder[0].run(); } });
+        prev.setOnClickListener(v -> { Calendar chk = (Calendar) hijriViewCal.clone(); chk.add(Calendar.DATE, -29); if(chk.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { hijriViewCal.add(Calendar.DATE, -29); renderHolder[0].run(); } else { ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } });
         next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { IslamicCalendar currentIc = new IslamicCalendar(); currentIc.setTime(hijriViewCal.getTime()); currentIc.add(IslamicCalendar.DATE, sp.getInt("hijri_offset", 0)); IslamicCalendar todayIc = new IslamicCalendar(); todayIc.setTime(new Date()); todayIc.add(IslamicCalendar.DATE, sp.getInt("hijri_offset", 0)); if (currentIc.get(IslamicCalendar.YEAR) < todayIc.get(IslamicCalendar.YEAR) || (currentIc.get(IslamicCalendar.YEAR) == todayIc.get(IslamicCalendar.YEAR) && currentIc.get(IslamicCalendar.MONTH) < todayIc.get(IslamicCalendar.MONTH))) { hijriViewCal.add(Calendar.DATE, 30); renderHolder[0].run(); } } });
         
-        renderHolder[0].run(); FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(340*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(wrap); ad.show();
+        renderHolder[0].run(); FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(-1, -2); flp.gravity = Gravity.CENTER; flp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); wrap.addView(main, flp); applyFont(wrap); ad.show();
     }
 }

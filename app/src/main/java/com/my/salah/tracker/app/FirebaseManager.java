@@ -40,6 +40,8 @@ public class FirebaseManager {
                 } catch(Exception e) {
                     String q = sp.getString("offline_q", ""); 
                     sp.edit().putString("offline_q", q + dateKey + "|" + prayerName + "|" + status + ",").apply();
+                    androidx.work.OneTimeWorkRequest syncWork = new androidx.work.OneTimeWorkRequest.Builder(SyncWorker.class).setConstraints(new androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build()).build();
+                    androidx.work.WorkManager.getInstance(activity).enqueueUniqueWork("auto_sync", androidx.work.ExistingWorkPolicy.REPLACE, syncWork);
                 }
             }
         }).start();

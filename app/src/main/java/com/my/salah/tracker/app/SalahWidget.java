@@ -146,9 +146,9 @@ public class SalahWidget extends AppWidgetProvider {
             String[] bnDays = {"রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"};
             String[] bnMonths = {"জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"};
             int gD = c.get(Calendar.DAY_OF_MONTH);
-            gregText = bnDays[c.get(Calendar.DAY_OF_WEEK) - 1] + ", " + lang.bnNum(gD) + getBnSuffix(gD) + " " + bnMonths[c.get(Calendar.MONTH)];
+            gregText = bnDays[c.get(Calendar.DAY_OF_WEEK) - 1] + ", " + lang.bnNum(gD) + getBnSuffix(gD) + " " + bnMonths[c.get(Calendar.MONTH)] + " " + lang.bnNum(c.get(Calendar.YEAR));
         } else {
-            SimpleDateFormat sdfGreg = new SimpleDateFormat("EEEE, MMM dd", Locale.US);
+            SimpleDateFormat sdfGreg = new SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.US);
             gregText = sdfGreg.format(new Date());
         }
 

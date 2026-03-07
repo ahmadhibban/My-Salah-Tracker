@@ -26,6 +26,9 @@ public class OnboardingHelper {
         final TextView desc = new TextView(activity); desc.setTextColor(themeColors[3]); desc.setTextSize(14); desc.setGravity(Gravity.CENTER); desc.setLineSpacing(0, 1.3f); desc.setPadding(0, 0, 0, (int) (40 * DENSITY));
         final Button nextBtn = new Button(activity); nextBtn.setText(sp.getString("app_lang", "en").equals("bn") ? "পরবর্তী" : "Next"); nextBtn.setTextColor(Color.WHITE); nextBtn.setAllCaps(false); nextBtn.setTextSize(16); nextBtn.setTypeface(Typeface.DEFAULT_BOLD); GradientDrawable btnBg = new GradientDrawable(); btnBg.setColor(colorAccent); btnBg.setCornerRadius(25f * DENSITY); nextBtn.setBackground(btnBg); LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(-1, (int) (55 * DENSITY)); btnLp.setMargins(0, (int) (20 * DENSITY), 0, 0); nextBtn.setLayoutParams(btnLp);
         main.addView(iconContainer); main.addView(title); main.addView(desc); main.addView(nextBtn); overlay.addView(main); root.addView(overlay);
+        TextView skipBtn = new TextView(activity); skipBtn.setText(lang.get("Skip")); skipBtn.setTextColor(themeColors[3]); skipBtn.setTextSize(14); skipBtn.setTypeface(Typeface.DEFAULT_BOLD); skipBtn.setPadding((int)(20*DENSITY), (int)(20*DENSITY), (int)(20*DENSITY), (int)(20*DENSITY));
+        FrameLayout.LayoutParams skipLp = new FrameLayout.LayoutParams(-2, -2); skipLp.gravity = Gravity.TOP | Gravity.END; skipLp.setMargins(0, (int)(30*DENSITY), 0, 0); overlay.addView(skipBtn, skipLp);
+        skipBtn.setOnClickListener(v -> { sp.edit().putBoolean("is_first_run_tutorial", false).apply(); overlay.animate().alpha(0f).setDuration(300).withEndAction(() -> root.removeView(overlay)).start(); });
 
         boolean isBn = sp.getString("app_lang", "en").equals("bn");
         final String[][] pages = {

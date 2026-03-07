@@ -23,7 +23,7 @@ public class LanguageEngine {
         bnMap.put("Settings & Options", "সেটিংস এবং অপশন"); bnMap.put("Choose Theme", "থিম পরিবর্তন করুন");
         bnMap.put("Change Language", "ভাষা পরিবর্তন"); bnMap.put("Backup & Sync", "ব্যাকআপ এবং সিঙ্ক");
         bnMap.put("View Qaza List", "কাজা লিস্ট দেখুন");
-        bnMap.put("Advanced Statistics", "বিস্তারিত রিপোর্ট (PDF)");
+        bnMap.put("Advanced Statistics", "বিস্তারিত রিপোর্ট");
         bnMap.put("Done", "সম্পন্ন"); bnMap.put("CLOSE", "বন্ধ করুন"); bnMap.put("CANCEL", "বাতিল"); bnMap.put("OK", "ঠিক আছে");
         bnMap.put("Patience is Virtue", "ভবিষ্যতের নামাজ পড়া সম্ভব নয়");
         bnMap.put("You cannot mark future prayers.", "ভবিষ্যতের নামাজ মার্ক করা যাবে না।");
@@ -77,6 +77,13 @@ public class LanguageEngine {
         bnMap.put("Name removed from Qaza list.", "কাজা লিস্ট থেকে মুছে ফেলা হয়েছে।");
         bnMap.put("You've completed all prayers today.\nMay Allah accept it.", "আলহামদুলিল্লাহ, আজকের সব নামাজ সম্পন্ন হয়েছে।\nআল্লাহ কবুল করুন।");
         bnMap.put("You've completed all prayers for this day.\nMay Allah accept it.", "এই দিনের সব নামাজ সম্পন্ন হয়েছে।\nআল্লাহ কবুল করুন।");
+        bnMap.put("Never synced", "কখনো সিঙ্ক করা হয়নি"); bnMap.put("Last synced", "শেষ সিঙ্ক"); bnMap.put("Skip", "এড়িয়ে যান");
+        bnMap.put("Limit Reached", "লিমিট শেষ");
+        bnMap.put("Cannot go back more than 100 years.", "১০০ বছরের বেশি পেছনে যাওয়া সম্ভব নয়।");
+        bnMap.put("Already Added", "ইতিমধ্যেই যুক্ত আছে");
+        bnMap.put("Already in Qaza list.", "এই দিনটি আগে থেকেই কাজা লিস্টে যুক্ত আছে।");
+        bnMap.put("Invalid Email", "ভুল ইমেইল");
+        bnMap.put("Please enter a valid email address.", "অনুগ্রহ করে একটি সঠিক ইমেইল অ্যাড্রেস দিন।");
     }
 
     public String bnNum(Object num) {
@@ -94,7 +101,7 @@ public class LanguageEngine {
     }
 
     // ✨ ম্যাজিক: ই, শে, রা, ঠা যুক্ত করার ফাংশন
-    private String getBnSuffix(int d) {
+    public String getBnSuffix(int d) {
         if (!currentLang.equals("bn")) return "";
         if(d == 1) return "লা";
         if(d == 2 || d == 3) return "রা";

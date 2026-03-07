@@ -32,6 +32,19 @@ public class UIComponents {
         this.lang = lang;
     }
 
+    public static class ProgressDrawable extends android.graphics.drawable.Drawable {
+        private int d, t, c, bg; private float dens;
+        public ProgressDrawable(int d, int t, int c, int bg, float dens) { this.d=d; this.t=t; this.c=c; this.bg=bg; this.dens=dens; }
+        @Override public void draw(android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds(); android.graphics.Paint p = new android.graphics.Paint(1);
+            p.setStyle(android.graphics.Paint.Style.STROKE); p.setStrokeWidth(2.5f * dens); p.setStrokeCap(android.graphics.Paint.Cap.ROUND);
+            float r = Math.min(b.width(), b.height()) / 2f - (2.5f * dens);
+            p.setColor(bg); canvas.drawCircle(b.exactCenterX(), b.exactCenterY(), r, p);
+            if(d>0){ p.setColor(c); canvas.drawArc(new android.graphics.RectF(b.exactCenterX()-r, b.exactCenterY()-r, b.exactCenterX()+r, b.exactCenterY()+r), -90, 360f*(d/(float)t), false, p); }
+        }
+        @Override public void setAlpha(int a){} @Override public void setColorFilter(android.graphics.ColorFilter f){} @Override public int getOpacity(){return -3;}
+    }
+
     public View getPremiumIcon(String emoji, int colorStart, int colorEnd, int sizeDp) { 
         TextView tv = new TextView(activity); tv.setText(emoji); tv.setTextColor(Color.WHITE); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(sizeDp / 2.5f); tv.setGravity(Gravity.CENTER); 
         GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{colorStart, colorEnd}); gd.setShape(GradientDrawable.OVAL); tv.setBackground(gd); 
@@ -50,7 +63,8 @@ public class UIComponents {
             if (Build.VERSION.SDK_INT >= 24) { 
                 IslamicCalendar hijriCal = new IslamicCalendar(); hijriCal.setTime(date); hijriCal.add(IslamicCalendar.DATE, offsetDays); 
                 String[] hMonths = {"Muharram", "Safar", "Rabi I", "Rabi II", "Jumada I", "Jumada II", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"}; 
-                String day = lang.bnNum(hijriCal.get(IslamicCalendar.DAY_OF_MONTH));
+                int hd = hijriCal.get(IslamicCalendar.DAY_OF_MONTH);
+                String day = lang.bnNum(hd) + lang.getBnSuffix(hd);
                 String month = lang.get(hMonths[hijriCal.get(IslamicCalendar.MONTH)]);
                 String year = lang.bnNum(hijriCal.get(IslamicCalendar.YEAR));
                 String ah = lang.get("AH");
@@ -102,6 +116,8 @@ public class UIComponents {
         }); 
     }
 
+    public void addClickFeedback(final View v) { v.setOnTouchListener(new View.OnTouchListener() { @Override public boolean onTouch(View view, android.view.MotionEvent event) { switch (event.getAction()) { case android.view.MotionEvent.ACTION_DOWN: view.animate().scaleX(0.92f).scaleY(0.92f).alpha(0.7f).setDuration(100).start(); break; case android.view.MotionEvent.ACTION_UP: case android.view.MotionEvent.ACTION_CANCEL: view.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(100).start(); break; } return false; } }); }
+
     public void hideLoadingBanner(final FrameLayout root) { 
         activity.runOnUiThread(new Runnable() { 
             @Override public void run() { if(activeBanner != null) { activeBanner.animate().translationY(-250f * DENSITY).alpha(0f).setDuration(400).setInterpolator(new android.view.animation.AnticipateInterpolator()).withEndAction(new Runnable() { @Override public void run() { root.removeView(activeBanner); activeBanner = null; } }).start(); } } 
@@ -118,8 +134,9 @@ public class UIComponents {
         android.animation.ObjectAnimator rot = android.animation.ObjectAnimator.ofFloat(iconView, "rotation", 0f, 15f, -15f, 15f, -15f, 0f);
         rot.setDuration(500); rot.start();
 
-        TextView title = new TextView(activity); title.setText(lang.get("Patience is Virtue")); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); title.setPadding(0,(int)(15*DENSITY),0,(int)(5*DENSITY)); main.addView(title); 
-        TextView sub = new TextView(activity); sub.setText(lang.get("You cannot mark future prayers.")); sub.setTextColor(themeColors[3]); sub.setTextSize(14); sub.setGravity(Gravity.CENTER); main.addView(sub);
+        Typeface tfReg = Typeface.DEFAULT, tfBold = Typeface.DEFAULT_BOLD; try { SharedPreferences uiSp = activity.getSharedPreferences("salah_pro_final", android.content.Context.MODE_PRIVATE); if (uiSp.getString("app_lang", "en").equals("bn")) { tfReg = Typeface.createFromAsset(activity.getAssets(), "fonts/hind_reg.ttf"); tfBold = Typeface.createFromAsset(activity.getAssets(), "fonts/hind_bold.ttf"); } else { tfReg = Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_reg.ttf"); tfBold = Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_bold.ttf"); } } catch(Exception e){} 
+        TextView title = new TextView(activity); title.setText(lang.get("Patience is Virtue")); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(tfBold); title.setGravity(Gravity.CENTER); title.setPadding(0,(int)(15*DENSITY),0,(int)(5*DENSITY)); main.addView(title); 
+        TextView sub = new TextView(activity); sub.setText(lang.get("You cannot mark future prayers.")); sub.setTextColor(themeColors[3]); sub.setTextSize(14); sub.setGravity(Gravity.CENTER); sub.setTypeface(tfReg); main.addView(sub);
         
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(280*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); 
         

@@ -63,7 +63,7 @@ public class BackupHelper {
                 tfReg = Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_reg.ttf");
                 tfBold = Typeface.createFromAsset(activity.getAssets(), "fonts/poppins_bold.ttf");
             }
-        } catch(Exception e){}
+        } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
     }
 
     // ✨ Method to apply fonts
@@ -85,7 +85,8 @@ public class BackupHelper {
             for (String k : m.keySet()) j.put(k, m.get(k));
             File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             if (!dir.exists()) dir.mkdirs();
-            File f = new File(dir, "Salah_Backup_" + System.currentTimeMillis() + ".json");
+            String dStr = new SimpleDateFormat("dd_MMM_yyyy", Locale.US).format(new Date());
+            File f = new File(dir, "Salah_Backup_" + dStr + "_" + (System.currentTimeMillis()%1000) + ".json");
             FileWriter w = new FileWriter(f);
             w.write(j.toString());
             w.close();
@@ -167,10 +168,7 @@ public class BackupHelper {
         
         TextView title = new TextView(activity); title.setText(lang.get("Backup & Sync")); title.setGravity(Gravity.CENTER); title.setTextColor(themeColors[2]); title.setTextSize(22); title.setTypeface(Typeface.DEFAULT_BOLD); rootDia.addView(title);
         long lastSyncTime = sp.getLong("last_sync", 0);
-        String syncText = lastSyncTime == 0 ?
-        "Never synced" : "Last synced: " + new SimpleDateFormat("dd MMM, hh:mm a", Locale.US).format(new Date(lastSyncTime));
-        if(lang.get("Fajr").equals("ফজর")) { syncText = lastSyncTime == 0 ? "কখনো সিঙ্ক করা হয়নি" : "শেষ সিঙ্ক: " + lang.bnNum(new SimpleDateFormat("dd MMM, hh:mm a", Locale.US).format(new Date(lastSyncTime)));
-        }
+        String syncText = lastSyncTime == 0 ? lang.get("Never synced") : lang.get("Last synced") + ": " + (lang.get("Fajr").equals("ফজর") ? lang.bnNum(new SimpleDateFormat("dd MMM, hh:mm a", Locale.US).format(new Date(lastSyncTime))) : new SimpleDateFormat("dd MMM, hh:mm a", Locale.US).format(new Date(lastSyncTime)));
         
         TextView desc = new TextView(activity);
         desc.setText(lang.get("Secure your data in cloud or local storage") + "\n(" + syncText + ")"); desc.setGravity(Gravity.CENTER); desc.setTextColor(themeColors[3]); desc.setTextSize(13);
@@ -206,7 +204,8 @@ public class BackupHelper {
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         ad.getWindow().setGravity(Gravity.CENTER);
         actionBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { 
-            String mail = emailIn.getText().toString().trim(); 
+            String mail = emailIn.getText().toString().trim();
+            if (mail.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(mail).matches()) { ui.showSmartBanner(root, lang.get("Invalid Email"), lang.get("Please enter a valid email address."), "img_warning", colorAccent, null); return; }
             if (!mail.isEmpty()) { 
                 sp.edit().putString("user_email", mail).apply(); ad.dismiss(); 
                 fbHelper.fetchAndLoad(
