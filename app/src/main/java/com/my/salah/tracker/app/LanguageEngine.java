@@ -33,7 +33,8 @@ public class LanguageEngine {
         bnMap.put("Deleting...", "মুছে ফেলা হচ্ছে...");
         bnMap.put("Offline Data", "অফলাইন ডাটা");
         bnMap.put("Data will sync when internet is available.", "ইন্টারনেট কানেকশন এলে ডাটা অটোম্যাটিক সিঙ্ক হবে।");
-        bnMap.put("Delete", "মুছে ফেলুন"); bnMap.put("Choose Theme", "থিম পরিবর্তন করুন");
+        bnMap.put("Delete", "মুছে ফেলুন");
+        bnMap.put("items waiting to sync.", "টি ডেটা সিঙ্কের অপেক্ষায় আছে।"); bnMap.put("Choose Theme", "থিম পরিবর্তন করুন");
         bnMap.put("Change Language", "ভাষা পরিবর্তন"); bnMap.put("Backup & Sync", "ব্যাকআপ এবং সিঙ্ক");
         bnMap.put("View Qaza List", "কাজা লিস্ট দেখুন");
         bnMap.put("Advanced Statistics", "বিস্তারিত রিপোর্ট");

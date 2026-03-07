@@ -93,6 +93,11 @@ public class SalahWidget extends AppWidgetProvider {
                 }
                 
                 toggleStatInRoom(record, prayerName);
+                if(getStatFromRoom(record, prayerName).equals("yes")) {
+                    switch(prayerName) { case "Fajr": record.fajr_qaza = false; break; case "Dhuhr": record.dhuhr_qaza = false; break; case "Asr": record.asr_qaza = false; break; case "Maghrib": record.maghrib_qaza = false; break; case "Isha": record.isha_qaza = false; break; case "Witr": record.witr_qaza = false; break; }
+                    context.getSharedPreferences("salah_pro_final", android.content.Context.MODE_PRIVATE).edit().putBoolean(todayKey+"_"+prayerName+"_qaza", false).apply();
+                }
+
                 dao.updateRecord(record);
 
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
