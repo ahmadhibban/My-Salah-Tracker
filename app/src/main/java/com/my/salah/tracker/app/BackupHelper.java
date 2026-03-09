@@ -83,7 +83,7 @@ public class BackupHelper {
             JSONObject j = new JSONObject();
             Map<String, ?> m = sp.getAll();
             for (String k : m.keySet()) j.put(k, m.get(k));
-            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File dir = activity.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
             if (!dir.exists()) dir.mkdirs();
             String dStr = new SimpleDateFormat("dd_MMM_yyyy", Locale.US).format(new Date());
             File f = new File(dir, "Salah_Backup_" + dStr + "_" + (System.currentTimeMillis()%1000) + ".json");
@@ -97,7 +97,7 @@ public class BackupHelper {
     }
 
     public void showRestoreDialog(final Runnable reload) {
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File dir = activity.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
         final File[] files = dir.listFiles(new FilenameFilter() {
             @Override public boolean accept(File d, String name) { return name.toLowerCase().endsWith(".json") && name.contains("Salah"); }
         });
@@ -136,7 +136,7 @@ public class BackupHelper {
                             else if (val instanceof Integer) ed.putInt(k, (Integer) val);
                             else if (val instanceof Long) ed.putLong(k, (Long) val);
                         }
-                        ed.apply();
+                        String curQ = sp.getString("offline_q", ""); ed.putString("offline_q", curQ); ed.putBoolean("is_migrated_to_room_v1", false).apply(); com.my.salah.tracker.app.DataMigrationHelper.migrateOldDataToRoom(activity);
                         ui.showSmartBanner(root, lang.get("Restore Successful"), lang.get("Data imported"), "img_tick", colorAccent, null);
                         if (reload != null) reload.run(); ad.dismiss();
                     } catch (Exception e) { ui.showSmartBanner(root, lang.get("Restore Failed"), lang.get("Corrupted file."), "img_warning", colorAccent, null);
@@ -150,7 +150,7 @@ public class BackupHelper {
         flp.gravity = Gravity.CENTER; wrap.addView(main, flp);
         
         applyFont(wrap); // ✨ Font Applied Here
-        ad.show();
+        if(!activity.isFinishing()) ad.show();
     }
 
     public void showProfileDialog(final Runnable onReload) {
@@ -217,6 +217,6 @@ public class BackupHelper {
         } });
         bEx.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { exportData(); ad.dismiss(); }});
         bIm.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showRestoreDialog(onReload); ad.dismiss(); }});
-        ad.show();
+        if(!activity.isFinishing()) ad.show();
     }
 }

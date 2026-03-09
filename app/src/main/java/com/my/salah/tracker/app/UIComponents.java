@@ -69,7 +69,7 @@ public class UIComponents {
                 String year = lang.bnNum(hijriCal.get(IslamicCalendar.YEAR));
                 String ah = lang.get("AH");
                 return day + " " + month + " " + year + " " + ah; 
-            } else { return lang.bnNum(16) + " " + lang.get("Ramadan") + " " + lang.bnNum(1447) + " " + lang.get("AH"); } 
+            } else { return ""; } 
         } catch (Exception e) { return "Error Date"; } 
     }
 
@@ -100,7 +100,7 @@ public class UIComponents {
     public void showSmartBanner(final FrameLayout root, final String titleStr, final String msg, final String imgName, final int colorAccent, final Runnable onClick) { 
         activity.runOnUiThread(new Runnable() { 
             @Override public void run() { 
-                if (activeBanner != null) { root.removeView(activeBanner); activeBanner = null; } 
+                if (activeBanner != null) { if(activeBanner != null && activeBanner.getParent() != null) root.removeView(activeBanner); activeBanner = null; } 
                 activeBanner = new LinearLayout(activity); activeBanner.setOrientation(LinearLayout.VERTICAL); 
                 GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); gd.setStroke((int)(1.5f*DENSITY), colorAccent); activeBanner.setBackground(gd); 
                 if (Build.VERSION.SDK_INT >= 21) activeBanner.setElevation(40f); 
@@ -120,7 +120,7 @@ public class UIComponents {
 
     public void hideLoadingBanner(final FrameLayout root) { 
         activity.runOnUiThread(new Runnable() { 
-            @Override public void run() { if(activeBanner != null) { activeBanner.animate().translationY(-250f * DENSITY).alpha(0f).setDuration(400).setInterpolator(new android.view.animation.AnticipateInterpolator()).withEndAction(new Runnable() { @Override public void run() { root.removeView(activeBanner); activeBanner = null; } }).start(); } } 
+            @Override public void run() { if(activeBanner != null) { activeBanner.animate().translationY(-250f * DENSITY).alpha(0f).setDuration(400).setInterpolator(new android.view.animation.AnticipateInterpolator()).withEndAction(new Runnable() { @Override public void run() { if(activeBanner != null && activeBanner.getParent() != null) root.removeView(activeBanner); activeBanner = null; } }).start(); } } 
         }); 
     }
 
@@ -143,6 +143,6 @@ public class UIComponents {
         android.app.AlertDialog ad = new android.app.AlertDialog.Builder(activity).setView(wrap).create(); 
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); 
         ad.getWindow().setGravity(Gravity.CENTER); 
-        ad.show(); 
+        if(!activity.isFinishing()) ad.show(); 
     }
 }

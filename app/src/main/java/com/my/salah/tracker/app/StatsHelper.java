@@ -70,7 +70,7 @@ public class StatsHelper {
     public void exportXls() {
         boolean isBn=sp.getString("app_lang","en").equals("bn");
         try{
-            java.io.File dir=android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists()) dir.mkdirs();
+            java.io.File dir=activity.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists()) dir.mkdirs();
             java.io.File file=new java.io.File(dir,"Salah_Premium_Report_"+System.currentTimeMillis()+".xls"); java.io.PrintWriter pw=new java.io.PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(file),"UTF-8"));
             int tD=0,tDn=0,tM=0,tE=0,tQ=0,tExt=0; java.util.Calendar sumCal=(java.util.Calendar)statsCalPointer.clone(); sumCal.set(5,1);
             int mDays=sumCal.getActualMaximum(5); java.util.Calendar nowSum=java.util.Calendar.getInstance(); java.text.SimpleDateFormat sdf=new java.text.SimpleDateFormat("yyyy-MM-dd",java.util.Locale.US);
@@ -102,7 +102,7 @@ public class StatsHelper {
             String sSt=aD?"sYes":"sNo"; String sTxt=aD?(isBn?"★ আলহামদুলিল্লাহ":"★ Perfect"):(isBn?"⚠ অসম্পূর্ণ":"⚠ Incomplete"); xml.append("<Cell ss:StyleID=\""+sSt+"\"><Data ss:Type=\"String\">"+sTxt+"</Data></Cell></Row>");}
             xml.append("</Table></Worksheet></Workbook>"); pw.write(xml.toString()); pw.close();
             final java.io.File fF=file; ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content),isBn?"সফল":"Success",isBn?"XLS ফাইল সেভ হয়েছে (ওপেন করতে ক্লিক)":"XLS Saved","img_tick",colorAccent,()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW); i.setDataAndType(androidx.core.content.FileProvider.getUriForFile(activity,activity.getPackageName()+".provider",fF),"application/vnd.ms-excel"); i.addFlags(1); activity.startActivity(android.content.Intent.createChooser(i,"Open with..."));});
-        }catch(Exception e){}
+        }catch(Exception e){ e.printStackTrace(); }
     }
 
     public void showStatsOptionsDialog() {
@@ -129,7 +129,7 @@ public class StatsHelper {
         bm.add(isBn ? "প্রিমিয়াম এক্সেল (XLS) এক্সপোর্ট" : "Export Premium XLS", new Runnable() { @Override public void run() { exportXls(); } });
         bm.add(isBn ? "প্রিমিয়াম পিডিএফ এক্সপোর্ট" : "Export Premium PDF", new Runnable() { @Override public void run() { exportPdf(); } });
         
-        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); ad.show();
+        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); if(!activity.isFinishing()) ad.show();
     }
 
     private void showShareTypeDialog() {
@@ -151,7 +151,7 @@ public class StatsHelper {
         LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(-1, -2); lp2.setMargins(0, (int)(10*DENSITY), 0, 0); btn2.setLayoutParams(lp2);
         TextView t2 = new TextView(activity); t2.setText(isBn ? "মাসিক রিপোর্ট" : "Monthly Report"); t2.setTextColor(themeColors[2]); t2.setTypeface(Typeface.DEFAULT_BOLD); btn2.addView(t2); main.addView(btn2);
         
-        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); ad.show();
+        FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); if(!activity.isFinishing()) ad.show();
     }
 
     public void shareImageReport(boolean isWeekly) {
@@ -188,16 +188,16 @@ public class StatsHelper {
             for(int i=0;i<dFV.size();i++){
                 float cx=pd+40+(i*cCol)+(cCol/2f), fH=(dFV.get(i)/6f)*mBH, sH=(dSV.get(i)/12f)*mBH;
                 float bW = isWeekly ? 35 : 12; float gap = isWeekly ? 5 : 2;
-                if(fH>0){pt.setColor(dC.get(i));cv.drawRoundRect(new android.graphics.RectF(cx-bW-gap,cyY+60+mBH-fH,cx-gap,cyY+60+mBH),bW/3f,bW/3f,pt);}
-                if(sH>0){pt.setColor(android.graphics.Color.parseColor("#F59E0B"));cv.drawRoundRect(new android.graphics.RectF(cx+gap,cyY+60+mBH-sH,cx+gap+bW,cyY+60+mBH),bW/3f,bW/3f,pt);}
+                if(fH>0){pt.setColor(dC.get(i));cv.drawRoundRect(new android.graphics.RectF(cx-bW-gap,cyY+60+mBH-fH,cx-gap,cyY+60+mBH),bW/2f,bW/2f,pt);}
+                if(sH>0){pt.setColor(android.graphics.Color.parseColor("#F59E0B"));cv.drawRoundRect(new android.graphics.RectF(cx+gap,cyY+60+mBH-sH,cx+gap+bW,cyY+60+mBH),bW/2f,bW/2f,pt);}
                 pt.setColor(themeColors[3]); pt.setTextSize(isWeekly?35:24); pt.setTextAlign(android.graphics.Paint.Align.CENTER); pt.setTypeface(appFonts[0]); cv.drawText(dL.get(i),cx,cyY+cyH-40,pt);
             }
             pt.setColor(themeColors[3]); pt.setTextAlign(android.graphics.Paint.Align.CENTER); pt.setTextSize(45); cv.drawText(isBn?"My Salah Tracker অ্যাপের মাধ্যমে তৈরি":"Generated by My Salah Tracker",w/2f,h-80,pt);
-            java.io.File dir=android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists())dir.mkdirs();
+            java.io.File dir=activity.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists())dir.mkdirs();
             java.io.File file=new java.io.File(dir,"Salah_Report_"+System.currentTimeMillis()+".png"); java.io.FileOutputStream fos=new java.io.FileOutputStream(file); bm.compress(android.graphics.Bitmap.CompressFormat.PNG,100,fos); fos.flush(); fos.close();
             android.os.StrictMode.VmPolicy.Builder b=new android.os.StrictMode.VmPolicy.Builder(); android.os.StrictMode.setVmPolicy(b.build());
             android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_SEND); i.setType("image/png"); i.putExtra(android.content.Intent.EXTRA_STREAM,android.net.Uri.fromFile(file)); i.putExtra(android.content.Intent.EXTRA_TEXT,"Alhamdulillah! Check out my Salah progress."); activity.startActivity(android.content.Intent.createChooser(i,"Share via"));
-        }catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
+        }catch(Exception e){ ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Share Failed"), lang.get("Storage permission required."), "img_warning", colorAccent, null); }
     }
 
     private void drawReportCard(Canvas canvas, Paint paint, float x, float y, float w, float h, int accentColor, String title, String value) {
@@ -213,7 +213,7 @@ public class StatsHelper {
     public void exportPdf() {
         boolean isBn=sp.getString("app_lang","en").equals("bn");
         try{
-            int pw=650, ph=1950; android.graphics.pdf.PdfDocument doc=new android.graphics.pdf.PdfDocument();
+            int pw=650, ph=2500; android.graphics.pdf.PdfDocument doc=new android.graphics.pdf.PdfDocument();
             android.graphics.pdf.PdfDocument.PageInfo pi=new android.graphics.pdf.PdfDocument.PageInfo.Builder(pw,ph,1).create();
             android.graphics.pdf.PdfDocument.Page pg=doc.startPage(pi); android.graphics.Canvas cv=pg.getCanvas(); android.graphics.Paint pt=new android.graphics.Paint(1);
             pt.setColor(android.graphics.Color.WHITE); cv.drawRect(0,0,pw,ph,pt); pt.setColor(colorAccent); android.graphics.Path hp=new android.graphics.Path(); hp.moveTo(0,0); hp.lineTo(pw,0); hp.lineTo(pw,180); hp.cubicTo(pw/2f,220,0,180,0,180); hp.close(); cv.drawPath(hp,pt);
@@ -259,8 +259,8 @@ public class StatsHelper {
                     if(cal.before(now)||dK.equals(sdf.format(now.getTime()))){ SalahRecord rec=getRoomRecord(dK); if(rec!=null){for(int p=0;p<prayers.length;p++){String fS=getFardStat(rec,prayers[p]); if(fS.equals("yes"))fD++; else if(fS.equals("excused")){fD++;hB=true;}} sD_cnt += getTotalExtras(dK);} }
                     float mBH=90f, lH=(fD/6f)*mBH, rH_b=(sD_cnt/12f)*mBH, bY=wY+135f;
                     if(!(cal.after(now)&&!dK.equals(sdf.format(now.getTime())))){
-                        if(fD>0){pt.setColor(hB?android.graphics.Color.parseColor("#8B5CF6"):android.graphics.Color.parseColor("#22C55E")); cv.drawRoundRect(new android.graphics.RectF(cx-10,bY-lH,cx-1,bY),3f,3f,pt);}
-                        if(sD_cnt>0){pt.setColor(android.graphics.Color.parseColor("#F59E0B")); cv.drawRoundRect(new android.graphics.RectF(cx+1,bY-rH_b,cx+10,bY),3f,3f,pt);}
+                        if(fD>0){pt.setColor(hB?android.graphics.Color.parseColor("#8B5CF6"):android.graphics.Color.parseColor("#22C55E")); cv.drawRoundRect(new android.graphics.RectF(cx-10,bY-lH,cx-1,bY),4.5f,4.5f,pt);}
+                        if(sD_cnt>0){pt.setColor(android.graphics.Color.parseColor("#F59E0B")); cv.drawRoundRect(new android.graphics.RectF(cx+1,bY-rH_b,cx+10,bY),4.5f,4.5f,pt);}
                     }
                     pt.setColor(android.graphics.Color.parseColor("#AAAAAA")); pt.setTextSize(10); pt.setTypeface(appFonts[0]); pt.setTextAlign(android.graphics.Paint.Align.CENTER); cv.drawText(ds[dw]+" "+lang.bnNum(d),cx,bY+18,pt);
                 } wY+=wCH+bG;
@@ -268,10 +268,10 @@ public class StatsHelper {
             pt.setColor(android.graphics.Color.parseColor("#AAAAAA")); pt.setTextSize(12); pt.setTypeface(appFonts[0]); pt.setTextAlign(android.graphics.Paint.Align.CENTER); cv.drawText(isBn?"My Salah Tracker অ্যাপের মাধ্যমে তৈরি":"Generated by My Salah Tracker",pw/2f,ph-40,pt);
             doc.finishPage(pg); 
             
-            java.io.File dir=android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists()) dir.mkdirs();
+            java.io.File dir=activity.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS); if(!dir.exists()) dir.mkdirs();
             java.io.File file=new java.io.File(dir,"Salah_Report_"+System.currentTimeMillis()+".pdf"); doc.writeTo(new java.io.FileOutputStream(file)); doc.close();
-            final java.io.File fF=file; if(activity instanceof MainActivity){android.widget.FrameLayout r=activity.findViewById(android.R.id.content); if(r!=null&&ui!=null){ui.showSmartBanner(r,isBn?"সফল":"Success",isBn?"পিডিএফ সেভ হয়েছে (দেখতে ক্লিক করুন)":"PDF Saved (Click to view)","img_tick",colorAccent,()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW); android.net.Uri u=androidx.core.content.FileProvider.getUriForFile(activity,activity.getPackageName()+".provider",fF); i.setDataAndType(u,"application/pdf"); i.addFlags(1); i.setFlags(1073741824|1); try{activity.startActivity(i);}catch(Exception e){} });}}
-        }catch(Exception e){if(activity instanceof MainActivity){android.widget.FrameLayout r=activity.findViewById(android.R.id.content); if(r!=null&&ui!=null)ui.showSmartBanner(r,"Error","Storage permission required.","img_warning",colorAccent,null);}}
+            final java.io.File fF=file; if(activity instanceof MainActivity){android.widget.FrameLayout r=activity.findViewById(android.R.id.content); if(r!=null&&ui!=null){ui.showSmartBanner(r,isBn?"সফল":"Success",isBn?"পিডিএফ সেভ হয়েছে (দেখতে ক্লিক করুন)":"PDF Saved (Click to view)","img_tick",colorAccent,()->{android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_VIEW); android.net.Uri u=androidx.core.content.FileProvider.getUriForFile(activity,activity.getPackageName()+".provider",fF); i.setDataAndType(u,"application/pdf"); i.addFlags(1); i.setFlags(1073741824|1); try{activity.startActivity(i);}catch(Exception e){ e.printStackTrace(); } });}}
+        }catch(Exception e){ if(activity instanceof MainActivity){android.widget.FrameLayout r=activity.findViewById(android.R.id.content); if(r!=null&&ui!=null)ui.showSmartBanner(r,"Error","Storage permission required.","img_warning",colorAccent,null);}}
     }
 
     private void drawPdfCardBig(Canvas canvas, Paint paint, float x, float y, float w, float h, int accent, String title, String val) {
@@ -289,7 +289,7 @@ public class StatsHelper {
         card.setOrientation(LinearLayout.VERTICAL); card.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); card.setGravity(Gravity.CENTER_HORIZONTAL);
         GradientDrawable cardBg = new GradientDrawable(); cardBg.setColor(themeColors[1]); cardBg.setCornerRadius(30f * DENSITY); card.setBackground(cardBg); wrap.addView(card, new LinearLayout.LayoutParams(-1, -2));
         final AlertDialog dialog = builder.setView(wrap).create(); dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent); dialog.getWindow().setGravity(Gravity.CENTER); 
-        renderStats(card, dialog, isWeekly); dialog.show();
+        renderStats(card, dialog, isWeekly); if(!activity.isFinishing()) dialog.show();
     }
     
     private void renderStats(final android.widget.LinearLayout card, final android.app.AlertDialog dialog, final boolean isWeekly) {
@@ -325,7 +325,7 @@ public class StatsHelper {
             }
             float fVal = d+e;
             fE.add(new com.github.mikephil.charting.data.BarEntry(i-0.2f, fVal));
-            sE.add(new com.github.mikephil.charting.data.BarEntry(i+0.2f, s*(6f/12f)));
+            sE.add(new com.github.mikephil.charting.data.BarEntry(i+0.2f, Math.min(6f, s*(6f/10f))));
             fC.add(fVal==0?android.graphics.Color.TRANSPARENT:((MainActivity)activity).getStatusColor(dK));
             lbls[i] = isWeekly ? new java.text.SimpleDateFormat("E", java.util.Locale.US).format(startCal.getTime()).substring(0,1) : (isBn?lang.bnNum(i+1):""+(i+1));
             if(isBn && isWeekly) lbls[i] = new String[]{"র","সো","ম","বু","বৃ","শু","শ"}[startCal.get(java.util.Calendar.DAY_OF_WEEK)-1];
@@ -338,7 +338,7 @@ public class StatsHelper {
         com.github.mikephil.charting.data.BarDataSet ss=new com.github.mikephil.charting.data.BarDataSet(sE, "Sunnah"); ss.setColor(android.graphics.Color.parseColor("#F59E0B")); ss.setDrawValues(false);
         bd=new com.github.mikephil.charting.data.BarData(fs, ss); bd.setBarWidth(0.3f);
         bc.getXAxis().setAxisMinimum(-0.5f); bc.getXAxis().setAxisMaximum(totalDays-0.5f);
-        bc.setData(bd); bc.getAxisLeft().setAxisMinimum(0); bc.getAxisLeft().setAxisMaximum(6); bc.getAxisLeft().setLabelCount(7, true);
+        bc.setData(bd); bc.setRenderer(new com.github.mikephil.charting.renderer.BarChartRenderer(bc, bc.getAnimator(), bc.getViewPortHandler()) { @Override public void drawDataSet(android.graphics.Canvas c, com.github.mikephil.charting.interfaces.datasets.IBarDataSet dataSet, int index) { for (int j = 0; j < dataSet.getEntryCount(); j++) { com.github.mikephil.charting.data.BarEntry e = dataSet.getEntryForIndex(j); if(e.getY() <= 0) continue; float[] pos = new float[]{e.getX() - 0.15f, e.getY(), e.getX() + 0.15f, 0}; mChart.getTransformer(dataSet.getAxisDependency()).pointValuesToPixel(pos); mRenderPaint.setColor(dataSet.getColor(j)); c.drawRoundRect(new android.graphics.RectF(pos[0], pos[1], pos[2], pos[3]), 8f * DENSITY, 8f * DENSITY, mRenderPaint); } } }); bc.getAxisLeft().setAxisMinimum(0); bc.getAxisLeft().setAxisMaximum(6.2f); bc.getAxisLeft().setGranularity(1f);
         bc.getXAxis().setPosition(com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM); bc.getXAxis().setDrawGridLines(false); bc.getXAxis().setTextColor(themeColors[3]);
         bc.getXAxis().setValueFormatter(new com.github.mikephil.charting.formatter.ValueFormatter(){@Override public String getFormattedValue(float v){int idx=Math.round(v); return (idx>=0&&idx<lbls.length)?lbls[idx]:"";}});
         bc.getLegend().setEnabled(false); bc.getDescription().setEnabled(false); bc.getAxisRight().setEnabled(false);

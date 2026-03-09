@@ -44,18 +44,18 @@ public class SalahWidget extends AppWidgetProvider {
         if(d == 1) return "লা";
         if(d == 2 || d == 3) return "রা"; 
         if(d == 4) return "ঠা";
-        if(d >= 5 && d <= 18) return "ই"; 
+        if(d >= 5 && d <= 18) return "ই"; if(d >= 19 && d <= 31) return "এ"; 
         return "শে";
     }
 
     private void toggleStatInRoom(SalahRecord record, String prayerName) {
         switch(prayerName) {
-            case "Fajr": record.fajr = record.fajr.equals("yes") ? "no" : "yes"; break;
-            case "Dhuhr": record.dhuhr = record.dhuhr.equals("yes") ? "no" : "yes"; break;
-            case "Asr": record.asr = record.asr.equals("yes") ? "no" : "yes"; break;
-            case "Maghrib": record.maghrib = record.maghrib.equals("yes") ? "no" : "yes"; break;
-            case "Isha": record.isha = record.isha.equals("yes") ? "no" : "yes"; break;
-            case "Witr": record.witr = record.witr.equals("yes") ? "no" : "yes"; break;
+            case "Fajr": record.fajr = record.fajr.equals("no") ? "yes" : "no"; break;
+            case "Dhuhr": record.dhuhr = record.dhuhr.equals("no") ? "yes" : "no"; break;
+            case "Asr": record.asr = record.asr.equals("no") ? "yes" : "no"; break;
+            case "Maghrib": record.maghrib = record.maghrib.equals("no") ? "yes" : "no"; break;
+            case "Isha": record.isha = record.isha.equals("no") ? "yes" : "no"; break;
+            case "Witr": record.witr = record.witr.equals("no") ? "yes" : "no"; break;
         }
     }
 
@@ -130,7 +130,7 @@ public class SalahWidget extends AppWidgetProvider {
         try {
             if (isBn) appFontBold = Typeface.createFromAsset(context.getAssets(), "fonts/hind_bold.ttf");
             else appFontBold = Typeface.createFromAsset(context.getAssets(), "fonts/poppins_bold.ttf");
-        } catch (Exception e) { appFontBold = Typeface.DEFAULT_BOLD; }
+        } catch (Exception e) { appFontBold = Typeface.SANS_SERIF; }
 
         SimpleDateFormat sdfKey = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         String todayKey = sdfKey.format(new Date());
@@ -200,7 +200,7 @@ public class SalahWidget extends AppWidgetProvider {
             views.addView(boxId, prayerBox); views.setOnClickPendingIntent(boxId, pendingIntent);
         }
 
-        int percent = (int) ((countCompleted / 6f) * 100);
+        int percent = Math.min(100, (int) ((countCompleted / 6f) * 100));
         views.setImageViewBitmap(context.getResources().getIdentifier("widget_percent_badge_img", "id", context.getPackageName()), buildTextBitmap(context, lang.bnNum(percent) + "%", mainTextColor, 14f, appFontBold));
         try {
             Bitmap progressBmp = Bitmap.createBitmap(1000, 30, Bitmap.Config.ARGB_8888);

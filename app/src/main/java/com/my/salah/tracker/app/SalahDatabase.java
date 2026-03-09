@@ -26,9 +26,9 @@ public abstract class SalahDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             SalahDatabase.class, "salah_tracker_db")
-                            .allowMainThreadQueries() // উইজেট ও দ্রুত লোডিংয়ের জন্য
-                            .fallbackToDestructiveMigration() // আপডেট করলে ক্র্যাশ ঠেকানোর জন্য
-                            .build();
+                             // উইজেট ও দ্রুত লোডিংয়ের জন্য
+                            /* .fallbackToDestructiveMigration() removed for safety */ // আপডেট করলে ক্র্যাশ ঠেকানোর জন্য
+                            .allowMainThreadQueries().build();
                 }
             }
         }

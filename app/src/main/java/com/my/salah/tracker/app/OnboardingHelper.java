@@ -28,7 +28,7 @@ public class OnboardingHelper {
         main.addView(iconContainer); main.addView(title); main.addView(desc); main.addView(nextBtn); overlay.addView(main); root.addView(overlay);
         TextView skipBtn = new TextView(activity); skipBtn.setText(lang.get("Skip")); skipBtn.setTextColor(themeColors[3]); skipBtn.setTextSize(14); skipBtn.setTypeface(Typeface.DEFAULT_BOLD); skipBtn.setPadding((int)(20*DENSITY), (int)(20*DENSITY), (int)(20*DENSITY), (int)(20*DENSITY));
         FrameLayout.LayoutParams skipLp = new FrameLayout.LayoutParams(-2, -2); skipLp.gravity = Gravity.TOP | Gravity.END; skipLp.setMargins(0, (int)(30*DENSITY), 0, 0); overlay.addView(skipBtn, skipLp);
-        skipBtn.setOnClickListener(v -> { sp.edit().putBoolean("is_first_run_tutorial", false).apply(); overlay.animate().alpha(0f).setDuration(300).withEndAction(() -> root.removeView(overlay)).start(); });
+        skipBtn.setOnClickListener(v -> { sp.edit().putBoolean("is_first_run_tutorial", false).apply(); overlay.animate().alpha(0f).setDuration(300).withEndAction(() -> { if(overlay != null && overlay.getParent() != null) root.removeView(overlay); }).start(); });
 
         boolean isBn = sp.getString("app_lang", "en").equals("bn");
         final String[][] pages = {
@@ -52,7 +52,7 @@ public class OnboardingHelper {
             @Override public void onClick(View v) {
                 if (currentPage < pages.length - 1) { currentPage++; updatePage.run(); } else {
                     sp.edit().putBoolean("is_first_run_tutorial", false).apply();
-                    overlay.animate().alpha(0f).setDuration(300).withEndAction(new Runnable() { @Override public void run() { root.removeView(overlay); } }).start();
+                    overlay.animate().alpha(0f).setDuration(300).withEndAction(new Runnable() { @Override public void run() { if(overlay != null && overlay.getParent() != null) root.removeView(overlay); } }).start();
                 }
             }
         });

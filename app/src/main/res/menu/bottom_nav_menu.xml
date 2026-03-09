@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_salah" android:title="Salah" android:icon="@drawable/img_tab_salah" />
+    <item android:id="@+id/nav_fasting" android:title="Fasting" android:icon="@drawable/img_habit_roza" />
+    <item android:id="@+id/nav_quran" android:title="Quran" android:icon="@drawable/img_habit_quran" />
+    <item android:id="@+id/nav_zikr" android:title="Zikr" android:icon="@drawable/img_habit_zikr" />
+    <item android:id="@+id/nav_stats" android:title="Stats" android:icon="@drawable/img_tab_stats" />
+</menu>

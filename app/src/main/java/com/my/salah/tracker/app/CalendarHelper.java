@@ -77,7 +77,7 @@ public class CalendarHelper {
         dialog.getWindow().setGravity(Gravity.CENTER); // ডায়ালগ মাঝখানে রাখার কোড
         
         renderGregorian(calCard, dialog); 
-        applyFont(wrap); dialog.show();
+        applyFont(wrap); if(!activity.isFinishing()) dialog.show();
     }
 
     private void renderGregorian(final LinearLayout card, final AlertDialog dialog) {
@@ -328,6 +328,6 @@ public class CalendarHelper {
         prev.setOnClickListener(v -> { Calendar chk = (Calendar) hijriViewCal.clone(); chk.add(Calendar.DATE, -29); if(chk.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { hijriViewCal.add(Calendar.DATE, -29); renderHolder[0].run(); } else { ui.showSmartBanner((android.widget.FrameLayout)activity.findViewById(android.R.id.content), lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } });
         next.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { IslamicCalendar currentIc = new IslamicCalendar(); currentIc.setTime(hijriViewCal.getTime()); currentIc.add(IslamicCalendar.DATE, sp.getInt("hijri_offset", 0)); IslamicCalendar todayIc = new IslamicCalendar(); todayIc.setTime(new Date()); todayIc.add(IslamicCalendar.DATE, sp.getInt("hijri_offset", 0)); if (currentIc.get(IslamicCalendar.YEAR) < todayIc.get(IslamicCalendar.YEAR) || (currentIc.get(IslamicCalendar.YEAR) == todayIc.get(IslamicCalendar.YEAR) && currentIc.get(IslamicCalendar.MONTH) < todayIc.get(IslamicCalendar.MONTH))) { hijriViewCal.add(Calendar.DATE, 30); renderHolder[0].run(); } } });
         
-        renderHolder[0].run(); FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(-1, -2); flp.gravity = Gravity.CENTER; flp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); wrap.addView(main, flp); applyFont(wrap); ad.show();
+        renderHolder[0].run(); FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams(-1, -2); flp.gravity = Gravity.CENTER; flp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); wrap.addView(main, flp); applyFont(wrap); if(!activity.isFinishing()) ad.show();
     }
 }

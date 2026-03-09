@@ -48,7 +48,7 @@ public class LanguageEngine {
         bnMap.put("Remove All (Inc. Sunnah)", "সবগুলো বাতিল করুন"); bnMap.put("Select Year", "বছর নির্বাচন করুন"); 
         bnMap.put("Start your journey", "নামাজ শুরু করুন");
         bnMap.put("Great start!", "দারুণ শুরু!"); 
-        bnMap.put("Keep going", "চালিয়ে যান"); bnMap.put("Halfway there!", "অর্ধেক সম্পন্ন!"); 
+        bnMap.put("Keep going", "চালিয়ে যান"); bnMap.put("Good progress!", "অর্ধেক সম্পন্ন!"); 
         bnMap.put("Almost done!", "প্রায় শেষ!"); bnMap.put("Mashallah!", "মাশাআল্লাহ!");
         bnMap.put("Purity Achieved!", "আলহামদুলিল্লাহ! সব সম্পন্ন");
         bnMap.put("Secure your data in cloud or local storage", "ক্লাউড বা লোকাল স্টোরেজে ডাটা সুরক্ষিত রাখুন");
@@ -120,7 +120,7 @@ public class LanguageEngine {
         if(d == 1) return "লা";
         if(d == 2 || d == 3) return "রা";
         if(d == 4) return "ঠা";
-        if(d >= 5 && d <= 18) return "ই";
+        if(d >= 5 && d <= 18) return "ই"; if(d >= 19 && d <= 31) return "এ";
         return "শে";
     }
 
@@ -128,7 +128,7 @@ public class LanguageEngine {
         if(!currentLang.equals("bn")) return new SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.US).format(d);
         Calendar c = Calendar.getInstance(); c.setTime(d);
         String[] w = {"রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"};
-        String[] m = {"জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"};
+        String[] m = {"জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রি", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"};
         int day = c.get(Calendar.DAY_OF_MONTH);
         // ✨ এখানে সাফিক্স যুক্ত করে দেওয়া হলো
         return w[c.get(Calendar.DAY_OF_WEEK)-1] + ", " + bnNum(day) + getBnSuffix(day) + " " + m[c.get(Calendar.MONTH)] + ", " + bnNum(c.get(Calendar.YEAR));
@@ -137,7 +137,7 @@ public class LanguageEngine {
     public String getShortGreg(Date d) {
         if(!currentLang.equals("bn")) return new SimpleDateFormat("MMM dd", Locale.US).format(d);
         Calendar c = Calendar.getInstance(); c.setTime(d);
-        String[] m = {"জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন", "জুল", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"};
+        String[] m = {"জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন", "জুল", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"};
         int day = c.get(Calendar.DAY_OF_MONTH);
         // ✨ এখানেও সাফিক্স যুক্ত করে দেওয়া হলো
         return bnNum(day) + getBnSuffix(day) + " " + m[c.get(Calendar.MONTH)];

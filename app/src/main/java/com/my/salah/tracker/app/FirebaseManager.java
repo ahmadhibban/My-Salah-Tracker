@@ -31,7 +31,7 @@ public class FirebaseManager {
                 try {
                     URL url = new URL(DB_URL + safeEmail + "/" + dateKey + "_" + prayerName + ".json");
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setRequestMethod("PUT"); 
+                    con.setConnectTimeout(5000); con.setReadTimeout(5000); con.setRequestMethod("PUT"); 
                     con.setRequestProperty("Content-Type", "application/json"); 
                     con.setDoOutput(true);
                     con.getOutputStream().write(("\"" + status + "\"").getBytes()); 
@@ -63,7 +63,7 @@ public class FirebaseManager {
                             try {
                                 URL url = new URL(DB_URL + safeEmail + "/" + parts[0] + "_" + parts[1] + ".json");
                                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                                con.setRequestMethod("PUT"); 
+                                con.setConnectTimeout(5000); con.setReadTimeout(5000); con.setRequestMethod("PUT"); 
                                 con.setRequestProperty("Content-Type", "application/json"); 
                                 con.setDoOutput(true);
                                 con.getOutputStream().write(("\"" + parts[2] + "\"").getBytes()); 
@@ -93,7 +93,7 @@ public class FirebaseManager {
                 try {
                     URL url = new URL(DB_URL + safeEmail + ".json");
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setRequestMethod("GET");
+                    con.setConnectTimeout(5000); con.setReadTimeout(5000); con.setRequestMethod("GET");
                     InputStream in = con.getInputStream(); 
                     BufferedReader reader = new BufferedReader(new InputStreamReader(in));
                     StringBuilder result = new StringBuilder(); 
