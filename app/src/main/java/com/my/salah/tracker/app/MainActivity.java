@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         int size = (int)(52 * DENSITY);
         android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(size, size);
         nd.setLayoutParams(lp);
-        nd.setShapeType(isChk ? 1 : 0);
+        nd.setShapeType(isChk ? 0 : 1);
         nd.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
         nd.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
         nd.setShadowElevation((isChk ? 2f : 5.5f) * DENSITY);
@@ -303,7 +303,7 @@ public class MainActivity extends Activity {
                         nextArrow.setLayoutParams(lp);
                     }
                     
-                    if(percentCard != null && !"waved".equals(percentCard.getTag())) {
+                    if(false && percentCard != null) {
                         percentCard.setTag("waved");
                         android.view.ViewGroup parent = (android.view.ViewGroup) percentCard.getParent();
                         if(parent != null) {
@@ -439,7 +439,9 @@ public class MainActivity extends Activity {
     }
 
     private void loadTodayPage() {
-        contentArea.setLayoutTransition(new android.animation.LayoutTransition()); contentArea.removeAllViews();
+        final int savedScrollPos = contentArea.getParent() instanceof ScrollView ? ((ScrollView)contentArea.getParent()).getScrollY() : 0;
+        contentArea.removeAllViews();
+        contentArea.post(new Runnable() { @Override public void run() { if (contentArea.getParent() instanceof ScrollView) ((ScrollView)contentArea.getParent()).scrollTo(0, savedScrollPos); } });
         root.setBackgroundColor(themeColors[0]);
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY); 
         final boolean isDayTime = (hour >= 6 && hour < 18); 
@@ -507,17 +509,34 @@ public class MainActivity extends Activity {
         LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(pCardPadV*DENSITY), (int)(20*DENSITY), (int)(pCardPadV*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
-         pCard.setBackgroundColor(Color.TRANSPARENT);
+         // --- 💎 Glassmorphism Effect Applied Here ---
+        int baseR = android.graphics.Color.red(colorAccent);
+        int baseG = android.graphics.Color.green(colorAccent);
+        int baseB = android.graphics.Color.blue(colorAccent);
+        
+        android.graphics.drawable.GradientDrawable glassGradient = new android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+            new int[]{
+                android.graphics.Color.argb(220, baseR, baseG, baseB),
+                android.graphics.Color.argb(120, baseR, baseG, baseB),
+                android.graphics.Color.argb(190, baseR, baseG, baseB)
+            }
+        );
+        glassGradient.setCornerRadius(20f * DENSITY);
+        glassGradient.setStroke((int)(1.5f * DENSITY), android.graphics.Color.argb(150, 255, 255, 255));
+        
+        pCard.setBackground(glassGradient);
+        
         soup.neumorphism.NeumorphCardView pNeo = new soup.neumorphism.NeumorphCardView(this);
         pNeo.setShapeType(0);
-        pNeo.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+        pNeo.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#FFFFFF"));
         pNeo.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
-        pNeo.setShadowElevation(6f * DENSITY);
+        pNeo.setShadowElevation(8f * DENSITY);
         pNeo.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 20f*DENSITY).build());
-        pNeo.setBackgroundColor(tSur);
+        pNeo.setBackgroundColor(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"));
         
         LinearLayout.LayoutParams pNeoLp = new LinearLayout.LayoutParams(-1, -2);
-        pNeoLp.setMargins((int)(10*DENSITY), 0, (int)(10*DENSITY), (int)(10*DENSITY));
+        pNeoLp.setMargins((int)(10*DENSITY), 0, (int)(10*DENSITY), (int)(4*DENSITY));
         pNeo.setLayoutParams(pNeoLp);
         pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
         pNeo.addView(pCard);
@@ -542,7 +561,7 @@ public class MainActivity extends Activity {
         final Calendar now = Calendar.getInstance(); final Calendar[] selectedCalArr = { Calendar.getInstance() };
         try { selectedCalArr[0].setTime(sdf.parse(selectedDate[0])); } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
         LinearLayout weekNavBox = new LinearLayout(this); weekNavBox.setGravity(Gravity.CENTER_VERTICAL);
-        weekNavBox.setPadding((int)(15*DENSITY), (int)(5*DENSITY), (int)(15*DENSITY), (int)(weekNavPadB*DENSITY));
+        weekNavBox.setPadding((int)(15*DENSITY), 0, (int)(15*DENSITY), 0);
         TextView prevW = new TextView(this); prevW.setText("❮"); prevW.setTextSize(16); prevW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); prevW.setTextColor(themeColors[2]); prevW.setGravity(Gravity.CENTER);
         GradientDrawable navBg = new GradientDrawable(); navBg.setColor(themeColors[1]); navBg.setCornerRadius(12f * DENSITY); navBg.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(prevW, 1, 15f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
         prevW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { Calendar chk = (Calendar) selectedCalArr[0].clone(); chk.add(Calendar.DATE, -7); if(chk.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { selectedCalArr[0].add(Calendar.DATE, -7); selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } else { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } } });
@@ -598,13 +617,13 @@ public class MainActivity extends Activity {
         final boolean isCurrentWeekArr = !selectedCalArr[0].before(weekStartNow);
         nextW.setAlpha(isCurrentWeekArr ? 0.3f : 1.0f);
         nextW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(!isCurrentWeekArr) { selectedCalArr[0].add(Calendar.DATE, 7); if(selectedCalArr[0].after(Calendar.getInstance())) { selectedCalArr[0].setTime(Calendar.getInstance().getTime()); } selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } } });
-        prevW.setLayoutParams(new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY)));
-        nextW.setLayoutParams(new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY)));
+        prevW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); prevW.setPadding(0,0,0,0); prevW.setGravity(android.view.Gravity.CENTER);
+        nextW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); nextW.setPadding(0,0,0,0); nextW.setGravity(android.view.Gravity.CENTER);
         weekNavBox.addView(prevW); weekNavBox.addView(weekBox); weekNavBox.addView(nextW); contentArea.addView(weekNavBox);
 
-        LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(actionMarB*DENSITY)); actionRow.setWeightSum(2);
+        LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); actionRow.setWeightSum(2);
         LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -2, 1f);
-        markLp.setMargins((int)(16*DENSITY), (int)(16*DENSITY), (int)(8*DENSITY), (int)(16*DENSITY)); markAllBtn.setLayoutParams(markLp); 
+        markLp.setMargins((int)(16*DENSITY), (int)(4*DENSITY), (int)(8*DENSITY), (int)(4*DENSITY)); markAllBtn.setLayoutParams(markLp); 
         TextView markAllTxt = new TextView(this); markAllTxt.setTextSize(13); markAllTxt.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable bg1 = new GradientDrawable(); bg1.setCornerRadius(20f * DENSITY);
         bg1.setColor(themeColors[1]); bg1.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(markAllBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); markAllBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
@@ -614,7 +633,7 @@ public class MainActivity extends Activity {
             markAllTxt.setTextColor(themeColors[2]); 
             View mIcon = ui.getRoundImage("img_tick", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); mIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         FrameLayout mIconFrame = new FrameLayout(this);
-        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
         mFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
         mIconFrame.setLayoutParams(mFlp);
         applyNeo(mIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
@@ -640,7 +659,7 @@ public class MainActivity extends Activity {
             markAllTxt.setText(lang.get("All Done")); markAllTxt.setTextColor(themeColors[2]);
             View mIcon = ui.getRoundImage("img_trophy", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); mIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         FrameLayout mIconFrame = new FrameLayout(this);
-        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
         mFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
         mIconFrame.setLayoutParams(mFlp);
         applyNeo(mIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
@@ -666,7 +685,7 @@ public class MainActivity extends Activity {
         actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(8*DENSITY), (int)(16*DENSITY), (int)(16*DENSITY), (int)(16*DENSITY)); todayBtn.setLayoutParams(todayLp); 
+        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(8*DENSITY), (int)(4*DENSITY), (int)(16*DENSITY), (int)(4*DENSITY)); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg2 = new GradientDrawable(); bg2.setCornerRadius(20f * DENSITY); bg2.setColor(themeColors[1]); bg2.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(todayBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); todayBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
         View tIcon = ui.getRoundImage("img_calender", 4, Color.TRANSPARENT, colorAccent);
@@ -680,7 +699,7 @@ public class MainActivity extends Activity {
         }
         tIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         FrameLayout tIconFrame = new FrameLayout(this);
-        LinearLayout.LayoutParams tFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        LinearLayout.LayoutParams tFlp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
         tFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
         tIconFrame.setLayoutParams(tFlp);
         applyNeo(tIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
@@ -716,10 +735,10 @@ public class MainActivity extends Activity {
             final boolean isQaza = getQazaStat(todayRec, name);
             
             soup.neumorphism.NeumorphCardView card = new soup.neumorphism.NeumorphCardView(this);
-            card.setShapeType(0);
+		card.setShapeType(0);
             card.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
             card.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
-            card.setShadowElevation(5f * DENSITY);
+            card.setShadowElevation(3f * DENSITY);
             card.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 16f*DENSITY).build());
             card.setBackgroundColor(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"));
             LinearLayout.LayoutParams cLp = new LinearLayout.LayoutParams(-1, -2); 
@@ -732,12 +751,12 @@ public class MainActivity extends Activity {
             innerCard.setPadding((int)(20*DENSITY), (int)(18*DENSITY), (int)(20*DENSITY), (int)(18*DENSITY));
             card.addView(innerCard);
             View iconView = ui.getRoundImage(pImgs[i], pPaddings[i], android.graphics.Color.TRANSPARENT, colorAccent); 
-            LinearLayout.LayoutParams icCardLp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY)); 
+            LinearLayout.LayoutParams icCardLp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY)); 
             icCardLp.setMargins(0,0,(int)(15*DENSITY),0); iconView.setLayoutParams(icCardLp); 
         iconView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         iconView.setPadding(0,0,0,0);
         FrameLayout iconFrame = new FrameLayout(this);
-        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams((int)(44*DENSITY), (int)(44*DENSITY));
+        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
         flp.setMargins(0, 0, (int)(15*DENSITY), 0);
         iconFrame.setLayoutParams(flp);
         applyNeo(iconFrame, 0, 12f, 2.5f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
@@ -767,9 +786,12 @@ public class MainActivity extends Activity {
                 if(!cStr.isEmpty()) { for(String cN : cStr.split(",")) { if(cN.contains(":")) cN = cN.split(":")[0]; totalS++; if("yes".equals(sp.getString(selectedDate[0]+"_"+name+"_Custom_"+cN, "no"))) doneSunnahs++; } }
                 String sText = totalS > 1 ? (lang.get("Extras") + " (" + lang.bnNum(doneSunnahs) + "/" + lang.bnNum(totalS) + ")") : (i == 5 ? lang.get("Tahajjud") : lang.get("Sunnah"));
                 sunnahBtn.setText(sText); sunnahBtn.setTextSize(11); sunnahBtn.setSingleLine(true);
-                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); if(doneSunnahs > 0){customSunnahBg.setColor(colorAccent);sunnahBtn.setTextColor(themeColors[2]);}else{customSunnahBg.setColor(themeColors[5]);sunnahBtn.setTextColor(themeColors[2]);} 
+                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); if(doneSunnahs > 0){customSunnahBg.setColor(colorAccent);sunnahBtn.setTextColor(doneSunnahs > 0 ? android.graphics.Color.WHITE : themeColors[2]);
+                }else{customSunnahBg.setColor(themeColors[5]);sunnahBtn.setTextColor(doneSunnahs > 0 ? android.graphics.Color.WHITE : themeColors[2]);
+                } 
                 sunnahBtn.setPadding((int)(10*DENSITY), (int)(5*DENSITY), (int)(10*DENSITY), (int)(5*DENSITY));
-                int sSur = doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#2C2C2E") : themeColors[1]); int _rX = android.graphics.Color.red(colorAccent); int _gX = android.graphics.Color.green(colorAccent); int _bX = android.graphics.Color.blue(colorAccent); int accShdTemp = isDarkTheme ? android.graphics.Color.rgb((int)(_rX*0.4f), (int)(_gX*0.4f), (int)(_bX*0.4f)) : android.graphics.Color.argb(100, _rX, _gX, _bX); int sShd = doneSunnahs > 0 ? accShdTemp : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : themeColors[4]); applyNeo(sunnahBtn, 1, 10f, 2f, doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0")), isDarkTheme); sunnahBtn.setPadding((int)(14*DENSITY), (int)(8*DENSITY), (int)(14*DENSITY), (int)(8*DENSITY));sunnahBtn.setTextColor(themeColors[2]); sunnahBtn.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY) + (int)(2f*DENSITY)); LinearLayout.LayoutParams customSunnahLp = new LinearLayout.LayoutParams(-2, -2); customSunnahLp.setMargins(0, 0, (int)(15*DENSITY), 0); sunnahBtn.setLayoutParams(customSunnahLp);
+                int sSur = doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#2C2C2E") : themeColors[1]); int _rX = android.graphics.Color.red(colorAccent); int _gX = android.graphics.Color.green(colorAccent); int _bX = android.graphics.Color.blue(colorAccent); int accShdTemp = isDarkTheme ? android.graphics.Color.rgb((int)(_rX*0.4f), (int)(_gX*0.4f), (int)(_bX*0.4f)) : android.graphics.Color.argb(100, _rX, _gX, _bX); int sShd = doneSunnahs > 0 ? accShdTemp : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : themeColors[4]); applyNeo(sunnahBtn, 1, 10f, 2f, doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0")), isDarkTheme); sunnahBtn.setPadding((int)(14*DENSITY), (int)(8*DENSITY), (int)(14*DENSITY), (int)(8*DENSITY));sunnahBtn.setTextColor(doneSunnahs > 0 ? android.graphics.Color.WHITE : themeColors[2]);
+                 sunnahBtn.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY) + (int)(2f*DENSITY)); LinearLayout.LayoutParams customSunnahLp = new LinearLayout.LayoutParams(-2, -2); customSunnahLp.setMargins(0, 0, (int)(15*DENSITY), 0); sunnahBtn.setLayoutParams(customSunnahLp);
                 sunnahBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showSunnahDialog(name, AppConstants.SUNNAHS[finalI]); } }); innerCard.addView(sunnahBtn);
             }
             
@@ -822,7 +844,7 @@ public class MainActivity extends Activity {
             if(isLandscape) { if(i<3) col1.addView(card);
             else col2.addView(card); } else cardsContainer.addView(card);
         }
-        cardsContainer.setAlpha(0f); cardsContainer.animate().alpha(1f).setDuration(400).start(); contentArea.addView(cardsContainer); 
+         contentArea.addView(cardsContainer); 
         if(appFonts[0] != null) applyFont(root, appFonts[0], appFonts[1]);
     }
 
@@ -1101,7 +1123,7 @@ private void showWipeDataDialog() {
         LinearLayout main = new LinearLayout(this); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY));
         GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); main.setBackground(gd);
         View icon = ui.getRoundImage("img_offline_warning", 0, android.graphics.Color.TRANSPARENT, android.graphics.Color.parseColor("#FF5252")); 
-        LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(50*DENSITY), (int)(50*DENSITY)); icLp.gravity = Gravity.CENTER_HORIZONTAL; icLp.setMargins(0, 0, 0, (int)(15*DENSITY)); icon.setLayoutParams(icLp); main.addView(icon);
+        LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(50*DENSITY), (int)(50*DENSITY)); icLp.gravity = Gravity.CENTER_HORIZONTAL; icLp.setMargins(0, 0, 0, (int)(3f * DENSITY)); icon.setLayoutParams(icLp); main.addView(icon);
         TextView title = new TextView(this); title.setText(lang.get("Wipe All Data")); title.setTextColor(android.graphics.Color.parseColor("#FF5252")); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); main.addView(title);
         TextView sub = new TextView(this); sub.setText(lang.get("Are you sure? This will delete all your local data permanently.")); sub.setTextColor(themeColors[3]); sub.setTextSize(14); sub.setGravity(Gravity.CENTER); sub.setPadding(0, (int)(10*DENSITY), 0, (int)(25*DENSITY)); main.addView(sub);
         LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
@@ -1164,7 +1186,7 @@ private void showWipeDataDialog() {
     private void showAddCustomPrayerDialog(final String prayer, final android.app.AlertDialog parentDialog) {
         android.widget.FrameLayout wrap = new android.widget.FrameLayout(this); wrap.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1));
         android.widget.LinearLayout main = new android.widget.LinearLayout(this); main.setOrientation(android.widget.LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(30f * DENSITY); main.setBackground(gd);
-        android.view.View iconView = ui.getRoundImage("img_custom_nafl", 0, android.graphics.Color.TRANSPARENT, 0); android.widget.LinearLayout.LayoutParams icLp = new android.widget.LinearLayout.LayoutParams((int)(60*DENSITY), (int)(60*DENSITY)); icLp.gravity = android.view.Gravity.CENTER; icLp.setMargins(0, 0, 0, (int)(15*DENSITY)); iconView.setLayoutParams(icLp); main.addView(iconView);
+        android.view.View iconView = ui.getRoundImage("img_custom_nafl", 0, android.graphics.Color.TRANSPARENT, 0); android.widget.LinearLayout.LayoutParams icLp = new android.widget.LinearLayout.LayoutParams((int)(60*DENSITY), (int)(60*DENSITY)); icLp.gravity = android.view.Gravity.CENTER; icLp.setMargins(0, 0, 0, (int)(3f * DENSITY)); iconView.setLayoutParams(icLp); main.addView(iconView);
         android.widget.TextView title = new android.widget.TextView(this); title.setText(lang.get("Add Extra Prayer")); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); title.setGravity(android.view.Gravity.CENTER); title.setPadding(0, (int)(10*DENSITY), 0, (int)(25*DENSITY)); main.addView(title);
         final android.widget.EditText nameIn = new android.widget.EditText(this); nameIn.setHint(lang.get("Prayer Name (e.g. Ishraq)")); nameIn.setTextColor(themeColors[2]); nameIn.setHintTextColor(themeColors[3]); android.graphics.drawable.GradientDrawable iBg = new android.graphics.drawable.GradientDrawable(); iBg.setColor(themeColors[4]); iBg.setCornerRadius(15f*DENSITY); nameIn.setBackground(iBg); nameIn.setPadding((int)(20*DENSITY),(int)(15*DENSITY),(int)(20*DENSITY),(int)(15*DENSITY)); main.addView(nameIn, new android.widget.LinearLayout.LayoutParams(-1, -2));
         final android.widget.EditText rakIn = new android.widget.EditText(this); rakIn.setHint(lang.get("Rakats (e.g. 2)")); rakIn.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); rakIn.setTextColor(themeColors[2]); rakIn.setHintTextColor(themeColors[3]); rakIn.setBackground(iBg); rakIn.setPadding((int)(20*DENSITY),(int)(15*DENSITY),(int)(20*DENSITY),(int)(15*DENSITY)); android.widget.LinearLayout.LayoutParams rLp = new android.widget.LinearLayout.LayoutParams(-1, -2); rLp.setMargins(0,(int)(10*DENSITY),0,(int)(25*DENSITY)); main.addView(rakIn, rLp);
