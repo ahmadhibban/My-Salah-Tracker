@@ -50,6 +50,62 @@ public class MainActivity extends Activity {
     private FrameLayout root;
     private LinearLayout contentArea;
     private SimpleDateFormat sdf;
+
+    private void applyNeo(android.view.View v, int type, float radius, float elev, int bgColor, boolean isDark) {
+        soup.neumorphism.NeumorphShapeAppearanceModel model = new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, radius * DENSITY).build();
+        soup.neumorphism.NeumorphShapeDrawable d = new soup.neumorphism.NeumorphShapeDrawable(v.getContext());
+        d.setShapeAppearanceModel(model);
+        d.setShapeType(type);
+        d.setShadowColorLight(isDark ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+        d.setShadowColorDark(isDark ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+        d.setShadowElevation(elev * DENSITY);
+        d.setFillColor(android.content.res.ColorStateList.valueOf(bgColor));
+        v.setBackground(d);
+        
+        // ছায়াকে বাইরে ছড়িয়ে পড়ার পারমিশন দেওয়া হচ্ছে
+        v.post(() -> {
+            android.view.ViewParent p1 = v.getParent();
+            if (p1 instanceof android.view.ViewGroup) {
+                ((android.view.ViewGroup) p1).setClipChildren(false);
+                ((android.view.ViewGroup) p1).setClipToPadding(false);
+                android.view.ViewParent p2 = p1.getParent();
+                if (p2 instanceof android.view.ViewGroup) {
+                    ((android.view.ViewGroup) p2).setClipChildren(false);
+                    ((android.view.ViewGroup) p2).setClipToPadding(false);
+                }
+            }
+        });
+    }
+
+
+    private View getNeoCheckbox(String status, int accentColor) {
+        boolean isChk = status.equals("yes") || status.equals("excused");
+        soup.neumorphism.NeumorphCardView nd = new soup.neumorphism.NeumorphCardView(this);
+        int size = (int)(52 * DENSITY);
+        android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(size, size);
+        nd.setLayoutParams(lp);
+        nd.setShapeType(isChk ? 1 : 0);
+        nd.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+        nd.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+        nd.setShadowElevation((isChk ? 2f : 5.5f) * DENSITY);
+        nd.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 26f*DENSITY).build());
+        nd.setBackgroundColor(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"));
+        nd.setPadding((int)(14*DENSITY), (int)(14*DENSITY), (int)(14*DENSITY), (int)(14*DENSITY));
+        
+        if(isChk) {
+            TextView inner = new TextView(this);
+            inner.setText(status.equals("yes") ? "✓" : "🌸");
+            inner.setTextColor(accentColor);
+            inner.setTextSize(18);
+            inner.setTypeface(null, Typeface.BOLD);
+            inner.setGravity(Gravity.CENTER);
+            FrameLayout.LayoutParams ilp = new FrameLayout.LayoutParams(-1, -1);
+            inner.setLayoutParams(ilp);
+            nd.addView(inner);
+        }
+        return nd;
+    }
+
     public android.graphics.drawable.Drawable getUltra3D(int surfaceColor, int shadowColor, float radius, float depthDp) {
     float d = getResources().getDisplayMetrics().density;
     android.graphics.drawable.GradientDrawable shadow = new android.graphics.drawable.GradientDrawable(); shadow.setColor(shadowColor); shadow.setCornerRadius(radius);
@@ -153,13 +209,13 @@ public class MainActivity extends Activity {
         activeTheme = sp.getInt("app_theme", 0); 
         String[] themeAccents = {"#00BFA5", "#3B82F6", "#FF9559", "#D81B60", "#A67BFF", "#3BCC75"};
         if (isDarkTheme) {
-            themeColors[0] = Color.parseColor("#0A0A0C"); 
+            themeColors[0] = Color.parseColor("#1C1C1E"); 
             themeColors[1] = Color.parseColor("#1C1C1E");
             themeColors[2] = Color.parseColor("#FFFFFF"); 
             themeColors[3] = Color.parseColor("#A0A0A5"); 
             themeColors[4] = Color.parseColor("#2C2C2E"); 
         } else {
-            themeColors[0] = Color.parseColor("#F8FAFC");
+            themeColors[0] = Color.parseColor("#E2E8F0");
             themeColors[1] = Color.parseColor("#FFFFFF"); 
             themeColors[2] = Color.parseColor("#141416"); 
             themeColors[3] = Color.parseColor("#64748B"); 
@@ -278,7 +334,7 @@ public class MainActivity extends Activity {
         streakBadge.setPadding((int)(10*DENSITY), (int)(4*DENSITY), (int)(10*DENSITY), (int)(4*DENSITY));
         streakBadge.setTextColor(colorAccent);
         streakBadge.setText(streakCount >= 365 ? lang.get("1 YEAR STREAK") : lang.bnNum(streakCount) + " " + lang.get("DAYS STREAK"));
-        LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(-2, -2); badgeLp.setMargins(0, 0, 0, (int)(10*DENSITY)); streakBadge.setLayoutParams(badgeLp); streakBadge.setBackground(getUltra3D(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.WHITE, isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 20f*DENSITY, 3f)); streakBadge.setPadding((int)(10*DENSITY), (int)(4*DENSITY), (int)(10*DENSITY), (int)(4*DENSITY) + (int)(3f*DENSITY)); leftHeader.addView(streakBadge);
+        LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(-2, -2); badgeLp.setMargins(0, 0, 0, (int)(10*DENSITY)); streakBadge.setLayoutParams(badgeLp); applyNeo(streakBadge, 0, 15f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); streakBadge.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY)); leftHeader.addView(streakBadge);
         
         LinearLayout hijriRow = new LinearLayout(this); hijriRow.setOrientation(LinearLayout.HORIZONTAL); hijriRow.setGravity(Gravity.CENTER_VERTICAL);
         View moonImg = ui.getRoundImage("img_moon", 0, Color.TRANSPARENT, themeColors[3]); LinearLayout.LayoutParams mOp = new LinearLayout.LayoutParams((int)(14*DENSITY), (int)(14*DENSITY)); mOp.setMargins(0,0,(int)(6*DENSITY),0); moonImg.setLayoutParams(mOp); hijriRow.addView(moonImg);
@@ -296,21 +352,35 @@ public class MainActivity extends Activity {
         
         LinearLayout rightHeader = new LinearLayout(this); rightHeader.setOrientation(LinearLayout.HORIZONTAL); rightHeader.setGravity(Gravity.CENTER_VERTICAL);
         TextView themeToggleBtn = new TextView(this); themeToggleBtn.setText(isDarkTheme ? "🌙" : "☀️"); themeToggleBtn.setGravity(Gravity.CENTER); themeToggleBtn.setTextSize(16);
-        int tSur = isDayTime ? android.graphics.Color.parseColor("#FF9500") : android.graphics.Color.parseColor("#1A2980"); int tShd = isDayTime ? android.graphics.Color.parseColor("#C77600") : android.graphics.Color.parseColor("#0F184A"); themeToggleBtn.setBackground(getUltra3D(tSur, tShd, 100f, 4f)); themeToggleBtn.setPadding(0, 0, 0, (int)(4f*DENSITY));
+        int tSur = colorAccent; int tShd = isDarkTheme ? android.graphics.Color.rgb((int)(android.graphics.Color.red(colorAccent)*0.4f), (int)(android.graphics.Color.green(colorAccent)*0.4f), (int)(android.graphics.Color.blue(colorAccent)*0.4f)) : android.graphics.Color.rgb((int)(android.graphics.Color.red(colorAccent)*0.75f), (int)(android.graphics.Color.green(colorAccent)*0.75f), (int)(android.graphics.Color.blue(colorAccent)*0.75f)); applyNeo(themeToggleBtn, 0, 20f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
         LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); tLp.setMargins(0,0,(int)(8*DENSITY),0); themeToggleBtn.setLayoutParams(tLp);
         themeToggleBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putBoolean("is_dark_mode", !isDarkTheme).apply(); finish(); overridePendingTransition(0, 0); startActivity(getIntent()); } }); rightHeader.addView(themeToggleBtn);
-        View offBtn = ui.getRoundImage("img_dummy", 6, android.graphics.Color.TRANSPARENT, colorAccent); offBtn.setBackground(getUltra3D(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.WHITE, isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 100f, 3f)); offBtn.setPadding(0, 0, 0, (int)(3f*DENSITY)); LinearLayout.LayoutParams offLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); offLp.setMargins(0,0,(int)(8*DENSITY),0); offBtn.setLayoutParams(offLp); if(sp.getString("offline_q", "").isEmpty()) offBtn.setVisibility(View.GONE); offBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { String[] items = sp.getString("offline_q", "").split(","); int count = 0; for(String it : items) if(!it.trim().isEmpty()) count++; ui.showSmartBanner(root, lang.get("Offline Data"), count + " " + lang.get("items waiting to sync."), "img_offline_warning", colorAccent, null); fbHelper.processOfflineQueue(null, () -> { loadTodayPage(); refreshWidget(); }, null); } }); rightHeader.addView(offBtn);
-        View periodBtn = ui.getRoundImage("img_period", 6, android.graphics.Color.TRANSPARENT, isDarkTheme ? android.graphics.Color.WHITE : colorAccent); periodBtn.setBackground(getUltra3D(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.WHITE, isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 100f, 3f)); periodBtn.setPadding(0, 0, 0, (int)(3f*DENSITY)); LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); pLp.setMargins(0,0,(int)(8*DENSITY),0); periodBtn.setLayoutParams(pLp);
+        View offBtn = ui.getRoundImage("img_dummy", 6, android.graphics.Color.TRANSPARENT, colorAccent); applyNeo(offBtn, 0, 20f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); LinearLayout.LayoutParams offLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); offLp.setMargins(0,0,(int)(8*DENSITY),0); offBtn.setLayoutParams(offLp); if(sp.getString("offline_q", "").isEmpty()) offBtn.setVisibility(View.GONE); offBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { String[] items = sp.getString("offline_q", "").split(","); int count = 0; for(String it : items) if(!it.trim().isEmpty()) count++; ui.showSmartBanner(root, lang.get("Offline Data"), count + " " + lang.get("items waiting to sync."), "img_offline_warning", colorAccent, null); fbHelper.processOfflineQueue(null, () -> { loadTodayPage(); refreshWidget(); }, null); } }); rightHeader.addView(offBtn);
+        View periodBtn = ui.getRoundImage("img_period", 6, android.graphics.Color.TRANSPARENT, isDarkTheme ? android.graphics.Color.parseColor("#F1F5F9") : colorAccent); applyNeo(periodBtn, 0, 20f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); pLp.setMargins(0,0,(int)(8*DENSITY),0); periodBtn.setLayoutParams(pLp);
         periodBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showExcuseDialog(); } }); rightHeader.addView(periodBtn); 
 
-        View settingsBtn = ui.getRoundImage("img_settings", 6, android.graphics.Color.TRANSPARENT, isDarkTheme ? android.graphics.Color.WHITE : colorAccent); settingsBtn.setBackground(getUltra3D(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.WHITE, isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 100f, 3f)); settingsBtn.setPadding(0, 0, 0, (int)(3f*DENSITY)); LinearLayout.LayoutParams sLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); settingsBtn.setLayoutParams(sLp);
+        View settingsBtn = ui.getRoundImage("img_settings", 6, android.graphics.Color.TRANSPARENT, isDarkTheme ? android.graphics.Color.parseColor("#F1F5F9") : colorAccent); applyNeo(settingsBtn, 0, 20f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); LinearLayout.LayoutParams sLp = new LinearLayout.LayoutParams((int)(34 * DENSITY), (int)(34 * DENSITY)); settingsBtn.setLayoutParams(sLp);
         settingsBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showSettingsMenu(); } }); rightHeader.addView(settingsBtn); 
         
         header.addView(leftHeader); header.addView(rightHeader); contentArea.addView(header);
         LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(pCardPadV*DENSITY), (int)(20*DENSITY), (int)(pCardPadV*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
-         pCard.setBackground(getUltra3D(tSur, tShd, 20f*DENSITY, 8f)); pCard.setPadding((int)(20*DENSITY), (int)(pCardPadV*DENSITY), (int)(20*DENSITY), (int)(pCardPadV*DENSITY) + (int)(8f*DENSITY));
+         pCard.setBackgroundColor(Color.TRANSPARENT);
+        soup.neumorphism.NeumorphCardView pNeo = new soup.neumorphism.NeumorphCardView(this);
+        pNeo.setShapeType(0);
+        pNeo.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+        pNeo.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+        pNeo.setShadowElevation(6f * DENSITY);
+        pNeo.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 20f*DENSITY).build());
+        pNeo.setBackgroundColor(tSur);
+        
+        LinearLayout.LayoutParams pNeoLp = new LinearLayout.LayoutParams(-1, -2);
+        pNeoLp.setMargins((int)(10*DENSITY), 0, (int)(10*DENSITY), (int)(10*DENSITY));
+        pNeo.setLayoutParams(pNeoLp);
+        pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
+        pNeo.addView(pCard);
+        pCard.setPadding((int)(25*DENSITY), (int)(20*DENSITY), (int)(25*DENSITY), (int)(20*DENSITY));
         
         int countCompleted = 0; 
         for(String p : AppConstants.PRAYERS) {
@@ -319,20 +389,21 @@ public class MainActivity extends Activity {
         }
         String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get("Just one more!"), lang.get("Purity Achieved!")};
         LinearLayout left = new LinearLayout(this); left.setOrientation(LinearLayout.VERTICAL); left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1.2f)); 
-        TextView gText = new TextView(this); gText.setText(greetingStr); gText.setTextColor(Color.WHITE); gText.setTextSize(14); gText.setTypeface(Typeface.DEFAULT_BOLD); gText.setAlpha(0.9f);
+        TextView gText = new TextView(this); gText.setText(greetingStr); gText.setTextColor(Color.WHITE); gText.setTextSize(14); gText.setTypeface(Typeface.DEFAULT_BOLD);
+        
         TextView pT = new TextView(this); pT.setText(lang.bnNum(countCompleted*100/6) + "%"); pT.setTextColor(Color.WHITE); pT.setTextSize(36); pT.setTypeface(Typeface.DEFAULT_BOLD); 
         TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]); subBtm.setTextColor(Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
         left.addView(gText); left.addView(pT); left.addView(subBtm);
         TextView artDisplay = new TextView(this); artDisplay.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 0.8f)); artDisplay.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL); artDisplay.setTextSize(40);
         artDisplay.setText(isDayTime ? "☀️" : "🌙"); 
-        pCard.addView(left); pCard.addView(artDisplay); contentArea.addView(pCard);
+        pCard.addView(left); pCard.addView(artDisplay); contentArea.addView(pNeo);
 
         final Calendar now = Calendar.getInstance(); final Calendar[] selectedCalArr = { Calendar.getInstance() };
         try { selectedCalArr[0].setTime(sdf.parse(selectedDate[0])); } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
         LinearLayout weekNavBox = new LinearLayout(this); weekNavBox.setGravity(Gravity.CENTER_VERTICAL);
         weekNavBox.setPadding((int)(15*DENSITY), (int)(5*DENSITY), (int)(15*DENSITY), (int)(weekNavPadB*DENSITY));
         TextView prevW = new TextView(this); prevW.setText("❮"); prevW.setTextSize(16); prevW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); prevW.setTextColor(themeColors[2]); prevW.setGravity(Gravity.CENTER);
-        GradientDrawable navBg = new GradientDrawable(); navBg.setColor(themeColors[1]); navBg.setCornerRadius(12f * DENSITY); navBg.setStroke((int)(1.5f*DENSITY), themeColors[4]); prevW.setBackground(navBg);
+        GradientDrawable navBg = new GradientDrawable(); navBg.setColor(themeColors[1]); navBg.setCornerRadius(12f * DENSITY); navBg.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(prevW, 0, 15f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
         prevW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { Calendar chk = (Calendar) selectedCalArr[0].clone(); chk.add(Calendar.DATE, -7); if(chk.get(Calendar.YEAR) >= Calendar.getInstance().get(Calendar.YEAR) - 100) { selectedCalArr[0].add(Calendar.DATE, -7); selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } else { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } } });
         LinearLayout weekBox = new LinearLayout(this); weekBox.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f)); weekBox.setGravity(Gravity.CENTER);
         Calendar cal = (Calendar) selectedCalArr[0].clone();
@@ -355,17 +426,32 @@ public class MainActivity extends Activity {
             
             FrameLayout cell = new FrameLayout(this);
             cell.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-            TextView t = new TextView(this); t.setText(dLabel); t.setTypeface(Typeface.DEFAULT_BOLD); t.setTextSize(13); t.setGravity(Gravity.CENTER); FrameLayout.LayoutParams textLp = new FrameLayout.LayoutParams(circleSize, circleSize);
-            textLp.gravity = Gravity.CENTER; t.setLayoutParams(textLp);
-            t.setTextColor(isSel ? android.graphics.Color.WHITE : (isFuture ? themeColors[4] : themeColors[3]));
-            t.setBackground(getUltra3D(isSel ? colorAccent : themeColors[1], isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 8f*DENSITY, isSel ? 0f : 3f)); t.setPadding(0, 0, 0, isSel ? 0 : (int)(3f*DENSITY));
-            cell.addView(t);
+            
+            soup.neumorphism.NeumorphCardView neoW = new soup.neumorphism.NeumorphCardView(this);
+            neoW.setShapeType(1); // 100% Guaranteed Sunken Effect for all
+            neoW.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+            neoW.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+            neoW.setShadowElevation(6f * DENSITY);
+            neoW.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 18f*DENSITY).build());
+            neoW.setBackgroundColor(isSel ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0")));
+            neoW.setPadding((int)(8*DENSITY), (int)(8*DENSITY), (int)(8*DENSITY), (int)(8*DENSITY));
+            
+            FrameLayout.LayoutParams nLp = new FrameLayout.LayoutParams((int)(44 * DENSITY), (int)(44 * DENSITY));
+            nLp.gravity = Gravity.CENTER;
+            neoW.setLayoutParams(nLp);
+            
+            TextView t = new TextView(this); t.setText(dLabel); t.setTypeface(Typeface.DEFAULT_BOLD); t.setTextSize(13); t.setGravity(Gravity.CENTER);
+            // Fix: Future dates are now a visible grey color (#94A3B8) instead of blending into background
+            t.setTextColor(isSel ? android.graphics.Color.parseColor("#F1F5F9") : (isFuture ? android.graphics.Color.parseColor("#94A3B8") : themeColors[3]));
+            
+            neoW.addView(t, new FrameLayout.LayoutParams(-1, -1));
+            cell.addView(neoW);
             cell.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(isFuture) { ui.showPremiumLocked(colorAccent); } else if(isTooOld) { ui.showSmartBanner(root, lang.get("Limit Reached"), lang.get("Cannot go back more than 100 years."), "img_warning", colorAccent, null); } else { selectedDate[0] = dKey; loadTodayPage(); } } });
             weekBox.addView(cell); cal.add(Calendar.DATE, 1);
         }
         
         TextView nextW = new TextView(this);
-        nextW.setText("❯"); nextW.setTextSize(16); nextW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); nextW.setTextColor(themeColors[2]); nextW.setGravity(Gravity.CENTER); nextW.setBackground(navBg); 
+        nextW.setText("❯"); nextW.setTextSize(16); nextW.setPadding((int)(10*DENSITY), (int)(6*DENSITY), (int)(10*DENSITY), (int)(6*DENSITY)); nextW.setTextColor(themeColors[2]); nextW.setGravity(Gravity.CENTER); applyNeo(nextW, 0, 15f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); 
         Calendar weekStartNow = (Calendar) now.clone();
         while (weekStartNow.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) { weekStartNow.add(Calendar.DATE, -1); }
         final boolean isCurrentWeekArr = !selectedCalArr[0].before(weekStartNow);
@@ -375,15 +461,25 @@ public class MainActivity extends Activity {
 
         LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(actionMarB*DENSITY)); actionRow.setWeightSum(2);
         LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -2, 1f);
-        markLp.setMargins(0, 0, (int)(6*DENSITY), 0); markAllBtn.setLayoutParams(markLp); 
+        markLp.setMargins((int)(12*DENSITY), (int)(24*DENSITY), (int)(6*DENSITY), (int)(16*DENSITY)); markAllBtn.setLayoutParams(markLp); 
         TextView markAllTxt = new TextView(this); markAllTxt.setTextSize(13); markAllTxt.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable bg1 = new GradientDrawable(); bg1.setCornerRadius(20f * DENSITY);
-        bg1.setColor(themeColors[1]); bg1.setStroke((int)(1.5f*DENSITY), themeColors[4]); markAllBtn.setBackground(getUltra3D(themeColors[1], isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 12f*DENSITY, 5f)); markAllBtn.setPadding(0, 0, 0, (int)(5f*DENSITY)); 
+        bg1.setColor(themeColors[1]); bg1.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(markAllBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); markAllBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
         
         if (countCompleted < 6) {
             markAllTxt.setText(lang.get("Mark All"));
             markAllTxt.setTextColor(themeColors[2]); 
-            View mIcon = ui.getRoundImage("img_tick", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); markAllBtn.addView(mIcon); markAllBtn.addView(markAllTxt);
+            View mIcon = ui.getRoundImage("img_tick", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); mIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        FrameLayout mIconFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        mFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
+        mIconFrame.setLayoutParams(mFlp);
+        applyNeo(mIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
+        FrameLayout.LayoutParams miLp = new FrameLayout.LayoutParams((int)(22*DENSITY), (int)(22*DENSITY));
+        miLp.gravity = Gravity.CENTER;
+        mIcon.setLayoutParams(miLp);
+        mIconFrame.addView(mIcon);
+        markAllBtn.addView(mIconFrame); markAllBtn.addView(markAllTxt);
             markAllBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showMarkOptions(); } });
             markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { 
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); 
@@ -399,7 +495,17 @@ public class MainActivity extends Activity {
             } });
         } else {
             markAllTxt.setText(lang.get("All Done")); markAllTxt.setTextColor(themeColors[2]);
-            View mIcon = ui.getRoundImage("img_trophy", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); markAllBtn.addView(mIcon); markAllBtn.addView(markAllTxt);
+            View mIcon = ui.getRoundImage("img_trophy", 4, Color.TRANSPARENT, colorAccent); LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); icLp.setMargins(0,0,(int)(8*DENSITY),0); mIcon.setLayoutParams(icLp); mIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        FrameLayout mIconFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams mFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        mFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
+        mIconFrame.setLayoutParams(mFlp);
+        applyNeo(mIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
+        FrameLayout.LayoutParams miLp = new FrameLayout.LayoutParams((int)(22*DENSITY), (int)(22*DENSITY));
+        miLp.gravity = Gravity.CENTER;
+        mIcon.setLayoutParams(miLp);
+        mIconFrame.addView(mIcon);
+        markAllBtn.addView(mIconFrame); markAllBtn.addView(markAllTxt);
             markAllBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showUnmarkOptions(); } });
             markAllBtn.setOnLongClickListener(new View.OnLongClickListener() { @Override public boolean onLongClick(View v) { 
                 v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); 
@@ -417,9 +523,9 @@ public class MainActivity extends Activity {
         actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(6*DENSITY), 0, 0, 0); todayBtn.setLayoutParams(todayLp); 
+        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(6*DENSITY), (int)(24*DENSITY), (int)(12*DENSITY), (int)(16*DENSITY)); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD);
-        GradientDrawable bg2 = new GradientDrawable(); bg2.setCornerRadius(20f * DENSITY); bg2.setColor(themeColors[1]); bg2.setStroke((int)(1.5f*DENSITY), themeColors[4]); todayBtn.setBackground(getUltra3D(themeColors[1], isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 12f*DENSITY, 5f)); todayBtn.setPadding(0, 0, 0, (int)(5f*DENSITY)); 
+        GradientDrawable bg2 = new GradientDrawable(); bg2.setCornerRadius(20f * DENSITY); bg2.setColor(themeColors[1]); bg2.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(todayBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); todayBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
         View tIcon = ui.getRoundImage("img_calender", 4, Color.TRANSPARENT, colorAccent);
         LinearLayout.LayoutParams tIcLp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); tIcLp.setMargins(0,0,(int)(8*DENSITY),0); tIcon.setLayoutParams(tIcLp);
         todayTxt.setTextColor(themeColors[2]); 
@@ -429,7 +535,17 @@ public class MainActivity extends Activity {
         else { todayTxt.setText(lang.get("This Week"));
             todayBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); } statsHelper.showStats(true); } });
         }
-        todayBtn.addView(tIcon); todayBtn.addView(todayTxt); actionRow.addView(todayBtn); 
+        tIcon.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        FrameLayout tIconFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams tFlp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
+        tFlp.setMargins(0, 0, (int)(10*DENSITY), 0);
+        tIconFrame.setLayoutParams(tFlp);
+        applyNeo(tIconFrame, 0, 12f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
+        FrameLayout.LayoutParams tiLp = new FrameLayout.LayoutParams((int)(22*DENSITY), (int)(22*DENSITY));
+        tiLp.gravity = Gravity.CENTER;
+        tIcon.setLayoutParams(tiLp);
+        tIconFrame.addView(tIcon);
+        todayBtn.addView(tIconFrame); todayBtn.addView(todayTxt); actionRow.addView(todayBtn); 
         contentArea.addView(actionRow);
 
         LinearLayout cardsContainer = new LinearLayout(this);
@@ -456,21 +572,39 @@ public class MainActivity extends Activity {
             final String stat = getFardStat(todayRec, name); final boolean checked = stat.equals("yes") || stat.equals("excused");
             final boolean isQaza = getQazaStat(todayRec, name);
             
-            LinearLayout card = new LinearLayout(this); card.setPadding((int)(15*DENSITY), (int)(cardPadV*DENSITY), (int)(20*DENSITY), (int)(cardPadV*DENSITY)); card.setGravity(Gravity.CENTER_VERTICAL);
-            GradientDrawable cb = new GradientDrawable(); 
-            if (stat.equals("excused")) { cb.setColor(isDarkTheme ? Color.parseColor("#1A1115") : Color.parseColor("#FCE4EC")); cb.setStroke((int)(1.5f*DENSITY), Color.parseColor("#FF4081"));
-            } 
-            else { cb.setColor(themeColors[1]);
-            cb.setStroke((int)(1.5f*DENSITY), checked? colorAccent : themeColors[4]); }
-            cb.setCornerRadius(25f * DENSITY);
-            int cM = stat.equals("excused") ? (isDarkTheme ? android.graphics.Color.parseColor("#1A1115") : android.graphics.Color.parseColor("#FCE4EC")) : themeColors[1]; int cS = isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0");  card.setBackground(getUltra3D(cM, isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"), 14f*DENSITY, 6f)); card.setPadding((int)(15*DENSITY), (int)(cardPadV*DENSITY), (int)(20*DENSITY), (int)(cardPadV*DENSITY) + (int)(6f*DENSITY)); 
-            
-            LinearLayout.LayoutParams cLp = new LinearLayout.LayoutParams(-1, 0, 1f); 
-            cLp.setMargins(0, 0, 0, i==5 ? 0 : (int)(cardMarB*DENSITY)); 
+            soup.neumorphism.NeumorphCardView card = new soup.neumorphism.NeumorphCardView(this);
+            card.setShapeType(0);
+            card.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+            card.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+            card.setShadowElevation(5f * DENSITY);
+            card.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 16f*DENSITY).build());
+            card.setBackgroundColor(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"));
+            LinearLayout.LayoutParams cLp = new LinearLayout.LayoutParams(-1, -2); 
+            cLp.setMargins(0, 0, 0, i==5 ? (int)(15*DENSITY) : 0); 
             card.setLayoutParams(cLp);
+
+            LinearLayout innerCard = new LinearLayout(this);
+            innerCard.setOrientation(LinearLayout.HORIZONTAL);
+            innerCard.setGravity(Gravity.CENTER_VERTICAL);
+            innerCard.setPadding((int)(20*DENSITY), (int)(18*DENSITY), (int)(20*DENSITY), (int)(18*DENSITY));
+            card.addView(innerCard);
             View iconView = ui.getRoundImage(pImgs[i], pPaddings[i], android.graphics.Color.TRANSPARENT, colorAccent); 
             LinearLayout.LayoutParams icCardLp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY)); 
-            icCardLp.setMargins(0,0,(int)(15*DENSITY),0); iconView.setLayoutParams(icCardLp); card.addView(iconView);
+            icCardLp.setMargins(0,0,(int)(15*DENSITY),0); iconView.setLayoutParams(icCardLp); 
+        iconView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        iconView.setPadding(0,0,0,0);
+        FrameLayout iconFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams((int)(44*DENSITY), (int)(44*DENSITY));
+        flp.setMargins(0, 0, (int)(15*DENSITY), 0);
+        iconFrame.setLayoutParams(flp);
+        applyNeo(iconFrame, 0, 12f, 2.5f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
+        
+        FrameLayout.LayoutParams ivLp = new FrameLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY));
+        ivLp.gravity = Gravity.CENTER;
+        iconView.setLayoutParams(ivLp);
+        iconFrame.addView(iconView);
+        innerCard.addView(iconFrame);
+
             LinearLayout textContainer = new LinearLayout(this); textContainer.setOrientation(LinearLayout.VERTICAL); textContainer.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
             LinearLayout titleRow = new LinearLayout(this); titleRow.setOrientation(LinearLayout.HORIZONTAL); titleRow.setGravity(Gravity.CENTER_VERTICAL);
             TextView tv = new TextView(this); tv.setText(lang.get(name)); tv.setTextColor(stat.equals("excused") ? Color.parseColor("#FF4081") : themeColors[2]); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(16); tv.setSingleLine(true); titleRow.addView(tv);
@@ -479,7 +613,7 @@ public class MainActivity extends Activity {
                 qBadge.setText(lang.get("QAZA")); qBadge.setTextColor(themeColors[2]); qBadge.setTextSize(10); qBadge.setTypeface(Typeface.DEFAULT_BOLD); qBadge.setPadding((int)(8*DENSITY), (int)(3*DENSITY), (int)(8*DENSITY), (int)(3*DENSITY)); GradientDrawable qBg = new GradientDrawable(); qBg.setColor(themeColors[5]); qBg.setCornerRadius(10f*DENSITY); qBadge.setBackground(qBg);
                 LinearLayout.LayoutParams qLp = new LinearLayout.LayoutParams(-2, -2); qLp.setMargins((int)(10*DENSITY), 0, 0, 0); qBadge.setLayoutParams(qLp); titleRow.addView(qBadge);
             }
-            textContainer.addView(titleRow); card.addView(textContainer);
+            textContainer.addView(titleRow); innerCard.addView(textContainer);
             
             final int finalI = i;
             if (AppConstants.SUNNAHS[i].length > 0 && !stat.equals("excused")) {
@@ -490,14 +624,14 @@ public class MainActivity extends Activity {
                 if(!cStr.isEmpty()) { for(String cN : cStr.split(",")) { if(cN.contains(":")) cN = cN.split(":")[0]; totalS++; if("yes".equals(sp.getString(selectedDate[0]+"_"+name+"_Custom_"+cN, "no"))) doneSunnahs++; } }
                 String sText = totalS > 1 ? (lang.get("Extras") + " (" + lang.bnNum(doneSunnahs) + "/" + lang.bnNum(totalS) + ")") : (i == 5 ? lang.get("Tahajjud") : lang.get("Sunnah"));
                 sunnahBtn.setText(sText); sunnahBtn.setTextSize(11); sunnahBtn.setSingleLine(true);
-                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); if(doneSunnahs > 0){customSunnahBg.setColor(colorAccent);sunnahBtn.setTextColor(android.graphics.Color.WHITE);}else{customSunnahBg.setColor(themeColors[5]);sunnahBtn.setTextColor(themeColors[2]);} 
+                GradientDrawable customSunnahBg = new GradientDrawable(); customSunnahBg.setCornerRadius(12f*DENSITY); if(doneSunnahs > 0){customSunnahBg.setColor(colorAccent);sunnahBtn.setTextColor(android.graphics.Color.parseColor("#F1F5F9"));}else{customSunnahBg.setColor(themeColors[5]);sunnahBtn.setTextColor(themeColors[2]);} 
                 sunnahBtn.setPadding((int)(10*DENSITY), (int)(5*DENSITY), (int)(10*DENSITY), (int)(5*DENSITY));
-                int sSur = doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#2C2C2E") : themeColors[1]); int _rX = android.graphics.Color.red(colorAccent); int _gX = android.graphics.Color.green(colorAccent); int _bX = android.graphics.Color.blue(colorAccent); int accShdTemp = isDarkTheme ? android.graphics.Color.rgb((int)(_rX*0.4f), (int)(_gX*0.4f), (int)(_bX*0.4f)) : android.graphics.Color.argb(100, _rX, _gX, _bX); int sShd = doneSunnahs > 0 ? accShdTemp : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : themeColors[4]); sunnahBtn.setBackground(getUltra3D(sSur, sShd, 12f*DENSITY, 2f)); sunnahBtn.setTextColor(doneSunnahs > 0 ? android.graphics.Color.WHITE : themeColors[2]); sunnahBtn.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY) + (int)(2f*DENSITY)); LinearLayout.LayoutParams customSunnahLp = new LinearLayout.LayoutParams(-2, -2); customSunnahLp.setMargins(0, 0, (int)(15*DENSITY), 0); sunnahBtn.setLayoutParams(customSunnahLp);
-                sunnahBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showSunnahDialog(name, AppConstants.SUNNAHS[finalI]); } }); card.addView(sunnahBtn);
+                int sSur = doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#2C2C2E") : themeColors[1]); int _rX = android.graphics.Color.red(colorAccent); int _gX = android.graphics.Color.green(colorAccent); int _bX = android.graphics.Color.blue(colorAccent); int accShdTemp = isDarkTheme ? android.graphics.Color.rgb((int)(_rX*0.4f), (int)(_gX*0.4f), (int)(_bX*0.4f)) : android.graphics.Color.argb(100, _rX, _gX, _bX); int sShd = doneSunnahs > 0 ? accShdTemp : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : themeColors[4]); applyNeo(sunnahBtn, 1, 10f, 2f, doneSunnahs > 0 ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0")), isDarkTheme); sunnahBtn.setPadding((int)(14*DENSITY), (int)(8*DENSITY), (int)(14*DENSITY), (int)(8*DENSITY));sunnahBtn.setTextColor(doneSunnahs > 0 ? android.graphics.Color.parseColor("#F1F5F9") : themeColors[2]); sunnahBtn.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY) + (int)(2f*DENSITY)); LinearLayout.LayoutParams customSunnahLp = new LinearLayout.LayoutParams(-2, -2); customSunnahLp.setMargins(0, 0, (int)(15*DENSITY), 0); sunnahBtn.setLayoutParams(customSunnahLp);
+                sunnahBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { showSunnahDialog(name, AppConstants.SUNNAHS[finalI]); } }); innerCard.addView(sunnahBtn);
             }
             
-            final View chk = ui.getPremiumCheckbox(stat, colorAccent);
-            card.addView(chk);
+            final View chk = getNeoCheckbox(stat, colorAccent);
+            innerCard.addView(chk);
             card.setOnClickListener(new View.OnClickListener() { 
                 @Override public void onClick(final View v) {
                     if (stat.equals("excused")) { 
@@ -827,7 +961,7 @@ private void showWipeDataDialog() {
         Button btnC = new Button(this); btnC.setText(lang.get("CANCEL")); btnC.setTextColor(themeColors[2]); btnC.setAllCaps(false); btnC.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bgC = new GradientDrawable(); bgC.setColor(themeColors[4]); bgC.setCornerRadius(15f*DENSITY); btnC.setBackground(bgC);
         LinearLayout.LayoutParams lpC = new LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f); lpC.setMargins(0,0,(int)(10*DENSITY),0); row.addView(btnC, lpC);
-        Button btnD = new Button(this); btnD.setText(lang.get("Delete")); btnD.setTextColor(android.graphics.Color.WHITE); btnD.setAllCaps(false); btnD.setTypeface(Typeface.DEFAULT_BOLD);
+        Button btnD = new Button(this); btnD.setText(lang.get("Delete")); btnD.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); btnD.setAllCaps(false); btnD.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bgD = new GradientDrawable(); bgD.setColor(android.graphics.Color.parseColor("#FF5252")); bgD.setCornerRadius(15f*DENSITY); btnD.setBackground(bgD);
         LinearLayout.LayoutParams lpD = new LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f); row.addView(btnD, lpD); main.addView(row);
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp);
@@ -851,7 +985,7 @@ private void showWipeDataDialog() {
             final String sName = sunnahList[s]; final String sKey = selectedDate[0] + "_" + prayer + "_Sunnah_" + sName; final boolean sChecked = sp.getString(sKey, "no").equals("yes");
             final android.widget.LinearLayout row = new android.widget.LinearLayout(this); row.setOrientation(android.widget.LinearLayout.HORIZONTAL); row.setGravity(android.view.Gravity.CENTER_VERTICAL); row.setPadding((int)(10*DENSITY), (int)(12*DENSITY), (int)(10*DENSITY), (int)(12*DENSITY)); android.widget.LinearLayout.LayoutParams rowLp = new android.widget.LinearLayout.LayoutParams(-1, -2); rowLp.setMargins(0, 0, 0, (int)(10*DENSITY)); row.setLayoutParams(rowLp); final android.graphics.drawable.GradientDrawable rowBg = new android.graphics.drawable.GradientDrawable(); rowBg.setCornerRadius(15f*DENSITY); rowBg.setColor(sChecked ? themeColors[4] : android.graphics.Color.TRANSPARENT); row.setBackground(rowBg);
             final android.widget.TextView tv = new android.widget.TextView(this); tv.setText(lang.get(sName)); tv.setTextColor(sChecked ? colorAccent : themeColors[2]); tv.setTextSize(16); tv.setTypeface(sChecked ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT); tv.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f)); final android.view.View chk = ui.getPremiumCheckbox(sChecked ? "yes" : "no", colorAccent); row.addView(tv); row.addView(chk); list.addView(row);
-            row.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(final android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean cur = sp.getString(sKey, "no").equals("yes"); boolean newVal = !cur; sp.edit().putString(sKey, newVal ? "yes" : "no").apply(); fbHelper.save(selectedDate[0], prayer + "_Sunnah_" + sName, newVal ? "yes" : "no"); android.widget.TextView t = (android.widget.TextView) chk; android.graphics.drawable.GradientDrawable bg = (android.graphics.drawable.GradientDrawable) t.getBackground(); if(newVal) { bg.setColor(colorAccent); bg.setStroke(0, android.graphics.Color.TRANSPARENT); t.setText("✓"); t.setTextColor(android.graphics.Color.WHITE); rowBg.setColor(themeColors[4]); tv.setTextColor(colorAccent); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); } else { bg.setColor(android.graphics.Color.TRANSPARENT); bg.setStroke((int)(2*DENSITY), themeColors[4]); t.setText(""); rowBg.setColor(android.graphics.Color.TRANSPARENT); tv.setTextColor(themeColors[2]); tv.setTypeface(android.graphics.Typeface.DEFAULT); } } });
+            row.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(final android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean cur = sp.getString(sKey, "no").equals("yes"); boolean newVal = !cur; sp.edit().putString(sKey, newVal ? "yes" : "no").apply(); fbHelper.save(selectedDate[0], prayer + "_Sunnah_" + sName, newVal ? "yes" : "no"); android.widget.TextView t = (android.widget.TextView) chk; android.graphics.drawable.GradientDrawable bg = (android.graphics.drawable.GradientDrawable) t.getBackground(); if(newVal) { bg.setColor(colorAccent); bg.setStroke(0, android.graphics.Color.TRANSPARENT); t.setText("✓"); t.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); rowBg.setColor(themeColors[4]); tv.setTextColor(colorAccent); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); } else { bg.setColor(android.graphics.Color.TRANSPARENT); bg.setStroke((int)(2*DENSITY), themeColors[4]); t.setText(""); rowBg.setColor(android.graphics.Color.TRANSPARENT); tv.setTextColor(themeColors[2]); tv.setTypeface(android.graphics.Typeface.DEFAULT); } } });
         } 
         String cStr = sp.getString("custom_nafl_" + prayer, "");
         if(!cStr.isEmpty()) {
@@ -863,7 +997,7 @@ private void showWipeDataDialog() {
                 final android.widget.TextView tv = new android.widget.TextView(this); tv.setText(cName); tv.setSingleLine(true); tv.setEllipsize(android.text.TextUtils.TruncateAt.END); tv.setTextColor(cChecked ? colorAccent : themeColors[2]); tv.setTextSize(16); tv.setTypeface(cChecked ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT); tCon.addView(tv);
                 android.widget.TextView tvR = new android.widget.TextView(this); tvR.setText(lang.bnNum(cRak) + " " + lang.get("Rakats")); tvR.setTextColor(themeColors[3]); tvR.setTextSize(12); tvR.setPadding(0,0,0,0); tCon.addView(tvR); row.addView(tCon);
                 final android.view.View chk = ui.getPremiumCheckbox(cChecked ? "yes" : "no", colorAccent); row.addView(chk); list.addView(row);
-                row.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(final android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean cur = sp.getString(cKey, "no").equals("yes"); boolean newVal = !cur; sp.edit().putString(cKey, newVal ? "yes" : "no").apply(); fbHelper.save(selectedDate[0], prayer + "_Custom_" + cName, newVal ? "yes" : "no"); android.widget.TextView t = (android.widget.TextView) chk; android.graphics.drawable.GradientDrawable bg = (android.graphics.drawable.GradientDrawable) t.getBackground(); if(newVal) { bg.setColor(colorAccent); bg.setStroke(0, android.graphics.Color.TRANSPARENT); t.setText("✓"); t.setTextColor(android.graphics.Color.WHITE); rowBg.setColor(themeColors[4]); tv.setTextColor(colorAccent); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); } else { bg.setColor(android.graphics.Color.TRANSPARENT); bg.setStroke((int)(2*DENSITY), themeColors[4]); t.setText(""); rowBg.setColor(android.graphics.Color.TRANSPARENT); tv.setTextColor(themeColors[2]); tv.setTypeface(android.graphics.Typeface.DEFAULT); } } });
+                row.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(final android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean cur = sp.getString(cKey, "no").equals("yes"); boolean newVal = !cur; sp.edit().putString(cKey, newVal ? "yes" : "no").apply(); fbHelper.save(selectedDate[0], prayer + "_Custom_" + cName, newVal ? "yes" : "no"); android.widget.TextView t = (android.widget.TextView) chk; android.graphics.drawable.GradientDrawable bg = (android.graphics.drawable.GradientDrawable) t.getBackground(); if(newVal) { bg.setColor(colorAccent); bg.setStroke(0, android.graphics.Color.TRANSPARENT); t.setText("✓"); t.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); rowBg.setColor(themeColors[4]); tv.setTextColor(colorAccent); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); } else { bg.setColor(android.graphics.Color.TRANSPARENT); bg.setStroke((int)(2*DENSITY), themeColors[4]); t.setText(""); rowBg.setColor(android.graphics.Color.TRANSPARENT); tv.setTextColor(themeColors[2]); tv.setTypeface(android.graphics.Typeface.DEFAULT); } } });
                 row.setOnLongClickListener(new android.view.View.OnLongClickListener() { @Override public boolean onLongClick(android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); showDeleteCustomPrayerDialog(prayer, cName, ad); return true; } });
             }
         }
@@ -871,7 +1005,7 @@ private void showWipeDataDialog() {
         android.widget.TextView aTxt = new android.widget.TextView(this); aTxt.setText("➕ " + lang.get("Add Extra Prayer")); aTxt.setTextColor(themeColors[2]); aTxt.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); addBtn.addView(aTxt);
         addBtn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); showAddCustomPrayerDialog(prayer, ad); } }); list.addView(addBtn);
         sv.addView(list); main.addView(sv, new android.widget.LinearLayout.LayoutParams(-1, -2, 1f));
-        android.widget.TextView closeBtn = new android.widget.TextView(this); closeBtn.setText(lang.get("Done")); closeBtn.setTextColor(android.graphics.Color.WHITE); closeBtn.setGravity(android.view.Gravity.CENTER); closeBtn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); closeBtn.setPadding(0, (int)(15*DENSITY), 0, (int)(15*DENSITY)); android.graphics.drawable.GradientDrawable cBg = new android.graphics.drawable.GradientDrawable(); cBg.setColor(colorAccent); cBg.setCornerRadius(20f*DENSITY); closeBtn.setBackground(cBg); android.widget.LinearLayout.LayoutParams clp = new android.widget.LinearLayout.LayoutParams(-1, -2); clp.setMargins(0, (int)(15*DENSITY), 0, 0); closeBtn.setLayoutParams(clp); main.addView(closeBtn); 
+        android.widget.TextView closeBtn = new android.widget.TextView(this); closeBtn.setText(lang.get("Done")); closeBtn.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); closeBtn.setGravity(android.view.Gravity.CENTER); closeBtn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); closeBtn.setPadding(0, (int)(15*DENSITY), 0, (int)(15*DENSITY)); android.graphics.drawable.GradientDrawable cBg = new android.graphics.drawable.GradientDrawable(); cBg.setColor(colorAccent); cBg.setCornerRadius(20f*DENSITY); closeBtn.setBackground(cBg); android.widget.LinearLayout.LayoutParams clp = new android.widget.LinearLayout.LayoutParams(-1, -2); clp.setMargins(0, (int)(15*DENSITY), 0, 0); closeBtn.setLayoutParams(clp); main.addView(closeBtn); 
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); 
         closeBtn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { ad.dismiss(); loadTodayPage(); refreshWidget(); } });
@@ -885,7 +1019,7 @@ private void showWipeDataDialog() {
         android.widget.TextView title = new android.widget.TextView(this); title.setText(lang.get("Add Extra Prayer")); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); title.setGravity(android.view.Gravity.CENTER); title.setPadding(0, (int)(10*DENSITY), 0, (int)(25*DENSITY)); main.addView(title);
         final android.widget.EditText nameIn = new android.widget.EditText(this); nameIn.setHint(lang.get("Prayer Name (e.g. Ishraq)")); nameIn.setTextColor(themeColors[2]); nameIn.setHintTextColor(themeColors[3]); android.graphics.drawable.GradientDrawable iBg = new android.graphics.drawable.GradientDrawable(); iBg.setColor(themeColors[4]); iBg.setCornerRadius(15f*DENSITY); nameIn.setBackground(iBg); nameIn.setPadding((int)(20*DENSITY),(int)(15*DENSITY),(int)(20*DENSITY),(int)(15*DENSITY)); main.addView(nameIn, new android.widget.LinearLayout.LayoutParams(-1, -2));
         final android.widget.EditText rakIn = new android.widget.EditText(this); rakIn.setHint(lang.get("Rakats (e.g. 2)")); rakIn.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); rakIn.setTextColor(themeColors[2]); rakIn.setHintTextColor(themeColors[3]); rakIn.setBackground(iBg); rakIn.setPadding((int)(20*DENSITY),(int)(15*DENSITY),(int)(20*DENSITY),(int)(15*DENSITY)); android.widget.LinearLayout.LayoutParams rLp = new android.widget.LinearLayout.LayoutParams(-1, -2); rLp.setMargins(0,(int)(10*DENSITY),0,(int)(25*DENSITY)); main.addView(rakIn, rLp);
-        android.widget.Button btn = new android.widget.Button(this); btn.setText(lang.get("Add Prayer")); btn.setTextColor(android.graphics.Color.WHITE); btn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btn.setAllCaps(false); android.graphics.drawable.GradientDrawable bBg = new android.graphics.drawable.GradientDrawable(); bBg.setColor(colorAccent); bBg.setCornerRadius(20f*DENSITY); btn.setBackground(bBg); main.addView(btn, new android.widget.LinearLayout.LayoutParams(-1, (int)(55*DENSITY)));
+        android.widget.Button btn = new android.widget.Button(this); btn.setText(lang.get("Add Prayer")); btn.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); btn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btn.setAllCaps(false); android.graphics.drawable.GradientDrawable bBg = new android.graphics.drawable.GradientDrawable(); bBg.setColor(colorAccent); bBg.setCornerRadius(20f*DENSITY); btn.setBackground(bBg); main.addView(btn, new android.widget.LinearLayout.LayoutParams(-1, (int)(55*DENSITY)));
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
         final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); applyFont(main, appFonts[0], appFonts[1]);
         btn.setOnClickListener(new android.view.View.OnClickListener(){@Override public void onClick(android.view.View v){
@@ -900,7 +1034,7 @@ private void showWipeDataDialog() {
         android.widget.TextView sub = new android.widget.TextView(this); sub.setText(lang.get("This will remove it from your list.")); sub.setTextColor(themeColors[3]); sub.setGravity(android.view.Gravity.CENTER); sub.setPadding(0,(int)(10*DENSITY),0,(int)(25*DENSITY)); main.addView(sub);
         android.widget.LinearLayout row = new android.widget.LinearLayout(this); row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
         android.widget.Button btnC = new android.widget.Button(this); btnC.setText(lang.get("CANCEL")); btnC.setTextColor(themeColors[2]); btnC.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btnC.setAllCaps(false); android.graphics.drawable.GradientDrawable cBg = new android.graphics.drawable.GradientDrawable(); cBg.setColor(themeColors[4]); cBg.setCornerRadius(15f*DENSITY); btnC.setBackground(cBg); android.widget.LinearLayout.LayoutParams lpC = new android.widget.LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f); lpC.setMargins(0,0,(int)(10*DENSITY),0); row.addView(btnC, lpC);
-        android.widget.Button btnD = new android.widget.Button(this); btnD.setText(lang.get("Delete")); btnD.setTextColor(android.graphics.Color.WHITE); btnD.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btnD.setAllCaps(false); android.graphics.drawable.GradientDrawable dBg = new android.graphics.drawable.GradientDrawable(); dBg.setColor(android.graphics.Color.parseColor("#FF5252")); dBg.setCornerRadius(15f*DENSITY); btnD.setBackground(dBg); row.addView(btnD, new android.widget.LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f)); main.addView(row);
+        android.widget.Button btnD = new android.widget.Button(this); btnD.setText(lang.get("Delete")); btnD.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); btnD.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btnD.setAllCaps(false); android.graphics.drawable.GradientDrawable dBg = new android.graphics.drawable.GradientDrawable(); dBg.setColor(android.graphics.Color.parseColor("#FF5252")); dBg.setCornerRadius(15f*DENSITY); btnD.setBackground(dBg); row.addView(btnD, new android.widget.LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f)); main.addView(row);
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
         final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); applyFont(main, appFonts[0], appFonts[1]);
         btnC.setOnClickListener(new android.view.View.OnClickListener(){@Override public void onClick(android.view.View v){ad.dismiss();}});
