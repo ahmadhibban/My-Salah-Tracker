@@ -6,13 +6,19 @@ if os.path.exists(java_file):
     with open(java_file, "r", encoding="utf-8") as f:
         mc = f.read()
 
-    # ১. আগের ভুল জায়গায় বসানো কোডগুলো (ছাদ থেকে) মুছে ফেলা হচ্ছে
-    mc = re.sub(r'\n\s*// Icons Color Injector[\s\S]*?\}\);', '', mc)
-    mc = re.sub(r'\n\s*// Wave Animation Injector[\s\S]*?if \(pCard != null\) \{[\s\S]*?\}\);\s*\}', '', mc)
+    print("\n=== 🛠️ INJECTION REPORT ===")
 
-    # ২. আইকনের কালার কোড ঠিক তাদের জন্মের পরপরই বসানো হচ্ছে
-    icon_logic = """
-        // Icons Color Injector (Correct Scope)
+    # ১. তীরচিহ্নের (Arrows) সাইজ ঠিক করা
+    mc_new = re.sub(r'(prevW\.setLayoutParams\(.*?LayoutParams\()\s*\([^)]+\)\s*,\s*\([^)]+\)\s*(\)\);)', r'\1(int)(52*DENSITY), (int)(52*DENSITY)\2', mc)
+    mc_new = re.sub(r'(nextW\.setLayoutParams\(.*?LayoutParams\()\s*\([^)]+\)\s*,\s*\([^)]+\)\s*(\)\);)', r'\1(int)(52*DENSITY), (int)(52*DENSITY)\2', mc_new)
+    if mc_new != mc:
+        mc = mc_new
+        print("✔ 1. Arrows Resized (52dp) - SUCCESS")
+    else:
+        print("❌ 1. Arrows Resized - FAILED")
+
+    # ২. উপরের আইকনগুলোর (Settings, Theme) কালার সবুজ/নীল করা
+    icon_color = """
         try {
             if(themeToggleBtn instanceof android.widget.TextView) ((android.widget.TextView)themeToggleBtn).setTextColor(colorAccent);
             else if (themeToggleBtn != null && themeToggleBtn.getBackground() != null) themeToggleBtn.getBackground().setColorFilter(colorAccent, android.graphics.PorterDuff.Mode.SRC_IN);
@@ -20,12 +26,62 @@ if os.path.exists(java_file):
             else if (settingsBtn != null && settingsBtn.getBackground() != null) settingsBtn.getBackground().setColorFilter(colorAccent, android.graphics.PorterDuff.Mode.SRC_IN);
         } catch(Exception e){}
     """
-    if "Icons Color Injector (Correct Scope)" not in mc:
-        mc = mc.replace("rightHeader.addView(settingsBtn);", "rightHeader.addView(settingsBtn);\n" + icon_logic)
+    if "themeToggleBtn instanceof" not in mc:
+        # settingsBtn-এ ক্লিক লিসেনার বসানোর ঠিক আগে কালার ইনজেক্ট করা হচ্ছে
+        mc_new = re.sub(r'(settingsBtn\.setOnClickListener)', icon_color + r'\n        \1', mc)
+        if mc_new != mc:
+            mc = mc_new
+            print("✔ 2. Icon Colors Applied - SUCCESS")
+        else:
+            print("❌ 2. Icon Colors Applied - FAILED")
+    else:
+        print("✔ 2. Icon Colors Applied - ALREADY EXISTS")
 
-    # ৩. পানির ঢেউয়ের কোড ঠিক pCard তৈরি হওয়ার পরপরই বসানো হচ্ছে
+    # ৩. রিস্টার্ট করলে আগের তারিখে থাকার ফিক্স
+    if "RESTORE_DATE" not in mc:
+        mc_new = re.sub(r'(currentDate\s*=\s*Calendar\.getInstance\(\);)', r'\1\n        long savedDate = getIntent().getLongExtra("RESTORE_DATE", -1L); if(savedDate != -1L) currentDate.setTimeInMillis(savedDate);', mc)
+        mc_new = re.sub(r'recreate\(\);', 'Intent intent = new Intent(this, MainActivity.class); intent.putExtra("RESTORE_DATE", currentDate.getTimeInMillis()); startActivity(intent); overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); finish();', mc_new)
+        if mc_new != mc:
+            mc = mc_new
+            print("✔ 3. Restart State Fix - SUCCESS")
+        else:
+            print("❌ 3. Restart State Fix - FAILED")
+    else:
+        print("✔ 3. Restart State Fix - ALREADY EXISTS")
+
+    # ৪. পানির ঢেউ (Water Wave) ক্লাস ও লজিক ইনজেক্ট করা
+    wave_class = """
+    public static class WaterWaveView extends android.view.View {
+        private android.graphics.Path path = new android.graphics.Path();
+        private android.graphics.Paint paint = new android.graphics.Paint();
+        private float phase = 0f; private int progress = 50;
+        public WaterWaveView(android.content.Context context) {
+            super(context); paint.setStyle(android.graphics.Paint.Style.FILL); paint.setAntiAlias(true);
+        }
+        public void setProgressAndColor(int p, int c) { this.progress = p; paint.setColor(c); paint.setAlpha(150); }
+        @Override
+        protected void onDraw(android.graphics.Canvas canvas) {
+            super.onDraw(canvas);
+            int w = getWidth(); int h = getHeight(); if (w == 0 || h == 0) return;
+            path.reset();
+            float baseHeight = h - (h * progress / 100f);
+            float amplitude = h * 0.04f;
+            path.moveTo(0, h); path.lineTo(0, baseHeight);
+            for (int i = 0; i <= w; i += 10) {
+                float y = (float) (Math.sin((i * 3 * Math.PI / w) + phase) * amplitude) + baseHeight;
+                path.lineTo(i, y);
+            }
+            path.lineTo(w, h); path.close();
+            canvas.drawPath(path, paint);
+            phase += 0.15f; postInvalidateDelayed(20);
+        }
+    }
+    """
+    if "class WaterWaveView" not in mc:
+        mc = re.sub(r'\}\s*$', wave_class + '\n}', mc)
+
     wave_logic = """
-        // Wave Animation Injector (Correct Scope)
+        // WAVE ANIMATION INJECTOR
         pCard.post(() -> {
             try {
                 android.view.ViewGroup parent = (android.view.ViewGroup) pCard.getParent();
@@ -74,11 +130,20 @@ if os.path.exists(java_file):
             } catch(Exception e){}
         });
     """
-    if "Wave Animation Injector (Correct Scope)" not in mc:
-        mc = mc.replace("contentArea.addView(pCard);", wave_logic + "\n        contentArea.addView(pCard);")
+    if "WAVE ANIMATION INJECTOR" not in mc:
+        # pCard কন্টেন্ট এরিয়াতে অ্যাড হওয়ার ঠিক পরেই ঢেউয়ের লজিক বসানো হচ্ছে
+        mc_new = re.sub(r'(contentArea\.addView\(\s*pCard\s*\)\s*;)', r'\1\n' + wave_logic, mc)
+        if mc_new != mc:
+            mc = mc_new
+            print("✔ 4. Water Wave Applied - SUCCESS")
+        else:
+            print("❌ 4. Water Wave Applied - FAILED")
+    else:
+        print("✔ 4. Water Wave Applied - ALREADY EXISTS")
+
+    print("===============================\n")
 
     with open(java_file, "w", encoding="utf-8") as f:
         f.write(mc)
-    print("✔ SCOPE ERROR FIXED! ALL YOUR CHANGES ARE KEPT SAFELY.")
 else:
     print("❌ FILE NOT FOUND")

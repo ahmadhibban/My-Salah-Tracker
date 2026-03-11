@@ -46,7 +46,7 @@ public class UIComponents {
     }
 
     public View getPremiumIcon(String emoji, int colorStart, int colorEnd, int sizeDp) { 
-        TextView tv = new TextView(activity); tv.setText(emoji); tv.setTextColor(Color.WHITE); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(sizeDp / 2.5f); tv.setGravity(Gravity.CENTER); 
+        TextView tv = new TextView(activity); tv.setText(emoji); tv.setTextColor(android.graphics.Color.WHITE); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(sizeDp / 2.5f); tv.setGravity(Gravity.CENTER); 
         GradientDrawable gd = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{colorStart, colorEnd}); gd.setShape(GradientDrawable.OVAL); tv.setBackground(gd); 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams((int)(sizeDp*DENSITY), (int)(sizeDp*DENSITY)); tv.setLayoutParams(lp); return tv; 
     }
@@ -77,8 +77,8 @@ public class UIComponents {
         TextView tv = new TextView(activity); tv.setGravity(Gravity.CENTER); tv.setTextSize(14); 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams((int)(26*DENSITY), (int)(26*DENSITY)); tv.setLayoutParams(lp); 
         GradientDrawable gd = new GradientDrawable(); gd.setShape(GradientDrawable.OVAL); 
-        if(status.equals("yes")) { gd.setColor(activeColorHex); tv.setText("✓"); tv.setTextColor(Color.WHITE); } 
-        else if (status.equals("excused")) { gd.setColor(activeColorHex); tv.setText("🌸"); tv.setTextColor(Color.WHITE); } 
+        if(status.equals("yes")) { gd.setColor(activeColorHex); tv.setText("✓"); tv.setTextColor(android.graphics.Color.WHITE); } 
+        else if(status.equals("excused")) {  gd.setColor(activeColorHex);  tv.setText("🌸"); gd.setCornerRadius(100f);  tv.setTextColor(android.graphics.Color.WHITE); } 
         else { gd.setColor(Color.TRANSPARENT); gd.setStroke((int)(2*DENSITY), themeColors[4]); tv.setText(""); } 
         tv.setBackground(gd); return tv; 
     }

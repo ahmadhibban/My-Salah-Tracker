@@ -144,7 +144,7 @@ public class StatsHelper {
         
         LinearLayout btn1 = new LinearLayout(activity); btn1.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); btn1.setGravity(Gravity.CENTER);
         GradientDrawable bg1 = new GradientDrawable(); bg1.setColor(colorAccent); bg1.setCornerRadius(15f*DENSITY); btn1.setBackground(bg1); btn1.setTag(true); btn1.setOnClickListener(clicker);
-        TextView t1 = new TextView(activity); t1.setText(isBn ? "সাপ্তাহিক রিপোর্ট" : "Weekly Report"); t1.setTextColor(Color.WHITE); t1.setTypeface(Typeface.DEFAULT_BOLD); btn1.addView(t1); main.addView(btn1);
+        TextView t1 = new TextView(activity); t1.setText(isBn ? "সাপ্তাহিক রিপোর্ট" : "Weekly Report"); t1.setTextColor(android.graphics.Color.WHITE); t1.setTypeface(Typeface.DEFAULT_BOLD); btn1.addView(t1); main.addView(btn1);
         
         LinearLayout btn2 = new LinearLayout(activity); btn2.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); btn2.setGravity(Gravity.CENTER);
         GradientDrawable bg2 = new GradientDrawable(); bg2.setColor(themeColors[4]); bg2.setCornerRadius(15f*DENSITY); btn2.setBackground(bg2); btn2.setTag(false); btn2.setOnClickListener(clicker);

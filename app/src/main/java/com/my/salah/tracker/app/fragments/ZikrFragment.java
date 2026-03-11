@@ -362,7 +362,7 @@ public class ZikrFragment extends Fragment {
                 android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
                 gd.setColor(card); gd.setCornerRadius(60f); root.setBackground(gd);
                 
-                TextView t = new TextView(v.getContext()); t.setText(isBn ? "রিসেট করতে চান?" : "Reset Tasbih?"); t.setTextSize(22f); t.setTextColor(txt); t.setTypeface(Typeface.DEFAULT_BOLD); t.setGravity(Gravity.CENTER); root.addView(t);
+                TextView t = new TextView(v.getContext()); t.setText(isBn ? "রিসেট করতে চান?" : "Reset Tasbih?"); t.setTextSize(22f); t.setTextColor(android.graphics.Color.WHITE); t.setTypeface(Typeface.DEFAULT_BOLD); t.setGravity(Gravity.CENTER); root.addView(t);
                 
                 LinearLayout btns = new LinearLayout(v.getContext()); btns.setOrientation(LinearLayout.HORIZONTAL); btns.setPadding(0, 60, 0, 0);
                 Button bNo = new Button(v.getContext()); bNo.setText(isBn ? "না" : "No"); bNo.setBackgroundColor(Color.TRANSPARENT); bNo.setTextColor(Color.GRAY); bNo.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
@@ -383,10 +383,10 @@ public class ZikrFragment extends Fragment {
                 android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
                 gd.setColor(card); gd.setCornerRadius(60f); root.setBackground(gd);
                 
-                TextView t = new TextView(v.getContext()); t.setText(isBn ? "নতুন টার্গেট দিন" : "Edit Target"); t.setTextSize(20f); t.setTextColor(txt); t.setGravity(Gravity.CENTER); root.addView(t);
-                final EditText et = new EditText(v.getContext()); et.setInputType(2); et.setText(String.valueOf(tasbihList.get(idx).target)); et.setTextColor(txt); root.addView(et);
+                TextView t = new TextView(v.getContext()); t.setText(isBn ? "নতুন টার্গেট দিন" : "Edit Target"); t.setTextSize(20f); t.setTextColor(android.graphics.Color.WHITE); t.setGravity(Gravity.CENTER); root.addView(t);
+                final EditText et = new EditText(v.getContext()); et.setInputType(2); et.setText(String.valueOf(tasbihList.get(idx).target)); et.setTextColor(android.graphics.Color.WHITE); root.addView(et);
                 
-                Button bOk = new Button(v.getContext()); bOk.setText(isBn ? "সেভ করুন" : "Save"); bOk.setBackgroundColor(acc); bOk.setTextColor(Color.WHITE);
+                Button bOk = new Button(v.getContext()); bOk.setText(isBn ? "সেভ করুন" : "Save"); bOk.setBackgroundColor(acc); bOk.setTextColor(android.graphics.Color.WHITE);
                 bOk.setOnClickListener(v2 -> {
                     if(!et.getText().toString().isEmpty()){
                         tasbihList.get(idx).target = Integer.parseInt(et.getText().toString());
@@ -418,7 +418,7 @@ public class ZikrFragment extends Fragment {
                     android.graphics.drawable.GradientDrawable rowBg = new android.graphics.drawable.GradientDrawable(); rowBg.setColor(card); rowBg.setCornerRadius(30f); row.setBackground(rowBg);
                     LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(-1, -2); rowParams.setMargins(0, 0, 0, 20); row.setLayoutParams(rowParams);
 
-                    TextView tvDua = new TextView(v.getContext()); tvDua.setText(tasbihList.get(rowIdx).arabic); tvDua.setTextColor(txt); tvDua.setTextSize(24); tvDua.setGravity(Gravity.CENTER); tvDua.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 6f));
+                    TextView tvDua = new TextView(v.getContext()); tvDua.setText(tasbihList.get(rowIdx).arabic); tvDua.setTextColor(android.graphics.Color.WHITE); tvDua.setTextSize(24); tvDua.setGravity(Gravity.CENTER); tvDua.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 6f));
                     if(arabicFont != null) tvDua.setTypeface(arabicFont);
                     tvDua.setOnClickListener(v2 -> { currentIdx[0] = rowIdx; v.invalidate(); d.dismiss(); });
 
@@ -440,10 +440,10 @@ public class ZikrFragment extends Fragment {
                     LinearLayout rootAdd = new LinearLayout(v.getContext()); rootAdd.setOrientation(LinearLayout.VERTICAL); rootAdd.setPadding(80, 80, 80, 80);
                     android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); gd.setColor(card); gd.setCornerRadius(60f); rootAdd.setBackground(gd);
                     
-                    EditText etDua = new EditText(v.getContext()); etDua.setHint(isBn?"আরবী দোয়া লিখুন":"Enter Arabic Dua"); etDua.setTextColor(txt); etDua.setHintTextColor(Color.GRAY); rootAdd.addView(etDua);
-                    EditText etTarget = new EditText(v.getContext()); etTarget.setHint(isBn?"টার্গেট (ঐচ্ছিক)":"Target (Optional)"); etTarget.setInputType(2); etTarget.setTextColor(txt); etTarget.setHintTextColor(Color.GRAY); rootAdd.addView(etTarget);
+                    EditText etDua = new EditText(v.getContext()); etDua.setHint(isBn?"আরবী দোয়া লিখুন":"Enter Arabic Dua"); etDua.setTextColor(android.graphics.Color.WHITE); etDua.setHintTextColor(Color.GRAY); rootAdd.addView(etDua);
+                    EditText etTarget = new EditText(v.getContext()); etTarget.setHint(isBn?"টার্গেট (ঐচ্ছিক)":"Target (Optional)"); etTarget.setInputType(2); etTarget.setTextColor(android.graphics.Color.WHITE); etTarget.setHintTextColor(Color.GRAY); rootAdd.addView(etTarget);
                     
-                    Button bSave = new Button(v.getContext()); bSave.setText(isBn?"সেভ":"Save"); bSave.setBackgroundColor(acc); bSave.setTextColor(Color.WHITE);
+                    Button bSave = new Button(v.getContext()); bSave.setText(isBn?"সেভ":"Save"); bSave.setBackgroundColor(acc); bSave.setTextColor(android.graphics.Color.WHITE);
                     bSave.setOnClickListener(v3 -> {
                         String newDua = etDua.getText().toString(); String tStr = etTarget.getText().toString();
                         if(!newDua.isEmpty()){
@@ -460,7 +460,7 @@ public class ZikrFragment extends Fragment {
                 listBody.addView(btnAddNew);
                 sv.addView(listBody); rootDia.addView(sv, new LinearLayout.LayoutParams(-1, 0, 1f));
 
-                Button btnClose = new Button(v.getContext()); btnClose.setText(isBn ? "বন্ধ করুন" : "Close"); btnClose.setBackgroundColor(card); btnClose.setTextColor(txt);
+                Button btnClose = new Button(v.getContext()); btnClose.setText(isBn ? "বন্ধ করুন" : "Close"); btnClose.setBackgroundColor(card); btnClose.setTextColor(android.graphics.Color.WHITE);
                 btnClose.setOnClickListener(v4 -> d.dismiss()); rootDia.addView(btnClose);
                 
                 d.setContentView(rootDia); d.show();

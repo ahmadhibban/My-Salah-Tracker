@@ -180,7 +180,7 @@ public class BackupHelper {
         LinearLayout.LayoutParams lpIn = new LinearLayout.LayoutParams(-1, -2); lpIn.setMargins(0, 0, 0, (int)(15*DENSITY)); emailIn.setLayoutParams(lpIn); rootDia.addView(emailIn);
         
         Button actionBtn = new Button(activity); actionBtn.setText(lang.get("Sync Cloud Data"));
-        actionBtn.setAllCaps(false); actionBtn.setTextColor(Color.WHITE); actionBtn.setTextSize(15); actionBtn.setTypeface(Typeface.DEFAULT_BOLD);
+        actionBtn.setAllCaps(false); actionBtn.setTextColor(android.graphics.Color.WHITE); actionBtn.setTextSize(15); actionBtn.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable btnBg = new GradientDrawable(); btnBg.setColor(colorAccent); btnBg.setCornerRadius(15f * DENSITY); actionBtn.setBackground(btnBg);
         LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(-1, (int)(50*DENSITY));
         btnLp.setMargins(0,0,0,(int)(20*DENSITY)); rootDia.addView(actionBtn, btnLp); 

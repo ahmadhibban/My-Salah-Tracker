@@ -146,7 +146,7 @@ public class QuranFragment extends Fragment {
 
         Button saveBtn = new Button(ctx);
         saveBtn.setText(isBn ? "সংরক্ষণ করুন" : "Save Progress");
-        saveBtn.setTypeface(tfBold); saveBtn.setTextColor(Color.WHITE); saveBtn.setAllCaps(false); saveBtn.setTextSize(16);
+        saveBtn.setTypeface(tfBold); saveBtn.setTextColor(android.graphics.Color.WHITE); saveBtn.setAllCaps(false); saveBtn.setTextSize(16);
         GradientDrawable bBg = new GradientDrawable(); bBg.setColor(colorAccent); bBg.setCornerRadius(15f*DENSITY);
         saveBtn.setBackground(bBg);
         LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(-1, (int)(50*DENSITY)); btnLp.setMargins(0, (int)(20*DENSITY), 0, 0);
