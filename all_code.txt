@@ -969,6 +969,15 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
+
+    private String tBn(String s) {
+        if(s == null) return "";
+        if(!getSharedPreferences("salah_pro_final", 0).getString("app_lang", "en").equals("bn")) return s;
+        return s.replace("0","০").replace("1","১").replace("2","২").replace("3","৩").replace("4","৪").replace("5","৫").replace("6","৬").replace("7","৭").replace("8","৮").replace("9","৯")
+                .replace("Saturday","শনিবার").replace("Sunday","রবিবার").replace("Monday","সোমবার").replace("Tuesday","মঙ্গলবার").replace("Wednesday","বুধবার").replace("Thursday","বৃহস্পতিবার").replace("Friday","শুক্রবার")
+                .replace("Jan","জানু").replace("Feb","ফেব্রু").replace("Mar","মার্চ").replace("Apr","এপ্রিল").replace("May","মে").replace("Jun","জুন").replace("Jul","জুল").replace("Aug","আগস্ট").replace("Sep","সেপ্টে").replace("Oct","অক্টো").replace("Nov","নভে").replace("Dec","ডিসে");
+    }
+
     
     
     private SharedPreferences sp;
@@ -1839,7 +1848,120 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
             if(isLandscape) { if(i<3) col1.addView(card);
             else col2.addView(card); } else cardsContainer.addView(card);
         }
-         contentArea.addView(cardsContainer); 
+         
+        // --- ROZA TRACKER START ---
+        final boolean isRozaBn = sp.getString("app_lang", "en").equals("bn");
+        final String rozaDbKey = selectedDate[0] + "_roza_stat";
+        
+        android.widget.TextView rozaHdr = new android.widget.TextView(MainActivity.this);
+        rozaHdr.setText(isRozaBn ? "অন্যান্য ইবাদত" : "Other Trackers");
+        rozaHdr.setTextColor(themeColors[2]);
+        rozaHdr.setTextSize(18);
+        rozaHdr.setTypeface(null, android.graphics.Typeface.BOLD);
+        android.widget.LinearLayout.LayoutParams rozaHdrLp = new android.widget.LinearLayout.LayoutParams(-2, -2);
+        // মার্জিন জিরো করা হয়েছে যাতে ঠিক নামাজের কার্ডের সাথে এলাইন হয়
+        rozaHdrLp.setMargins(0, (int)(5*DENSITY), 0, (int)(10*DENSITY));
+
+        // 100% Match with Prayer Card Layout (pCard)
+        soup.neumorphism.NeumorphCardView rCardNeo = new soup.neumorphism.NeumorphCardView(MainActivity.this);
+        rCardNeo.setShapeType(0);
+        rCardNeo.setShadowColorLight(isDarkTheme ? android.graphics.Color.parseColor("#333336") : android.graphics.Color.parseColor("#F1F5F9"));
+        rCardNeo.setShadowColorDark(isDarkTheme ? android.graphics.Color.parseColor("#0A0A0C") : android.graphics.Color.parseColor("#cbd5e0"));
+        rCardNeo.setShadowElevation(3f * DENSITY);
+        rCardNeo.setShapeAppearanceModel(new soup.neumorphism.NeumorphShapeAppearanceModel.Builder().setAllCorners(0, 16f*DENSITY).build());
+        rCardNeo.setBackgroundColor(isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"));
+        android.widget.LinearLayout.LayoutParams rCLp = new android.widget.LinearLayout.LayoutParams(-1, -2);
+        rCLp.setMargins(0, 0, 0, 0); // 0 margin to exactly match prayer cards
+        rCardNeo.setLayoutParams(rCLp);
+
+        android.widget.LinearLayout rInner = new android.widget.LinearLayout(MainActivity.this);
+        rInner.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        rInner.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        rInner.setPadding((int)(20*DENSITY), (int)(18*DENSITY), (int)(20*DENSITY), (int)(18*DENSITY)); // Exact Padding match!
+        rCardNeo.addView(rInner);
+
+        // 100% Match with Icon Frame
+        android.view.View rIconView = ui.getRoundImage("img_roza", 8, android.graphics.Color.TRANSPARENT, colorAccent);
+        rIconView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        rIconView.setPadding(5, 2, 5, 2);
+        android.widget.FrameLayout rIconFrame = new android.widget.FrameLayout(MainActivity.this);
+        android.widget.LinearLayout.LayoutParams rFlp = new android.widget.LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
+        rFlp.setMargins(0, 0, (int)(15*DENSITY), 0);
+        rIconFrame.setLayoutParams(rFlp);
+        applyNeo(rIconFrame, 0, 12f, 2.5f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme);
+        android.widget.FrameLayout.LayoutParams rIvLp = new android.widget.FrameLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY));
+        rIvLp.gravity = android.view.Gravity.CENTER;
+        rIconView.setLayoutParams(rIvLp);
+        rIconFrame.addView(rIconView);
+        rInner.addView(rIconFrame);
+
+        // Title Row
+        android.widget.LinearLayout rTxtCon = new android.widget.LinearLayout(MainActivity.this);
+        rTxtCon.setOrientation(android.widget.LinearLayout.VERTICAL);
+        rTxtCon.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f));
+        android.widget.TextView rTv = new android.widget.TextView(MainActivity.this);
+        rTv.setText(isRozaBn ? "রোজা" : "Fasting");
+        rTv.setTextColor(themeColors[2]);
+        rTv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        rTv.setTextSize(16);
+        rTv.setSingleLine(true);
+        rTxtCon.addView(rTv);
+        rInner.addView(rTxtCon);
+
+        final String rozaType = sp.getString(selectedDate[0] + "_roza_type", "nafil");
+        final boolean isRozaDone = sp.getString(rozaDbKey, "no").equals("yes");
+
+        // Category Button (100% Match with Sunnah Button)
+        android.widget.TextView rCatBtn = new android.widget.TextView(MainActivity.this);
+        String catLabel = isRozaBn ? "নফল" : "Nafil";
+        if(rozaType.equals("fard")) catLabel = isRozaBn ? "ফরজ" : "Fard";
+        else if(rozaType.equals("qaza")) catLabel = isRozaBn ? "কাজা" : "Qaza";
+        rCatBtn.setText(catLabel);
+        rCatBtn.setTextSize(11);
+        rCatBtn.setSingleLine(true);
+        rCatBtn.setTextColor(isRozaDone ? android.graphics.Color.WHITE : themeColors[2]);
+        
+        // Exact Sunken 3D Effect for button
+        applyNeo(rCatBtn, 1, 10f, 2f, isRozaDone ? colorAccent : (isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0")), isDarkTheme);
+        rCatBtn.setPadding((int)(14*DENSITY), (int)(8*DENSITY), (int)(14*DENSITY), (int)(8*DENSITY));
+        rCatBtn.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY) + (int)(2f*DENSITY));
+        android.widget.LinearLayout.LayoutParams rCatLp = new android.widget.LinearLayout.LayoutParams(-2, -2);
+        rCatLp.setMargins(0, 0, (int)(15*DENSITY), 0);
+        rCatBtn.setLayoutParams(rCatLp);
+        rCatBtn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { showRozaCategoryDialog(); } });
+        rInner.addView(rCatBtn);
+
+        // Checkbox (100% Exact match using your own getNeoCheckbox)
+        final android.view.View rChkBox = getNeoCheckbox(isRozaDone ? "yes" : "no", colorAccent);
+        rInner.addView(rChkBox);
+
+        // Click Action
+        rCardNeo.setOnClickListener(new android.view.View.OnClickListener() {
+            @Override public void onClick(final android.view.View v) {
+                v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+                sp.edit().putString(rozaDbKey, !isRozaDone ? "yes" : "no").apply();
+                v.animate().scaleX(0.95f).scaleY(0.95f).alpha(0.8f).setDuration(35).withEndAction(new Runnable() { @Override public void run() { v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(120).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); } }).start();
+                loadTodayPage();
+            }
+        });
+
+        // সরাসরি নামাজের কার্ডের সাথে যুক্ত করা হচ্ছে (gap ও size 100% match করবে)
+        if(isLandscape) {
+            col2.addView(rozaHdr, rozaHdrLp);
+            col2.addView(rCardNeo);
+        } else {
+            cardsContainer.addView(rozaHdr, rozaHdrLp);
+            cardsContainer.addView(rCardNeo);
+        }
+        // --- ROZA TRACKER END ---
+
+        contentArea.addView(cardsContainer);
+
+        
+
+
+        
+ 
         if(appFonts[0] != null) applyFont(root, appFonts[0], appFonts[1]);
     }
 
@@ -1888,6 +2010,9 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
                 ad.dismiss(); loadTodayPage(); refreshWidget(); 
             } 
         });
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show(); 
     }
 
@@ -1921,7 +2046,10 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         MenuRow mr = new MenuRow();
         
         // একদম পারফেক্ট A-Z সর্টিং
-        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "হিজরি তারিখ সেটিং" : "Adjust Hijri Date", "img_moon", new Runnable() { @Override public void run() { boolean isBn = sp.getString("app_lang", "en").equals("bn"); FrameLayout wrap = new FrameLayout(MainActivity.this); wrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1)); LinearLayout main = new LinearLayout(MainActivity.this); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); main.setBackground(gd); TextView title = new TextView(MainActivity.this); title.setText(isBn ? "হিজরি তারিখ সেটিং" : "Adjust Hijri Date"); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); title.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(title); final AlertDialog ad = new AlertDialog.Builder(MainActivity.this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(Gravity.CENTER); String[] opts = isBn ? new String[]{"-১ দিন", "ডিফল্ট (০)", "+১ দিন"} : new String[]{"-1 Day", "Default (0)", "+1 Day"}; final int[] vals = {-1, 0, 1}; int current = sp.getInt("hijri_offset", 0); for(int i=0; i<3; i++) { final int idx = i; LinearLayout btn = new LinearLayout(MainActivity.this); btn.setOrientation(LinearLayout.HORIZONTAL); btn.setGravity(Gravity.CENTER); btn.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); GradientDrawable bg = new GradientDrawable(); bg.setColor(vals[i] == current ? colorAccent : themeColors[4]); bg.setCornerRadius(15f*DENSITY); btn.setBackground(bg); LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 0, 0, (int)(10*DENSITY)); btn.setLayoutParams(lp); TextView tv = new TextView(MainActivity.this); tv.setText(opts[i]); tv.setTextColor(vals[i] == current ? Color.WHITE : themeColors[2]); tv.setTextSize(16); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setGravity(Gravity.CENTER); tv.setLayoutParams(new LinearLayout.LayoutParams(-1, -2)); btn.addView(tv); btn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putInt("hijri_offset", vals[idx]).apply(); ad.dismiss(); loadTodayPage(); refreshWidget(); } }); main.addView(btn); } FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show(); }});
+        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "হিজরি তারিখ সেটিং" : "Adjust Hijri Date", "img_moon", new Runnable() { @Override public void run() { boolean isBn = sp.getString("app_lang", "en").equals("bn"); FrameLayout wrap = new FrameLayout(MainActivity.this); wrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1)); LinearLayout main = new LinearLayout(MainActivity.this); main.setOrientation(LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); GradientDrawable gd = new GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); main.setBackground(gd); TextView title = new TextView(MainActivity.this); title.setText(isBn ? "হিজরি তারিখ সেটিং" : "Adjust Hijri Date"); title.setTextColor(themeColors[2]); title.setTextSize(20); title.setTypeface(Typeface.DEFAULT_BOLD); title.setGravity(Gravity.CENTER); title.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(title); final AlertDialog ad = new AlertDialog.Builder(MainActivity.this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(Gravity.CENTER); String[] opts = isBn ? new String[]{"-১ দিন", "ডিফল্ট (০)", "+১ দিন"} : new String[]{"-1 Day", "Default (0)", "+1 Day"}; final int[] vals = {-1, 0, 1}; int current = sp.getInt("hijri_offset", 0); for(int i=0; i<3; i++) { final int idx = i; LinearLayout btn = new LinearLayout(MainActivity.this); btn.setOrientation(LinearLayout.HORIZONTAL); btn.setGravity(Gravity.CENTER); btn.setPadding((int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY)); GradientDrawable bg = new GradientDrawable(); bg.setColor(vals[i] == current ? colorAccent : themeColors[4]); bg.setCornerRadius(15f*DENSITY); btn.setBackground(bg); LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2); lp.setMargins(0, 0, 0, (int)(10*DENSITY)); btn.setLayoutParams(lp); TextView tv = new TextView(MainActivity.this); tv.setText(opts[i]); tv.setTextColor(vals[i] == current ? Color.WHITE : themeColors[2]); tv.setTextSize(16); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setGravity(Gravity.CENTER); tv.setLayoutParams(new LinearLayout.LayoutParams(-1, -2)); btn.addView(tv); btn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { sp.edit().putInt("hijri_offset", vals[idx]).apply(); ad.dismiss(); loadTodayPage(); refreshWidget(); } }); main.addView(btn); } FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp); 
+        
+
+        applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show(); }});
         mr.addImg("Advanced Statistics", "img_stats", new Runnable() { @Override public void run() { try{statsHelper.syncDate(sdf.parse(selectedDate[0]));}catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); } statsHelper.showStatsOptionsDialog(); }});
         mr.addImg("Backup & Sync", "img_cloud", new Runnable() { @Override public void run() { backupHelper.showProfileDialog(new Runnable() { @Override public void run() { loadTodayPage(); refreshWidget(); }}); }});
         mr.addImg("Change Language", "img_lang", new Runnable() { @Override public void run() { String nextL = sp.getString("app_lang", "en").equals("en") ? "bn" : "en"; sp.edit().putString("app_lang", nextL).apply(); finish(); Intent intent = new Intent(MainActivity.this, MainActivity.class); try { intent.putExtra("RESTORE_DATE", sdf.parse(selectedDate[0]).getTime()); } catch(Exception e){} startActivity(intent); overridePendingTransition(0, 0); }});
@@ -1996,6 +2124,9 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         closeBtn.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { ad.dismiss(); } });
         FrameLayout.LayoutParams flp2 = new FrameLayout.LayoutParams((int)(320*DENSITY), -2);
         flp2.gravity = Gravity.CENTER; wrap.addView(main, flp2);
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show();
     }
 private void showMarkOptions() {
@@ -2038,6 +2169,9 @@ private void showMarkOptions() {
                 showSuccessSequence(); // ✨ ফিক্স: মাশাআল্লাহ যুক্ত করা হলো
             } 
         });
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show();
     }
 
@@ -2078,7 +2212,10 @@ private void showMarkOptions() {
                 updateRoomRecord(r);
                 ad.dismiss(); loadTodayPage(); refreshWidget(); 
             } 
-        }); applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show();
+        }); 
+        
+
+        applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show();
     }
 
     private void showSuccessSequence() {
@@ -2111,6 +2248,9 @@ private void showMarkOptions() {
         scaleX.setDuration(1000); scaleY.setDuration(1000); 
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet(); animSet.playTogether(scaleX, scaleY); animSet.start();
         new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 2500);
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); 
     }
 private void showWipeDataDialog() {
@@ -2130,6 +2270,9 @@ private void showWipeDataDialog() {
         LinearLayout.LayoutParams lpD = new LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f); row.addView(btnD, lpD); main.addView(row);
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int)(300*DENSITY), -2); flp.gravity = Gravity.CENTER; wrap.addView(main, flp);
         final AlertDialog ad = new AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(Gravity.CENTER);
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); btnC.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){ad.dismiss();}});
         btnD.setOnClickListener(new View.OnClickListener(){@Override public void onClick(View v){
             ad.dismiss(); ui.showSmartBanner(root, lang.get("Deleting..."), "", "img_offline_warning", android.graphics.Color.parseColor("#FF5252"), null);
@@ -2141,6 +2284,96 @@ private void showWipeDataDialog() {
             }}).start();
         }}); if(!isFinishing()) ad.show();
     }
+
+    
+    private void showRozaCategoryDialog() {
+        boolean isBn = sp.getString("app_lang", "en").equals("bn");
+        android.widget.FrameLayout wrap = new android.widget.FrameLayout(this);
+        wrap.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1)); 
+        android.widget.LinearLayout main = new android.widget.LinearLayout(this); 
+        main.setOrientation(android.widget.LinearLayout.VERTICAL); 
+        main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); 
+        android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); 
+        gd.setColor(themeColors[1]);
+        gd.setCornerRadius(25f * DENSITY); main.setBackground(gd); 
+        
+        android.widget.TextView title = new android.widget.TextView(this); 
+        title.setText(isBn ? "রোজার ক্যাটাগরি" : "Fasting Category"); 
+        title.setTextColor(colorAccent); title.setTextSize(20); 
+        title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        title.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(title); 
+        
+        android.widget.ScrollView sv = new android.widget.ScrollView(this); 
+        android.widget.LinearLayout list = new android.widget.LinearLayout(this); 
+        list.setOrientation(android.widget.LinearLayout.VERTICAL);
+        final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); 
+        
+        String[] opts = isBn ? new String[]{"ফরজ", "কাজা", "নফল"} : new String[]{"Fard", "Qaza", "Nafil"};
+        final String[] vals = {"fard", "qaza", "nafil"};
+        String curType = sp.getString(selectedDate[0] + "_roza_type", "nafil");
+        
+        for(int s=0; s<opts.length; s++) { 
+            final String sName = opts[s];
+            final String sVal = vals[s];
+            final boolean sChecked = curType.equals(sVal);
+            
+            final android.widget.LinearLayout row = new android.widget.LinearLayout(this); 
+            row.setOrientation(android.widget.LinearLayout.HORIZONTAL); 
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL); 
+            row.setPadding((int)(10*DENSITY), (int)(12*DENSITY), (int)(10*DENSITY), (int)(12*DENSITY)); 
+            android.widget.LinearLayout.LayoutParams rowLp = new android.widget.LinearLayout.LayoutParams(-1, -2);
+            rowLp.setMargins(0, 0, 0, (int)(10*DENSITY)); row.setLayoutParams(rowLp); 
+            final android.graphics.drawable.GradientDrawable rowBg = new android.graphics.drawable.GradientDrawable(); 
+            rowBg.setCornerRadius(15f*DENSITY); 
+            rowBg.setColor(sChecked ? themeColors[4] : android.graphics.Color.TRANSPARENT); 
+            row.setBackground(rowBg);
+            
+            final android.widget.TextView tv = new android.widget.TextView(this); 
+            tv.setText(sName); 
+            tv.setTextColor(sChecked ? colorAccent : themeColors[2]); 
+            tv.setTextSize(16); 
+            tv.setTypeface(sChecked ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT);
+            tv.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f)); 
+            
+            final android.view.View chk = ui.getPremiumCheckbox(sChecked ? "yes" : "no", colorAccent); 
+            row.addView(tv); row.addView(chk); list.addView(row);
+            
+            row.setOnClickListener(new android.view.View.OnClickListener() { 
+                @Override public void onClick(final android.view.View v) { 
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); 
+                    sp.edit().putString(selectedDate[0] + "_roza_type", sVal).apply(); 
+                    sp.edit().putString(selectedDate[0] + "_roza_stat", "yes").apply();
+                    ad.dismiss();
+                    loadTodayPage();
+                } 
+            });
+        } 
+        
+        sv.addView(list);
+        main.addView(sv, new android.widget.LinearLayout.LayoutParams(-1, -2, 1f));
+        
+        android.widget.TextView closeBtn = new android.widget.TextView(this); 
+        closeBtn.setText(lang.get("Done")); 
+        closeBtn.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); 
+        closeBtn.setGravity(android.view.Gravity.CENTER); 
+        closeBtn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); 
+        closeBtn.setPadding(0, (int)(15*DENSITY), 0, (int)(15*DENSITY));
+        android.graphics.drawable.GradientDrawable cBg = new android.graphics.drawable.GradientDrawable(); 
+        cBg.setColor(colorAccent); cBg.setCornerRadius(20f*DENSITY); 
+        closeBtn.setBackground(cBg); 
+        android.widget.LinearLayout.LayoutParams clp = new android.widget.LinearLayout.LayoutParams(-1, -2); 
+        clp.setMargins(0, (int)(15*DENSITY), 0, 0); 
+        closeBtn.setLayoutParams(clp); 
+        main.addView(closeBtn);
+        
+        android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); 
+        flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
+        ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); 
+        ad.getWindow().setGravity(android.view.Gravity.CENTER);
+        closeBtn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { ad.dismiss(); loadTodayPage(); } });
+        applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show();
+    }
+    // --- ROZA DIALOG END ---
 
     private void showSunnahDialog(final String prayer, final String[] sunnahList) { 
         android.widget.FrameLayout wrap = new android.widget.FrameLayout(this); wrap.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1)); android.widget.LinearLayout main = new android.widget.LinearLayout(this); main.setOrientation(android.widget.LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY)); android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(25f * DENSITY); main.setBackground(gd); 
@@ -2175,6 +2408,9 @@ private void showWipeDataDialog() {
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
         ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); 
         closeBtn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { ad.dismiss(); loadTodayPage(); refreshWidget(); } });
+        
+        
+
         applyFont(main, appFonts[0], appFonts[1]); if(!isFinishing()) ad.show(); 
     }
 
@@ -2187,7 +2423,10 @@ private void showWipeDataDialog() {
         final android.widget.EditText rakIn = new android.widget.EditText(this); rakIn.setHint(lang.get("Rakats (e.g. 2)")); rakIn.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); rakIn.setTextColor(themeColors[2]); rakIn.setHintTextColor(themeColors[3]); rakIn.setBackground(iBg); rakIn.setPadding((int)(20*DENSITY),(int)(15*DENSITY),(int)(20*DENSITY),(int)(15*DENSITY)); android.widget.LinearLayout.LayoutParams rLp = new android.widget.LinearLayout.LayoutParams(-1, -2); rLp.setMargins(0,(int)(10*DENSITY),0,(int)(25*DENSITY)); main.addView(rakIn, rLp);
         android.widget.Button btn = new android.widget.Button(this); btn.setText(lang.get("Add Prayer")); btn.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); btn.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btn.setAllCaps(false); android.graphics.drawable.GradientDrawable bBg = new android.graphics.drawable.GradientDrawable(); bBg.setColor(colorAccent); bBg.setCornerRadius(20f*DENSITY); btn.setBackground(bBg); main.addView(btn, new android.widget.LinearLayout.LayoutParams(-1, (int)(55*DENSITY)));
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
-        final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); applyFont(main, appFonts[0], appFonts[1]);
+        final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); 
+        
+
+        applyFont(main, appFonts[0], appFonts[1]);
         btn.setOnClickListener(new android.view.View.OnClickListener(){@Override public void onClick(android.view.View v){
             String n = nameIn.getText().toString().trim().replace(":", "").replace(",", "").replace("|", ""); String r = rakIn.getText().toString().trim();
             if(!n.isEmpty()) { String cList = sp.getString("custom_nafl_" + prayer, ""); sp.edit().putString("custom_nafl_" + prayer, cList + (cList.isEmpty()?"":",") + n + ":" + (r.isEmpty()?"2":r)).apply(); ad.dismiss(); if(parentDialog!=null) parentDialog.dismiss(); loadTodayPage(); refreshWidget(); int idx = java.util.Arrays.asList(AppConstants.PRAYERS).indexOf(prayer); if(idx != -1) showSunnahDialog(prayer, AppConstants.SUNNAHS[idx]); }
@@ -2202,7 +2441,10 @@ private void showWipeDataDialog() {
         android.widget.Button btnC = new android.widget.Button(this); btnC.setText(lang.get("CANCEL")); btnC.setTextColor(themeColors[2]); btnC.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btnC.setAllCaps(false); android.graphics.drawable.GradientDrawable cBg = new android.graphics.drawable.GradientDrawable(); cBg.setColor(themeColors[4]); cBg.setCornerRadius(15f*DENSITY); btnC.setBackground(cBg); android.widget.LinearLayout.LayoutParams lpC = new android.widget.LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f); lpC.setMargins(0,0,(int)(10*DENSITY),0); row.addView(btnC, lpC);
         android.widget.Button btnD = new android.widget.Button(this); btnD.setText(lang.get("Delete")); btnD.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); btnD.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); btnD.setAllCaps(false); android.graphics.drawable.GradientDrawable dBg = new android.graphics.drawable.GradientDrawable(); dBg.setColor(android.graphics.Color.parseColor("#FF5252")); dBg.setCornerRadius(15f*DENSITY); btnD.setBackground(dBg); row.addView(btnD, new android.widget.LinearLayout.LayoutParams(0, (int)(50*DENSITY), 1f)); main.addView(row);
         android.widget.FrameLayout.LayoutParams flp = new android.widget.FrameLayout.LayoutParams((int)(320*DENSITY), -2); flp.gravity = android.view.Gravity.CENTER; wrap.addView(main, flp);
-        final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); applyFont(main, appFonts[0], appFonts[1]);
+        final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(this).setView(wrap).create(); ad.getWindow().setBackgroundDrawableResource(android.R.color.transparent); ad.getWindow().setGravity(android.view.Gravity.CENTER); 
+        
+
+        applyFont(main, appFonts[0], appFonts[1]);
         btnC.setOnClickListener(new android.view.View.OnClickListener(){@Override public void onClick(android.view.View v){ad.dismiss();}});
         btnD.setOnClickListener(new android.view.View.OnClickListener(){@Override public void onClick(android.view.View v){ String cList = sp.getString("custom_nafl_" + prayer, ""); String[] pts = cList.split(","); StringBuilder sb = new StringBuilder(); for(String p : pts) { if(!p.startsWith(cName+":") && !p.equals(cName)) { sb.append(p).append(","); } } String res = sb.toString(); if(res.endsWith(",")) res = res.substring(0, res.length()-1); sp.edit().putString("custom_nafl_" + prayer, res).apply(); ad.dismiss(); if(parentDialog!=null) parentDialog.dismiss(); loadTodayPage(); refreshWidget(); int idx = java.util.Arrays.asList(AppConstants.PRAYERS).indexOf(prayer); if(idx != -1) showSunnahDialog(prayer, AppConstants.SUNNAHS[idx]); }}); if(!isFinishing()) ad.show();
     }
@@ -3323,6 +3565,15 @@ public class PremiumTasbihView extends LinearLayout {
         else { ld.setLayerInset(0, 0, 0, 6, 6); ld.setLayerInset(1, 0, 0, 6, 6); }
         return ld;
     }
-    private void updateDisplay(){ display.setText(String.format("%04d", count)); }
+    private void updateDisplay() {
+        String numStr = String.format("%04d", count);
+        try {
+            android.content.SharedPreferences sp = getContext().getSharedPreferences("salah_pro_final", 0);
+            if (sp.getString("app_lang", "en").equals("bn")) {
+                numStr = numStr.replace("0", "০").replace("1", "১").replace("2", "২").replace("3", "৩").replace("4", "৪").replace("5", "৫").replace("6", "৬").replace("7", "৭").replace("8", "৮").replace("9", "৯");
+            }
+        } catch(Exception e){}
+        display.setText(numStr);
+    }
     private void vib(Context c, int d){ try{ ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(d); }catch(Exception e){} }
 }
