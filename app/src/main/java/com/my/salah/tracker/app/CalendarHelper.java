@@ -143,7 +143,7 @@ public class CalendarHelper {
                     GradientDrawable bgD = new GradientDrawable(); bgD.setShape(GradientDrawable.OVAL);
                     if (dKey.equals(selectedDate[0])) { bgD.setColor(colorAccent); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
                     else if (isDayCompleted && !isFuture) { bgD.setColor(themeColors[5]); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
-                    else { bgD.setColor(android.graphics.Color.TRANSPARENT); tv.setBackground(((MainActivity)activity).getProgressBorder(dKey, dKey.equals(selectedDate[0]))); }
+                    else { tv.setBackground(null); }
                     cell.addView(tv);
                     cell.setOnClickListener(new View.OnClickListener() { 
                         @Override public void onClick(View v) { 

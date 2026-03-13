@@ -1166,7 +1166,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
                     android.widget.LinearLayout.LayoutParams boxLp = new android.widget.LinearLayout.LayoutParams(-1, -2); boxLp.setMargins(0, 0, 0, (int)(10*DENSITY)); box.setLayoutParams(boxLp);
                     android.view.View dot = new android.view.View(MainActivity.this); android.graphics.drawable.GradientDrawable dotBg = new android.graphics.drawable.GradientDrawable(); dotBg.setShape(android.graphics.drawable.GradientDrawable.OVAL); dotBg.setColor(colorAccent);
                     android.widget.LinearLayout.LayoutParams dotLp = new android.widget.LinearLayout.LayoutParams((int)(8*DENSITY), (int)(8*DENSITY)); dotLp.setMargins(0, 0, (int)(15*DENSITY), 0); dot.setLayoutParams(dotLp); dot.setBackground(dotBg);
-                    android.widget.TextView tv = new android.widget.TextView(MainActivity.this); tv.setText(copts[i]); tv.setTextColor(themeColors[2]); tv.setTextSize(16);
+                    android.widget.TextView tv = new android.widget.TextView(MainActivity.this); tv.setText(copts[i]); tv.setTextColor(themeColors[2]); tv.setTextSize(16); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
                     box.addView(dot); box.addView(tv); main.addView(box);
                     box.setOnClickListener(new android.view.View.OnClickListener() {
                         @Override public void onClick(android.view.View v) {
@@ -1195,7 +1195,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
                     android.widget.LinearLayout.LayoutParams boxLp = new android.widget.LinearLayout.LayoutParams(-1, -2); boxLp.setMargins(0, 0, 0, (int)(10*DENSITY)); box.setLayoutParams(boxLp);
                     android.view.View dot = new android.view.View(MainActivity.this); android.graphics.drawable.GradientDrawable dotBg = new android.graphics.drawable.GradientDrawable(); dotBg.setShape(android.graphics.drawable.GradientDrawable.OVAL); dotBg.setColor(colorAccent);
                     android.widget.LinearLayout.LayoutParams dotLp = new android.widget.LinearLayout.LayoutParams((int)(8*DENSITY), (int)(8*DENSITY)); dotLp.setMargins(0, 0, (int)(15*DENSITY), 0); dot.setLayoutParams(dotLp); dot.setBackground(dotBg);
-                    android.widget.TextView tv = new android.widget.TextView(MainActivity.this); tv.setText(ops[i]); tv.setTextColor(themeColors[2]); tv.setTextSize(16);
+                    android.widget.TextView tv = new android.widget.TextView(MainActivity.this); tv.setText(ops[i]); tv.setTextColor(themeColors[2]); tv.setTextSize(16); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
                     box.addView(dot); box.addView(tv); main.addView(box);
                     box.setOnClickListener(new android.view.View.OnClickListener() {
                         @Override public void onClick(android.view.View v) {
@@ -1216,7 +1216,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
                                 android.widget.LinearLayout.LayoutParams sBoxLp = new android.widget.LinearLayout.LayoutParams(-1, -2); sBoxLp.setMargins(0, 0, 0, (int)(10*DENSITY)); sBox.setLayoutParams(sBoxLp);
                                 android.view.View sDot = new android.view.View(MainActivity.this); android.graphics.drawable.GradientDrawable sDotBg = new android.graphics.drawable.GradientDrawable(); sDotBg.setShape(android.graphics.drawable.GradientDrawable.OVAL); sDotBg.setColor(vals[sj] == currentVal ? android.graphics.Color.WHITE : colorAccent);
                                 android.widget.LinearLayout.LayoutParams sDotLp = new android.widget.LinearLayout.LayoutParams((int)(8*DENSITY), (int)(8*DENSITY)); sDotLp.setMargins(0, 0, (int)(15*DENSITY), 0); sDot.setLayoutParams(sDotLp); sDot.setBackground(sDotBg);
-                                android.widget.TextView sTv = new android.widget.TextView(MainActivity.this); sTv.setText(subOpts[sj]); sTv.setTextColor(vals[sj] == currentVal ? android.graphics.Color.WHITE : themeColors[2]); sTv.setTextSize(16); sTv.setTypeface(vals[sj] == currentVal ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT);
+                                android.widget.TextView sTv = new android.widget.TextView(MainActivity.this); sTv.setText(subOpts[sj]); sTv.setTextColor(vals[sj] == currentVal ? android.graphics.Color.WHITE : themeColors[2]); sTv.setTextSize(16); sTv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
                                 sBox.addView(sDot); sBox.addView(sTv); iMain.addView(sBox);
                                 sBox.setOnClickListener(new android.view.View.OnClickListener() {
                                     @Override public void onClick(android.view.View v) {
