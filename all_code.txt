@@ -1378,6 +1378,24 @@ public class MainActivity extends Activity {
         return new UIComponents.ProgressDrawable(d, 6, c==0?themeColors[4]:c, themeColors[4], DENSITY);
     }
 
+    
+    private void updateLivePercentage(String dK) {
+        try {
+            int nC = 0; 
+            SalahRecord currR = SalahDatabase.getDatabase(this).salahDao().getRecordByDate(dK);
+            if(currR != null) {
+                for(String pr : AppConstants.PRAYERS) { 
+                    String s = getFardStat(currR, pr); 
+                    if(s.equals("yes") || s.equals("excused")) nC++; 
+                }
+            }
+            TextView pT = getWindow().getDecorView().findViewWithTag("PERCENT_TEXT");
+            TextView subBtm = getWindow().getDecorView().findViewWithTag("SUB_TEXT");
+            if(pT != null) pT.setText(lang.bnNum(nC*100/6) + "%");
+            String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get("Just one more!"), lang.get("Purity Achieved!")}; if(subBtm != null) subBtm.setText(statusMsgs[nC]);
+        } catch(Exception e){}
+    }
+
     private void loadTodayPage() {
         final int savedScrollPos = contentArea.getParent() instanceof ScrollView ? ((ScrollView)contentArea.getParent()).getScrollY() : 0;
         contentArea.removeAllViews();
@@ -1446,7 +1464,7 @@ public class MainActivity extends Activity {
      
         
         header.addView(leftHeader); header.addView(rightHeader); contentArea.addView(header);
-        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
+        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(15*DENSITY), (int)(2*DENSITY), (int)(15*DENSITY), (int)(2*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
          // --- 💎 Glassmorphism Effect Applied Here ---
@@ -1480,7 +1498,7 @@ public class MainActivity extends Activity {
         pNeo.setLayoutParams(pNeoLp);
         pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
         pNeo.addView(pCard);
-        pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY));
+        pCard.setPadding((int)(15*DENSITY), (int)(2*DENSITY), (int)(15*DENSITY), (int)(2*DENSITY));
         
         int countCompleted = 0; 
         for(String p : AppConstants.PRAYERS) {
@@ -1492,7 +1510,8 @@ public class MainActivity extends Activity {
         TextView gText = new TextView(this); gText.setText(greetingStr); gText.setTextColor(android.graphics.Color.WHITE); gText.setTextSize(14); gText.setTypeface(Typeface.DEFAULT_BOLD);
         
         TextView pT = new TextView(this); pT.setText(lang.bnNum(countCompleted*100/6) + "%"); pT.setTag("PERCENT_TEXT"); pT.setTextColor(android.graphics.Color.WHITE); pT.setTextSize(36); pT.setTypeface(Typeface.DEFAULT_BOLD); 
-        TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]); subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
+        TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]);
+subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
         left.addView(gText); left.addView(pT); left.addView(subBtm);
         PremiumTasbihView tasbihView = new PremiumTasbihView(this, isDarkTheme, colorAccent);
         tasbihView.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 0.8f));
@@ -1842,7 +1861,7 @@ public class MainActivity extends Activity {
         
         TextView sub = new TextView(this);
         sub.setText(lang.get(isAlreadyExcused ? "Prayers are currently marked as excused." : "Mark today's prayers as excused. Streak will not break.")); sub.setGravity(Gravity.CENTER); sub.setTextColor(themeColors[3]);
-        sub.setTextSize(12); sub.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(sub); 
+        sub.setTextSize(11); sub.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(sub); 
         Button actionBtn = new Button(this);
         actionBtn.setText(lang.get(isAlreadyExcused ? "Remove Excused Status" : "Mark Today as Excused")); actionBtn.setAllCaps(false); actionBtn.setTextColor(android.graphics.Color.WHITE); actionBtn.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable btnBg = new GradientDrawable(); btnBg.setColor(colorAccent);
@@ -2091,7 +2110,7 @@ private void showMarkOptions() {
         scaleX.setRepeatCount(android.animation.ValueAnimator.INFINITE); scaleY.setRepeatCount(android.animation.ValueAnimator.INFINITE); 
         scaleX.setDuration(1000); scaleY.setDuration(1000); 
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet(); animSet.playTogether(scaleX, scaleY); animSet.start();
-        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 0);
+        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 2500);
         applyFont(main, appFonts[0], appFonts[1]); 
     }
 private void showWipeDataDialog() {
@@ -2227,6 +2246,21 @@ private void showWipeDataDialog() {
         }
     }
     
+
+    
+
+
+    
+
+
+    
+
+
+    
+
+
+    
+
 }package com.my.salah.tracker.app;
 
 import android.appwidget.AppWidgetManager;
@@ -3083,15 +3117,6 @@ public class SyncWorker extends Worker {
     }
 }package com.my.salah.tracker.app;
 
-public class TasbihDataStore {
-    // এখানে আপনার সমস্ত দোয়া সুরক্ষিত আছে। যখন খুশি বাড়াতে/কমাতে পারবেন।
-    public static String[] getDuas() {
-        return new String[]{
-            "سُبْحَانَ اللّٰهِ|33", "الْحَمْدُ لِلّٰهِ|33", "اللّٰهُ أَكْبَرُ|34", "لَا إِلٰهَ إِلَّا اللّٰهُ مُحَمَّدٌ رَسُولُ اللّٰهِ|0", "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ كُلَّمَا ذَكَرَهُ الذَّاكِرُونَ وَصَلِّ عَلَى مُحَمَّدٍ كُلَّمَا غَفَلَ عَنْ ذِكْرِهِ الْغَافِلُونَ|0", "صَلَّى اللّٰهُ عَلَيْهِ وَسَلَّمَ|0", "جَزَى اللهُ عَنَّا مُحَمَّدًا مَا هُوَ أَهْلُهُ|0", "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ النَّبِيِّ الْأُمِّيِّ وَعَلَى آلِهِ وَسَلِّمْ تَسْلِيمًا|0", "اَللّٰهُمَّ صَلِّ عَلَىٰ سَيِّدِنَا وَنَبِيِّنَا وَشَفِيعِنَا وَحَبِيبِنَا وَمَوْلَانَا مُحَمَّدٍ ، صَلَّى اللّٰهُ عَلَيْهِ وَعَلَىٰ آلِهِ وَأَصْحَابِهِ وَبَارِكْ وَسَلِّمْ|0", "أَسْتَغْفِرُ اللّٰهَ وَأَتُوبُ إِلَيْهِ|100", "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ|0", "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ|0", "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ|0", "اللَّهُمَّ إِنَّكَ عَفُوٌّ كَرِيمٌ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي|0", "لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِي وَيُمِيتُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ|100", "اللَّهُمَّ اهْدِنَا وَاهْدِ بِنَا وَاهْدِ النَّاسَ جَمِيعًا|0", "اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ، وَلَا مُعْطِيَ لِمَا مَنَعْتَ، وَلَا يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ|1", "أَسْتَغْفِرُ اللهَ|3", "إِلَّا اللهُ|0", "أَعُوذُ بِاللهِ السَّمِيعِ الْعَلِيمِ مِنَ الشَّيْطَانِ الرَّجِيمِ|0", "حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ|7", "أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ غَضَبِهِ وَعِقَابِهِ وَشَرِّ عِبَادِهِ، وَمِنْ هَمَزَاتِ الشَّيْطَانِ وَأَنْ يَحْضُرُونِ|0", "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عِلْمٍ لَا يَنْفَعُ، وَقَلْبٍ لَا يَخْشَعُ، وَدُعَاءٍ لَا يُسْمَعُ، وَنَفْسٍ لَا تَشْبَعُ|0", "أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّةِ، مِنْ كُلِّ شَيْطَانٍ هَامَّةٍ، وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ|0", "حَسْبُنَا اللهُ، وَنِعْمَ الْوَكِيلُ|0", "لَا إِلَهَ إِلَّا اللهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللهُ رَبُّ السَّمَوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ|0", "اللَّهُمَّ إِنَّا نَجْعَلُكَ فِي نُحُورِهِمْ، وَنَعُوذُ بِكَ مِنْ شُرُورِهِمْ|0", "اللَّهُمَّ إِنَّكَ عَفُوٌّ كَرِيمٌ تُحِبُّ الْعَفْوَ فَاعْفُ عَنَّا يَا كَرِيمُ|0", "اللَّهُمَّ أَنْتَ السَّلَامُ، وَمِنْكَ السَّلَامُ، تَبَارَكْتَ ذَا الْجَلَالِ وَالْإِكْرَامِ|1", "رَبِّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ|3", "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسنِ عِبَادَتِكَ|1", "أَعُوذُ بِاللهِ الْعَظِيمِ، وَبِوَجْهِهِ الْكَرِيمِ، وَسُلْطَانِهِ الْقَدِيمِ، مِنَ الشَّيْطَانِ الرَّجِيمِ|1", "لَا إِلَهَ إِلَّا اللهُ|0", "رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ|100", "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ|3", "اللَّهُمَّ مُصَرِّفَ الْقُلُوبِ صَرِّفْ قُلُوبَنَا عَلَى طَاعَتِكَ|0", "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ وَالْعَجْزِ وَالْكَسَلِ وَالْبُخْلِ وَالْجُبْنِ وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ|0", "اَللَّهُمَّ اجْعَلْ فِيْ قَلْبِيْ نُوْرًا وَفِيْ لِسَانِيْ نُوْرًا وَاجْعَلْ فِيْ سَمْعِيْ نُوْرًا وَاجْعَلْ فِيْ بَصَرِيْ نُوْرًا|0", "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ وَرِضَا نَفْسِهِ وَزِنَةَ عَرْشِهِ وَمِدَادَ كَلِمَاتِهِ|3", "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي وَاهْدِنِي وَعَافِنِي وَارْزُقْنِي|0", "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ|0", "سُبْحَانَ اللّٰهِ وَبِحَمْدِهِ ، سُبْحَانَ اللّٰهِ الْعَظِيمِ|100", "لَا إِلٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ|0", "لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ|100", "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ|0", "سُبْحَانَ اللّٰهِ وَالْحَمْدُ لِلّٰهِ وَلَا إِلٰهَ إِلَّا اللّٰهُ وَاللّٰهُ أَكْبَرُ|0", "بِسْمِ اللّٰهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ|3", "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ|0", "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا|1", "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ|7", "رَضِيتُ بِاللَّهِ رَبًّا وَبִالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ نَبِيًّا|3", "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ|7", "أَسْتَغْفِرُ اللَّهَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ|0"
-        };
-    }
-}package com.my.salah.tracker.app;
-
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -3237,1043 +3262,67 @@ public class UIComponents {
         ad.getWindow().setGravity(Gravity.CENTER); 
         if(!activity.isFinishing()) ad.show(); 
     }
-}package com.my.salah.tracker.app.fragments;
+}package com.my.salah.tracker.app;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import androidx.fragment.app.Fragment;
-import java.lang.reflect.Field;
-import com.my.salah.tracker.app.LanguageEngine;
-
-public class FastingFragment extends Fragment {
-    private Object getField(String name) {
-        try { Field f = getActivity().getClass().getDeclaredField(name); f.setAccessible(true); return f.get(getActivity()); } catch (Exception e) { return null; }
-    }
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Context ctx = getContext();
-        int[] themeColors = (int[]) getField("themeColors");
-        int colorAccent = themeColors != null ? (Integer) getField("colorAccent") : Color.parseColor("#00BFA5");
-        float DENSITY = themeColors != null ? (Float) getField("DENSITY") : 3.0f;
-        LanguageEngine lang = (LanguageEngine) getField("lang");
-        boolean isBn = false; try { isBn = lang.get("Fajr").equals("ফজর"); } catch(Exception e){}
-        Typeface[] fonts = (Typeface[]) getField("appFonts");
-        Typeface tfBold = fonts != null ? fonts[1] : Typeface.DEFAULT_BOLD;
-        Typeface tfReg = fonts != null ? fonts[0] : Typeface.DEFAULT;
-
-        ScrollView scroll = new ScrollView(ctx);
-        scroll.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-        scroll.setBackgroundColor(themeColors != null ? themeColors[0] : Color.parseColor("#F5F5F5"));
-
-        LinearLayout root = new LinearLayout(ctx);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding((int)(20*DENSITY), (int)(40*DENSITY), (int)(20*DENSITY), (int)(100*DENSITY));
-        root.setGravity(Gravity.CENTER_HORIZONTAL);
-        scroll.addView(root);
-
-        TextView header = new TextView(ctx);
-        header.setText(isBn ? "রোজা (Fasting)" : "Fasting");
-        header.setTypeface(tfBold); header.setTextSize(28);
-        header.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        header.setGravity(Gravity.CENTER); header.setPadding(0, 0, 0, (int)(30*DENSITY));
-        root.addView(header);
-
-        LinearLayout card = new LinearLayout(ctx);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding((int)(25*DENSITY), (int)(40*DENSITY), (int)(25*DENSITY), (int)(40*DENSITY));
-        card.setGravity(Gravity.CENTER);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(themeColors != null ? themeColors[1] : Color.WHITE);
-        bg.setCornerRadius(30f * DENSITY);
-        if (themeColors != null) bg.setStroke((int)(1.5f * DENSITY), themeColors[4]);
-        card.setBackground(bg);
-        if (android.os.Build.VERSION.SDK_INT >= 21) card.setElevation(10f);
-
-        TextView iconView = new TextView(ctx);
-        iconView.setText("🌙"); iconView.setTextSize(60);
-        iconView.setGravity(Gravity.CENTER); iconView.setPadding(0, 0, 0, (int)(15*DENSITY));
-        card.addView(iconView);
-
-        TextView title = new TextView(ctx);
-        title.setText(isBn ? "খুব শিগগিরই আসছে!" : "Coming Soon!");
-        title.setTypeface(tfBold); title.setTextColor(colorAccent);
-        title.setTextSize(24); title.setGravity(Gravity.CENTER); title.setPadding(0, 0, 0, (int)(10*DENSITY));
-        card.addView(title);
-
-        TextView desc = new TextView(ctx);
-        desc.setText(isBn ? "রমজান এবং নফল রোজার ট্র্যাকিং, সাহরি ও ইফতারের সময়সূচিসহ চমৎকার সব ফিচার নিয়ে এই পেজটি পরবর্তী আপডেটে যুক্ত করা হবে ইনশাআল্লাহ্‌।" : "Ramadan & Nafl fasting tracker with Suhoor & Iftar timings will be added in the next update InshaAllah.");
-        desc.setTypeface(tfReg); desc.setTextColor(themeColors != null ? themeColors[3] : Color.GRAY);
-        desc.setTextSize(16); desc.setGravity(Gravity.CENTER); desc.setLineSpacing(0, 1.2f);
-        card.addView(desc);
-
-        root.addView(card);
-        return scroll;
-    }
-}
-package com.my.salah.tracker.app.fragments;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Bundle;
-import android.text.InputType;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.fragment.app.Fragment;
-import java.util.Calendar;
-import java.lang.reflect.Field;
-import com.my.salah.tracker.app.LanguageEngine;
-
-public class QuranFragment extends Fragment {
-
-    private Object getField(String name) {
-        try { Field f = getActivity().getClass().getDeclaredField(name); f.setAccessible(true); return f.get(getActivity()); } catch (Exception e) { return null; }
-    }
-
-    private String[] ayats = {
-        "فَٱذْكُرُونِىٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِى وَلَا تَكْفُرُونِ|অতএব তোমরা আমাকে স্মরণ কর, আমিও তোমাদেরকে স্মরণ করব। আর তোমরা আমার প্রতি কৃতজ্ঞ হও এবং অকৃতজ্ঞ হয়ো না। (সূরা আল-বাকারা: ১৫২)|Therefore remember Me, I will remember you, and be thankful to Me. (Al-Baqarah: 152)",
-        "إِنَّ ٱللَّهَ مَعَ ٱلصَّـٰبِرِينَ|নিশ্চয়ই আল্লাহ ধৈর্যশীলদের সাথে আছেন। (সূরা আল-বাকারা: ১৫৩)|Indeed, Allah is with the patient. (Al-Baqarah: 153)",
-        "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ|এবং তোমরা যেখানেই থাক না কেন, তিনি তোমাদের সাথেই আছেন। (সূরা আল-হাদীদ: ৪)|And He is with you wherever you are. (Al-Hadid: 4)",
-        "لَا تَحْزَنْ إِنَّ ٱللَّهَ مَعَنَا|চিন্তা করো না, নিশ্চয়ই আল্লাহ আমাদের সাথে আছেন। (সূরা আত-তাওবাহ: ৪০)|Do not grieve; indeed Allah is with us. (At-Tawbah: 40)",
-        "فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا|নিশ্চয়ই কষ্টের সাথেই রয়েছে স্বস্তি। (সূরা আশ-শারহ: ৫)|For indeed, with hardship [will be] ease. (Ash-Sharh: 5)",
-        "وَٱللَّهُ يَهْدِى مَن يَشَآءُ إِلَىٰ صِرَٰطٍ مُّسْتَقِيمٍ|আর আল্লাহ যাকে ইচ্ছা সরল পথের দিশা দেন। (সূরা আল-বাকারা: ২১৩)|And Allah guides whom He wills to a straight path. (Al-Baqarah: 213)",
-        "وَخُلِقَ ٱلْإِنسَـٰنُ ضَعِيفًا|আর মানুষকে সৃষ্টি করা হয়েছে দুর্বল করে। (সূরা আন-নিসা: ২৮)|And mankind was created weak. (An-Nisa: 28)",
-        "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ|আমাদেরকে সরল পথ প্রদর্শন করুন। (সূরা আল-ফাতিহা: ৬)|Guide us to the straight path. (Al-Fatihah: 6)"
-    };
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Context ctx = getContext();
-        int[] themeColors = (int[]) getField("themeColors");
-        int colorAccent = themeColors != null ? (Integer) getField("colorAccent") : Color.parseColor("#00BFA5");
-        float DENSITY = themeColors != null ? (Float) getField("DENSITY") : 3.0f;
-        LanguageEngine lang = (LanguageEngine) getField("lang");
-        boolean isBnTemp = false; try { isBnTemp = lang.get("Fajr").equals("ফজর"); } catch(Exception e){}
-        final boolean isBn = isBnTemp;
-        Typeface[] fonts = (Typeface[]) getField("appFonts");
-        Typeface tfBold = fonts != null ? fonts[1] : Typeface.DEFAULT_BOLD;
-        Typeface tfReg = fonts != null ? fonts[0] : Typeface.DEFAULT;
-        Typeface arabicFont = null; try { arabicFont = Typeface.createFromAsset(ctx.getAssets(), "fonts/al_majeed_quranic_font_shiped.ttf"); } catch (Exception e) {}
-
-        ScrollView scroll = new ScrollView(ctx);
-        scroll.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-        scroll.setBackgroundColor(themeColors != null ? themeColors[0] : Color.parseColor("#F5F5F5"));
-
-        LinearLayout root = new LinearLayout(ctx);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding((int)(20*DENSITY), (int)(30*DENSITY), (int)(20*DENSITY), (int)(100*DENSITY));
-        scroll.addView(root);
-
-        TextView header = new TextView(ctx);
-        header.setText(isBn ? "আল কুরআন" : "Al Quran");
-        header.setTypeface(tfBold); header.setTextSize(28);
-        header.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        header.setGravity(Gravity.CENTER); header.setPadding(0, 0, 0, (int)(20*DENSITY));
-        root.addView(header);
-
-        LinearLayout ayatCard = new LinearLayout(ctx);
-        ayatCard.setOrientation(LinearLayout.VERTICAL);
-        ayatCard.setPadding((int)(20*DENSITY), (int)(25*DENSITY), (int)(20*DENSITY), (int)(25*DENSITY));
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(themeColors != null ? themeColors[1] : Color.WHITE);
-        bg.setCornerRadius(25f * DENSITY);
-        if (themeColors != null) bg.setStroke((int)(1.5f * DENSITY), themeColors[4]);
-        ayatCard.setBackground(bg);
-        if (android.os.Build.VERSION.SDK_INT >= 21) ayatCard.setElevation(8f);
-
-        TextView ayatTitle = new TextView(ctx);
-        ayatTitle.setText(isBn ? "আজকের আয়াত" : "Ayat of the Day");
-        ayatTitle.setTypeface(tfBold); ayatTitle.setTextColor(themeColors != null ? themeColors[3] : Color.GRAY);
-        ayatTitle.setTextSize(14); ayatTitle.setGravity(Gravity.CENTER); ayatTitle.setPadding(0, 0, 0, (int)(15*DENSITY));
-        ayatCard.addView(ayatTitle);
-
-        int dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
-        String[] todayAyat = ayats[dayOfYear % ayats.length].split("\\|");
-
-        TextView arabicText = new TextView(ctx);
-        arabicText.setText(todayAyat[0]);
-        if (arabicFont != null) arabicText.setTypeface(arabicFont);
-        arabicText.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        arabicText.setTextSize(32); arabicText.setGravity(Gravity.CENTER); arabicText.setLineSpacing(0, 1.3f);
-        ayatCard.addView(arabicText);
-
-        TextView transText = new TextView(ctx);
-        transText.setText(isBn ? todayAyat[1] : todayAyat[2]);
-        transText.setTypeface(tfReg); transText.setTextColor(themeColors != null ? themeColors[3] : Color.DKGRAY);
-        transText.setTextSize(16); transText.setGravity(Gravity.CENTER); transText.setPadding(0, (int)(20*DENSITY), 0, (int)(5*DENSITY));
-        ayatCard.addView(transText);
-        root.addView(ayatCard);
-
-        LinearLayout trackCard = new LinearLayout(ctx);
-        trackCard.setOrientation(LinearLayout.VERTICAL);
-        trackCard.setPadding((int)(20*DENSITY), (int)(25*DENSITY), (int)(20*DENSITY), (int)(25*DENSITY));
-        trackCard.setBackground(bg);
-        if (android.os.Build.VERSION.SDK_INT >= 21) trackCard.setElevation(8f);
-        LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(-1, -2);
-        tLp.setMargins(0, (int)(25*DENSITY), 0, 0);
-        trackCard.setLayoutParams(tLp);
-
-        TextView trackTitle = new TextView(ctx);
-        trackTitle.setText(isBn ? "তিলাওয়াত ট্র্যাকার" : "Recitation Tracker");
-        trackTitle.setTypeface(tfBold); trackTitle.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        trackTitle.setTextSize(18); trackTitle.setGravity(Gravity.CENTER); trackTitle.setPadding(0, 0, 0, (int)(15*DENSITY));
-        trackCard.addView(trackTitle);
-
-        final SharedPreferences prefs = ctx.getSharedPreferences("QuranPrefs", Context.MODE_PRIVATE);
-        LinearLayout inputRow = new LinearLayout(ctx);
-        inputRow.setOrientation(LinearLayout.HORIZONTAL);
-        inputRow.setWeightSum(2f);
-
-        EditText paraInput = new EditText(ctx);
-        paraInput.setHint(isBn ? "পারা (১-৩০)" : "Para (1-30)");
-        paraInput.setTypeface(tfReg); paraInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        paraInput.setGravity(Gravity.CENTER); paraInput.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        paraInput.setTextSize(16); paraInput.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        paraInput.setHintTextColor(themeColors != null ? themeColors[3] : Color.GRAY);
-        GradientDrawable iBg = new GradientDrawable(); iBg.setColor(themeColors != null ? themeColors[4] : Color.LTGRAY); iBg.setCornerRadius(15f*DENSITY);
-        paraInput.setBackground(iBg); paraInput.setText(prefs.getString("saved_para", ""));
-        LinearLayout.LayoutParams pLp = new LinearLayout.LayoutParams(0, -2, 1f); pLp.setMargins(0, 0, (int)(8*DENSITY), 0);
-        paraInput.setLayoutParams(pLp); inputRow.addView(paraInput);
-
-        EditText pageInput = new EditText(ctx);
-        pageInput.setHint(isBn ? "পৃষ্ঠা নম্বর" : "Page No.");
-        pageInput.setTypeface(tfReg); pageInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        pageInput.setGravity(Gravity.CENTER); pageInput.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        pageInput.setTextSize(16); pageInput.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        pageInput.setHintTextColor(themeColors != null ? themeColors[3] : Color.GRAY);
-        pageInput.setBackground(iBg); pageInput.setText(prefs.getString("saved_page", ""));
-        LinearLayout.LayoutParams pgLp = new LinearLayout.LayoutParams(0, -2, 1f); pgLp.setMargins((int)(8*DENSITY), 0, 0, 0);
-        pageInput.setLayoutParams(pgLp); inputRow.addView(pageInput);
-        trackCard.addView(inputRow);
-
-        Button saveBtn = new Button(ctx);
-        saveBtn.setText(isBn ? "সংরক্ষণ করুন" : "Save Progress");
-        saveBtn.setTypeface(tfBold); saveBtn.setTextColor(android.graphics.Color.WHITE); saveBtn.setAllCaps(false); saveBtn.setTextSize(16);
-        GradientDrawable bBg = new GradientDrawable(); bBg.setColor(colorAccent); bBg.setCornerRadius(15f*DENSITY);
-        saveBtn.setBackground(bBg);
-        LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(-1, (int)(50*DENSITY)); btnLp.setMargins(0, (int)(20*DENSITY), 0, 0);
-        saveBtn.setLayoutParams(btnLp);
-        saveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                prefs.edit().putString("saved_para", paraInput.getText().toString()).putString("saved_page", pageInput.getText().toString()).apply();
-                Toast.makeText(getContext(), isBn ? "মাশাআল্লাহ! সেভ হয়েছে।" : "Mashallah! Saved.", Toast.LENGTH_SHORT).show();
-            }
-        });
-        trackCard.addView(saveBtn);
-        root.addView(trackCard);
-        return scroll;
-    }
-}
-package com.my.salah.tracker.app.fragments;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import android.view.Gravity;
-import androidx.fragment.app.Fragment;
-
-public class SalahFragment extends Fragment {
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // আপাতত এটি একটি সিম্পল টেক্সট দেখাবে
-        TextView tv = new TextView(getContext());
-        tv.setText("Salah Page");
-        tv.setGravity(Gravity.CENTER);
-        tv.setTextSize(24f);
-        return tv;
-    }
-}
-package com.my.salah.tracker.app.fragments;
-
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import androidx.fragment.app.Fragment;
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import com.my.salah.tracker.app.StatsHelper;
-import com.my.salah.tracker.app.LanguageEngine;
-import com.my.salah.tracker.app.UIComponents;
-
-public class StatsFragment extends Fragment {
-
-    // MainActivity থেকে অরিজিনাল ডাটা এবং লজিক আনার জন্য Reflection মেথড
-    private Object getField(String name) {
-        try {
-            Field f = getActivity().getClass().getDeclaredField(name);
-            f.setAccessible(true);
-            return f.get(getActivity());
-        } catch (Exception e) { return null; }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Context ctx = getContext();
-        
-        // অরিজিনাল লজিক কানেকশন
-        final StatsHelper statsHelper = (StatsHelper) getField("statsHelper");
-        LanguageEngine lang = (LanguageEngine) getField("lang");
-        UIComponents ui = (UIComponents) getField("ui");
-        int[] themeColors = (int[]) getField("themeColors");
-        int colorAccent = themeColors != null ? (Integer) getField("colorAccent") : Color.parseColor("#00BFA5");
-        float DENSITY = themeColors != null ? (Float) getField("DENSITY") : 3.0f;
-        final SimpleDateFormat sdf = (SimpleDateFormat) getField("sdf");
-        final String[] selectedDate = (String[]) getField("selectedDate");
-
-        boolean isBn = false;
-        try { isBn = lang.get("Fajr").equals("ফজর"); } catch(Exception e){}
-
-        Typeface tfBold = Typeface.DEFAULT_BOLD;
-        try {
-            if (isBn) tfBold = Typeface.createFromAsset(ctx.getAssets(), "fonts/hind_bold.ttf");
-            else tfBold = Typeface.createFromAsset(ctx.getAssets(), "fonts/poppins_bold.ttf");
-        } catch (Exception e) {}
-
-        ScrollView scroll = new ScrollView(ctx);
-        scroll.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-        scroll.setBackgroundColor(themeColors != null ? themeColors[0] : Color.parseColor("#F8FAFC"));
-
-        LinearLayout root = new LinearLayout(ctx);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding((int)(20*DENSITY), (int)(40*DENSITY), (int)(20*DENSITY), (int)(150*DENSITY));
-        scroll.addView(root);
-
-        // হেডার ডিজাইন
-        TextView header = new TextView(ctx);
-        header.setText(isBn ? "বিস্তারিত রিপোর্ট" : "Advanced Statistics");
-        header.setTypeface(tfBold);
-        header.setTextSize(28);
-        header.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-        header.setGravity(Gravity.CENTER);
-        header.setPadding(0, 0, 0, (int)(40*DENSITY));
-        root.addView(header);
-
-        // অরিজিনাল ডাটাবেস সিঙ্ক করা
-        try {
-            if (statsHelper != null && sdf != null && selectedDate != null) {
-                statsHelper.syncDate(sdf.parse(selectedDate[0]));
-            }
-        } catch (Exception e) {}
-
-        // বাটনের তালিকা
-        String[] titles = {
-            isBn ? "সাপ্তাহিক পরিসংখ্যান" : "Weekly Statistics",
-            isBn ? "মাসিক পরিসংখ্যান" : "Monthly Statistics",
-            isBn ? "রিপোর্ট শেয়ার (ছবি)" : "Share Report (Image)",
-            isBn ? "প্রিমিয়াম এক্সেল (XLS) এক্সপোর্ট" : "Export Premium XLS",
-            isBn ? "প্রিমিয়াম পিডিএফ এক্সপোর্ট" : "Export Premium PDF"
-        };
-        
-        String[] emojis = {"📊", "📈", "🖼️", "📗", "📕"};
-
-        // বাটনের অ্যাকশন (অরিজিনাল StatsHelper মেথড কল করা)
-        final Runnable[] actions = {
-            new Runnable() { public void run() { if(statsHelper!=null) statsHelper.showStats(true); } },
-            new Runnable() { public void run() { if(statsHelper!=null) statsHelper.showStats(false); } },
-            new Runnable() { public void run() { 
-                try { java.lang.reflect.Method m = statsHelper.getClass().getDeclaredMethod("showShareTypeDialog"); m.setAccessible(true); m.invoke(statsHelper); } catch(Exception e){}
-            } },
-            new Runnable() { public void run() { if(statsHelper!=null) statsHelper.exportXls(); } },
-            new Runnable() { public void run() { if(statsHelper!=null) statsHelper.exportPdf(); } }
-        };
-
-        // ৫টি প্রিমিয়াম বাটন তৈরি করা
-        for (int i = 0; i < titles.length; i++) {
-            final int idx = i;
-            LinearLayout btn = new LinearLayout(ctx);
-            btn.setOrientation(LinearLayout.HORIZONTAL);
-            btn.setGravity(Gravity.CENTER_VERTICAL);
-            btn.setPadding((int)(20*DENSITY), (int)(22*DENSITY), (int)(20*DENSITY), (int)(22*DENSITY));
-            
-            GradientDrawable bg = new GradientDrawable();
-            bg.setColor(themeColors != null ? themeColors[1] : Color.WHITE);
-            bg.setCornerRadius(20f * DENSITY);
-            if (themeColors != null) bg.setStroke((int)(1.5f * DENSITY), themeColors[4]);
-            btn.setBackground(bg);
-            
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
-                btn.setElevation(8f);
-            }
-            
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
-            lp.setMargins((int)(10*DENSITY), 0, (int)(10*DENSITY), (int)(20*DENSITY));
-            btn.setLayoutParams(lp);
-
-            if (ui != null) {
-                View icon = ui.getPremiumIcon(emojis[i], colorAccent, colorAccent, 38);
-                LinearLayout.LayoutParams icLp = new LinearLayout.LayoutParams((int)(38*DENSITY), (int)(38*DENSITY));
-                icLp.setMargins(0, 0, (int)(18*DENSITY), 0);
-                icon.setLayoutParams(icLp);
-                btn.addView(icon);
-            }
-
-            TextView tv = new TextView(ctx);
-            tv.setText(titles[i]);
-            tv.setTextColor(themeColors != null ? themeColors[2] : Color.BLACK);
-            tv.setTextSize(16);
-            tv.setTypeface(tfBold);
-            btn.addView(tv);
-
-            btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                    actions[idx].run();
-                }
-            });
-
-            if (ui != null) ui.addClickFeedback(btn);
-            
-            root.addView(btn);
-        }
-
-        return scroll;
-    }
-}
-package com.my.salah.tracker.app.fragments;
-
-import android.animation.ValueAnimator;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.RectF;
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.text.Layout;
-import android.text.StaticLayout;
-import android.text.TextPaint;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import androidx.fragment.app.Fragment;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import com.my.salah.tracker.app.TasbihDataStore;
-
-public class ZikrFragment extends Fragment {
-    class TasbihData {
-        String arabic; int target; boolean soundOn;
-        TasbihData(String a, int t, boolean s) { this.arabic = a; this.target = t; this.soundOn = s; }
-    }
-
-    final ArrayList<TasbihData> tasbihList = new ArrayList<>();
-    final int[] currentIdx = {0};
-    final int[] individualCounts = new int[200];
-    final int[] individualRounds = new int[200];
-    final int[] individualTotals = new int[200];
-    
-    android.media.ToneGenerator toneGen;
-    Typeface arabicFont, bnFont;
-    float visualBeadPos = 0f; 
-    ValueAnimator beadAnim;
-    
-    final int[][] beadThemes = {
-        {Color.parseColor("#111111"), Color.parseColor("#666666")}, 
-        {Color.parseColor("#E0E0E0"), Color.parseColor("#FFFFFF")}, 
-        {Color.parseColor("#D4AF37"), Color.parseColor("#FFF5C3")}, 
-        {Color.parseColor("#B87333"), Color.parseColor("#F5DEB3")}, 
-        {Color.parseColor("#5C4033"), Color.parseColor("#8B5A2B")}, 
-        {Color.parseColor("#2E8B57"), Color.parseColor("#8FBC8F")}  
-    };
-    int currentBeadTheme = 2; 
-
-    private Object getField(String name) {
-        try { Field f = getActivity().getClass().getDeclaredField(name); f.setAccessible(true); return f.get(getActivity()); } catch (Exception e) { return null; }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Context ctx = getContext();
-        final int[] themeColors = (int[]) getField("themeColors");
-        com.my.salah.tracker.app.LanguageEngine lang = (com.my.salah.tracker.app.LanguageEngine) getField("lang");
-        boolean isBnTemp = false; try { isBnTemp = lang.get("Fajr").equals("ফজর"); } catch(Exception e){}
-        final boolean isBn = isBnTemp;
-        
-        final int bgCol = themeColors != null && themeColors.length > 0 ? themeColors[0] : Color.parseColor("#FDFCF0");
-        final int cardCol = themeColors != null && themeColors.length > 1 ? themeColors[1] : Color.WHITE;
-        final int textCol = themeColors != null && themeColors.length > 2 ? themeColors[2] : Color.BLACK;
-        final int accentCol = themeColors != null && themeColors.length > 4 ? themeColors[4] : Color.parseColor("#00BFA5");
-
-        Typeface[] fonts = (Typeface[]) getField("appFonts");
-        if (fonts != null && fonts.length > 1) bnFont = fonts[1];
-
-        toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100);
-        try { arabicFont = Typeface.createFromAsset(ctx.getAssets(), "fonts/al_majeed_quranic_font_shiped.ttf"); } catch (Exception e) {}
-        
-        android.content.SharedPreferences prefs = ctx.getSharedPreferences("TasbihPrefs", Context.MODE_PRIVATE);
-        tasbihList.clear();
-        ArrayList<TasbihData> allData = new ArrayList<>();
-        
-        String[] duas = TasbihDataStore.getDuas();
-        for(int i=3; i<duas.length; i++) {
-            String[] p = duas[i].split("\\|");
-            allData.add(new TasbihData(p[0], Integer.parseInt(p[1]), true));
-        }
-        Collections.sort(allData, (d1, d2) -> Integer.compare(d1.arabic.length(), d2.arabic.length()));
-        for(int i=0; i<3; i++) {
-            String[] p = duas[i].split("\\|");
-            tasbihList.add(new TasbihData(p[0], Integer.parseInt(p[1]), true));
-        }
-        tasbihList.addAll(allData);
-        
-        int customCount = prefs.getInt("custom_dua_count", 0);
-        for(int i=0; i<customCount; i++) {
-            String cDua = prefs.getString("custom_dua_" + i, "");
-            int cTarg = prefs.getInt("custom_target_" + i, 33);
-            if(!cDua.isEmpty()) tasbihList.add(new TasbihData(cDua, cTarg, true));
-        }
-        
-        for (int i = 0; i < tasbihList.size(); i++) {
-            individualCounts[i] = prefs.getInt("ind_" + i, 0);
-            individualRounds[i] = prefs.getInt("round_" + i, 0);
-            individualTotals[i] = prefs.getInt("total_" + i, 0);
-            tasbihList.get(i).target = prefs.getInt("target_custom_" + i, tasbihList.get(i).target);
-            tasbihList.get(i).soundOn = prefs.getBoolean("sound_" + i, true);
-        }
-        
-        currentIdx[0] = prefs.getInt("lastIdx", 0);
-        if (currentIdx[0] >= tasbihList.size() || currentIdx[0] < 0) currentIdx[0] = 0;
-        currentBeadTheme = prefs.getInt("bead_theme", 2);
-        visualBeadPos = individualCounts[currentIdx[0]];
-
-        final View circleView = new View(ctx) {
-            private String formatNum(int num) {
-                String out = String.valueOf(num);
-                if (!isBn) return out;
-                String[] eng = {"0","1","2","3","4","5","6","7","8","9"}, bng = {"০","১","২","৩","৪","৫","৬","৭","৮","৯"};
-                for(int i=0; i<10; i++) out = out.replace(eng[i], bng[i]); return out;
-            }
-            
-            int lastDrawnIdx = -1;
-
-            @Override protected void onDraw(Canvas canvas) {
-                super.onDraw(canvas);
-                float w = getWidth(), h = getHeight();
-                if (w <= 0 || h <= 0) return; 
-                float centerX = w / 2.0f;
-                Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-                int idx = currentIdx[0]; 
-                TasbihData d = tasbihList.get(idx); int curVal = individualCounts[idx];
-                
-                if (lastDrawnIdx != idx) { visualBeadPos = curVal; lastDrawnIdx = idx; }
-
-                float boxTop = h * 0.04f, boxHeight = h * 0.17f;
-                float circleY = boxTop + boxHeight + (h * 0.22f), radius = w * 0.29f;
-                float beadY = circleY + radius + (h * 0.09f);
-                float totalBoxY = beadY + (h * 0.14f);
-                float themeY = h - (h * 0.05f);
-
-                // --- 1. Salah Tab Style Day/Night Dua Box ---
-                RectF boxRect = new RectF(40, boxTop, w - 40, boxTop + boxHeight);
-                int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
-                boolean isDayTime = (hour >= 6 && hour < 18);
-                int[] cardColors = isDayTime ? new int[]{Color.parseColor("#FFB75E"), Color.parseColor("#ED8F03")} 
-                                             : new int[]{Color.parseColor("#00C9FF"), Color.parseColor("#1A2980")};
-                android.graphics.LinearGradient lg = new android.graphics.LinearGradient(
-                    40, boxTop, w-40, boxTop+boxHeight, cardColors[0], cardColors[1], android.graphics.Shader.TileMode.CLAMP);
-                p.setShader(lg); p.setShadowLayer(15f, 0, 10f, Color.argb(60, 0, 0, 0));
-                canvas.drawRoundRect(boxRect, 50f, 50f, p); p.clearShadowLayer(); p.setShader(null);
-
-                TextPaint tp = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-                if(arabicFont != null) tp.setTypeface(arabicFont); 
-                tp.setColor(Color.WHITE); tp.setShadowLayer(5f, 0f, 2f, Color.argb(150, 0,0,0));
-                int layoutWidth = (int)(w - 100); 
-                if (layoutWidth > 0) {
-                    float autoFontSize = 95f; android.text.StaticLayout sl;
-                    while (true) {
-                        tp.setTextSize(autoFontSize);
-                        sl = new android.text.StaticLayout(d.arabic, tp, layoutWidth, android.text.Layout.Alignment.ALIGN_CENTER, 1.1f, 0.0f, false);
-                        if (sl.getHeight() <= (boxHeight - 40f) || autoFontSize <= 35f) break; autoFontSize -= 2f; 
-                    }
-                    canvas.save(); canvas.translate(centerX - (layoutWidth / 2f), boxTop + (boxHeight - sl.getHeight()) / 2f);
-                    sl.draw(canvas); canvas.restore(); tp.clearShadowLayer();
-                }
-
-                // --- 2. Dynamic 3D Progress Ring & Ball ---
-                int themeMain = accentCol;
-                float sweep = (d.target > 0) ? ((float)curVal / d.target) * 360f : 0f;
-                float rOuter = radius + 25f;
-                
-                // বৃত্তের বর্ডার (গ্রে কালার মুছে থিমের কালার বসানো হয়েছে)
-                android.graphics.SweepGradient themeRing = new android.graphics.SweepGradient(centerX, circleY, new int[]{cardCol, themeMain, cardCol, themeMain, cardCol}, null);
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(30f); p.setShader(themeRing); p.setShadowLayer(20f, 0, 15f, Color.argb(120,0,0,0));
-                canvas.drawCircle(centerX, circleY, rOuter, p); p.clearShadowLayer(); p.setShader(null);
-                
-                p.setStrokeWidth(15f); p.setColor(Color.argb(40, 0,0,0)); canvas.drawCircle(centerX, circleY, radius, p);
-                
-                // প্রোগ্রেস লাইন
-                p.setStrokeWidth(22f); p.setStrokeCap(Paint.Cap.ROUND); p.setColor(themeMain);
-                canvas.drawArc(new RectF(centerX-radius, circleY-radius, centerX+radius, circleY+radius), -90, sweep, false, p);
-                
-                // ৩ডি বল (সাদা থেকে থিম কালারের গ্রেডিয়েন্ট)
-                double angle = Math.toRadians(sweep - 90);
-                float ballX = (float) (centerX + radius * Math.cos(angle)), ballY = (float) (circleY + radius * Math.sin(angle));
-                p.setStyle(Paint.Style.FILL); 
-                android.graphics.RadialGradient ballRg = new android.graphics.RadialGradient(ballX-5, ballY-5, 30f, Color.WHITE, themeMain, android.graphics.Shader.TileMode.CLAMP);
-                p.setShader(ballRg); p.setShadowLayer(10, 0, 5, Color.argb(100,0,0,0));
-                canvas.drawCircle(ballX, ballY, 24f, p); p.clearShadowLayer(); p.setShader(null);
-
-                p.setStyle(Paint.Style.FILL); if(bnFont != null) p.setTypeface(bnFont); p.setColor(textCol); 
-                String mainCountStr = formatNum(curVal); String targetPart = " / " + formatNum(d.target); 
-                p.setTextSize(260f); float mainTextWidth = p.measureText(mainCountStr);
-                Paint targetPaint = new Paint(p); targetPaint.setTextSize(55f); targetPaint.setColor(themeMain); 
-                targetPaint.setUnderlineText(true); 
-                float targetWidth = targetPaint.measureText(targetPart); float startX = centerX - ((mainTextWidth + targetWidth) / 2f);
-                p.setTextAlign(Paint.Align.LEFT); canvas.drawText(mainCountStr, startX, circleY + 85f, p);
-                targetPaint.setTextAlign(Paint.Align.LEFT); canvas.drawText(targetPart, startX + mainTextWidth, circleY + 85f, targetPaint);
-
-                // --- 3. 3D Premium U-Curve Beads ---
-                float bRad = 45f, spacing = 85f, gapSize = 150f, dip = 110f;
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(8f); p.setColor(Color.parseColor("#C19A6B"));
-                Path sPath = new Path(); sPath.moveTo(-50, beadY); sPath.quadTo(centerX, beadY + dip * 2.1f, w + 50, beadY);
-                canvas.drawPath(sPath, p);
-
-                for(int i = curVal - 15; i <= curVal + 15; i++) {
-                    float rel = i - visualBeadPos; 
-                    float bx;
-                    if (rel <= 0) bx = centerX - gapSize/2f - Math.abs(rel) * spacing; 
-                    else if (rel >= 1) bx = centerX + gapSize/2f + (rel - 1f) * spacing; 
-                    else bx = centerX + gapSize/2f - (1f - rel) * gapSize; 
-
-                    if (bx < -50 || bx > w + 50) continue;
-                    float dx = bx - centerX; float maxDx = w / 2f;
-                    float by = beadY + dip * (1f - (dx * dx) / (maxDx * maxDx)); 
-
-                    p.setStyle(Paint.Style.FILL);
-                    android.graphics.RadialGradient woodRg = new android.graphics.RadialGradient(bx - 12f, by - 12f, bRad * 1.5f, new int[]{beadThemes[currentBeadTheme][1], beadThemes[currentBeadTheme][0], Color.BLACK}, new float[]{0f, 0.6f, 1f}, android.graphics.Shader.TileMode.CLAMP);
-                    p.setShader(woodRg); p.setShadowLayer(20f, 5f, 10f, Color.argb(150, 0, 0, 0)); 
-                    canvas.drawCircle(bx, by, bRad, p); p.clearShadowLayer(); p.setShader(null);
-                    p.setColor(Color.argb(160, 255, 255, 255)); canvas.drawOval(new RectF(bx - 18f, by - 35f, bx + 8f, by - 12f), p);
-                }
-
-                // --- 4. Dynamic Themed Total Box ---
-                String totalTxt = (isBn ? "সর্বমোট: " : "Total: ") + formatNum(individualTotals[idx]) + "  |  " + (isBn ? "রাউন্ড: " : "Loop: ") + formatNum(individualRounds[idx]);
-                p.setTextSize(40f); float boxW = p.measureText(totalTxt) + 80; if(bnFont != null) p.setTypeface(bnFont);
-                
-                RectF totalRect = new RectF(centerX - boxW/2, totalBoxY - 40, centerX + boxW/2, totalBoxY + 40);
-                // themeMain আগেই তৈরি করা আছে, তাই এখানে নতুন করে লেখার দরকার নেই
-                
-                // থিম কালারে হালকা ফিল (Background)
-                p.setStyle(Paint.Style.FILL); p.setColor(themeMain); p.setAlpha(30);
-                canvas.drawRoundRect(totalRect, 40f, 40f, p); p.setAlpha(255);
-                
-                // থিম কালারে স্পষ্ট বর্ডার
-                p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(4f); p.setColor(themeMain);
-                canvas.drawRoundRect(totalRect, 40f, 40f, p);
-                
-                // লেখা মাঝখানে রাখা
-                p.setStyle(Paint.Style.FILL); p.setColor(textCol); p.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText(totalTxt, centerX, totalBoxY + 12, p);
-
-                // --- 5. Theme Selector ---
-                float themeSpacing = w / 7f, themeRadius = 30f;
-                for(int i = 0; i < beadThemes.length; i++) {
-                    float tx = themeSpacing * (i + 1); p.setStyle(Paint.Style.FILL);
-                    android.graphics.RadialGradient trg = new android.graphics.RadialGradient(tx - 10f, themeY - 10f, themeRadius*1.5f, new int[]{beadThemes[i][1], beadThemes[i][0], Color.BLACK}, new float[]{0f, 0.7f, 1f}, android.graphics.Shader.TileMode.CLAMP);
-                    p.setShader(trg); if (currentBeadTheme == i) p.setShadowLayer(15f, 0f, 0f, accentCol); else p.setShadowLayer(8f, 2f, 5f, Color.argb(100,0,0,0));
-                    canvas.drawCircle(tx, themeY, themeRadius, p); p.clearShadowLayer(); p.setShader(null);
-                    p.setColor(Color.argb(120, 255, 255, 255)); canvas.drawOval(new RectF(tx-12, themeY-20, tx+5, themeY-8), p);
-                    if (currentBeadTheme == i) { p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(5f); p.setColor(accentCol); canvas.drawCircle(tx, themeY, themeRadius + 10f, p); }
-                }
-            }
-            private float getColorHue(int color) { float[] hsv = new float[3]; Color.colorToHSV(color, hsv); return hsv[0]; }
-        };
-
-        circleView.setOnTouchListener(new View.OnTouchListener() {
-            float startX, startY; boolean isDraggingBeads = false;
-            long downTime = 0;
-
-            private void triggerBeadAnimation(final View v, float target) {
-                if (beadAnim != null) beadAnim.cancel();
-                beadAnim = ValueAnimator.ofFloat(visualBeadPos, target);
-                beadAnim.setDuration(300); 
-                beadAnim.setInterpolator(new android.view.animation.DecelerateInterpolator());
-                beadAnim.addUpdateListener(anim -> { visualBeadPos = (float) anim.getAnimatedValue(); v.invalidate(); });
-                beadAnim.start();
-            }
-
-            @Override public boolean onTouch(final View v, MotionEvent event) {
-                float x = event.getX(), y = event.getY(), w = v.getWidth(), h = v.getHeight(), centerX = w / 2.0f;
-                float boxTop = h * 0.04f, boxHeight = h * 0.17f, circleY = boxTop + boxHeight + (h * 0.18f), radius = w * 0.32f, beadY = circleY + radius + (h * 0.09f), themeY = h - (h * 0.05f);
-                final int idx = currentIdx[0];
-
-                if (event.getAction() == MotionEvent.ACTION_DOWN) { 
-                    startX = x; startY = y; downTime = System.currentTimeMillis();
-                    if (y > beadY - 120 && y < beadY + 150) { isDraggingBeads = true; return true; }
-                    return true; 
-                }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    long pressDuration = System.currentTimeMillis() - downTime;
-                    float deltaX = x - startX, deltaY = y - startY;
-
-                    // 1. Multi-Bead Drag Logic
-                    if (isDraggingBeads) {
-                        isDraggingBeads = false;
-                        int beadsMoved = Math.round(Math.abs(deltaX) / 85f);
-                        if (beadsMoved == 0 && Math.abs(deltaX) < 20) beadsMoved = 1; 
-                        
-                        if (deltaX < -30) incrementCount(idx, v, beadsMoved); 
-                        else if (deltaX > 30) decrementCount(idx, v, beadsMoved); 
-                        else incrementCount(idx, v, 1); 
-                        return true;
-                    }
-                    
-                    if (y > themeY - 60) {
-                        float themeSpacing = w / 7f;
-                        for(int i = 0; i < beadThemes.length; i++) {
-                            if (Math.abs(x - (themeSpacing * (i + 1))) < 50) {
-                                currentBeadTheme = i; v.getContext().getSharedPreferences("TasbihPrefs", Context.MODE_PRIVATE).edit().putInt("bead_theme", i).apply(); v.invalidate(); return true;
-                            }
-                        }
-                    }
-                    
-                    // 2. Long Press Reset & Target Click
-                    if (Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - circleY, 2)) <= radius + 30) { 
-                        if (pressDuration > 600 && Math.abs(deltaX) < 30 && Math.abs(deltaY) < 30) {
-                            showModernResetDialog(v, idx, isBn, cardCol, textCol); 
-                        } else {
-                            if (x > centerX && y > circleY && y < circleY + 140) {
-                                showEditTargetDialog(v, idx, isBn, cardCol, textCol, accentCol); 
-                            } else {
-                                incrementCount(idx, v, 1); 
-                            }
-                        }
-                        return true; 
-                    }
-                    
-                    // 3. Swipe Dua Box for Settings
-                    if (y > boxTop && y < boxTop + boxHeight) {
-                        if (Math.abs(deltaX) > 100) {
-                            if (deltaX < 0) currentIdx[0] = (currentIdx[0] + 1) % tasbihList.size();
-                            else currentIdx[0] = (currentIdx[0] - 1 + tasbihList.size()) % tasbihList.size();
-                            v.getContext().getSharedPreferences("TasbihPrefs", 0).edit().putInt("lastIdx", currentIdx[0]).apply();
-                            v.invalidate(); return true;
-                        } else if (Math.abs(deltaX) < 20 && Math.abs(y - startY) < 20) { showModernSettingsDialog(v, isBn, bgCol, cardCol, textCol, accentCol); return true; }
-                    }
-                } return true;
-            }
-
-            private void incrementCount(int idx, View v, int amount) {
-                if (idx >= tasbihList.size() || amount <= 0) return;
-                individualCounts[idx] += amount; individualTotals[idx] += amount;
-                if (tasbihList.get(idx).soundOn && toneGen != null) toneGen.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 100);
-                v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                if (individualCounts[idx] >= tasbihList.get(idx).target && tasbihList.get(idx).target > 0) { 
-                    individualCounts[idx] = individualCounts[idx] % tasbihList.get(idx).target; 
-                    individualRounds[idx]++; 
-                }
-                v.getContext().getSharedPreferences("TasbihPrefs", Context.MODE_PRIVATE).edit().putInt("ind_" + idx, individualCounts[idx]).putInt("total_" + idx, individualTotals[idx]).putInt("round_" + idx, individualRounds[idx]).apply();
-                triggerBeadAnimation(v, individualCounts[idx]);
-            }
-
-            private void decrementCount(int idx, View v, int amount) {
-                if (idx >= tasbihList.size() || amount <= 0) return;
-                if (individualCounts[idx] >= amount) {
-                    individualCounts[idx] -= amount; if (individualTotals[idx] >= amount) individualTotals[idx] -= amount;
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
-                    v.getContext().getSharedPreferences("TasbihPrefs", Context.MODE_PRIVATE).edit().putInt("ind_" + idx, individualCounts[idx]).putInt("total_" + idx, individualTotals[idx]).apply();
-                    triggerBeadAnimation(v, individualCounts[idx]);
-                }
-            }
-
-            private void showModernResetDialog(final View v, int idx, boolean isBn, int card, int txt) {
-                final android.app.Dialog d = new android.app.Dialog(v.getContext());
-                d.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-                LinearLayout root = new LinearLayout(v.getContext()); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(80, 80, 80, 80);
-                android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-                gd.setColor(card); gd.setCornerRadius(60f); root.setBackground(gd);
-                
-                TextView t = new TextView(v.getContext()); t.setText(isBn ? "রিসেট করতে চান?" : "Reset Tasbih?"); t.setTextSize(22f); t.setTextColor(android.graphics.Color.WHITE); t.setTypeface(Typeface.DEFAULT_BOLD); t.setGravity(Gravity.CENTER); root.addView(t);
-                
-                LinearLayout btns = new LinearLayout(v.getContext()); btns.setOrientation(LinearLayout.HORIZONTAL); btns.setPadding(0, 60, 0, 0);
-                Button bNo = new Button(v.getContext()); bNo.setText(isBn ? "না" : "No"); bNo.setBackgroundColor(Color.TRANSPARENT); bNo.setTextColor(Color.GRAY); bNo.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-                Button bYes = new Button(v.getContext()); bYes.setText(isBn ? "হ্যাঁ" : "Yes"); bYes.setBackgroundColor(Color.TRANSPARENT); bYes.setTextColor(Color.RED); bYes.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-                
-                bNo.setOnClickListener(v2 -> d.dismiss());
-                bYes.setOnClickListener(v2 -> {
-                    individualCounts[idx] = 0; individualTotals[idx] = 0; individualRounds[idx] = 0; triggerBeadAnimation(v, 0); 
-                    v.getContext().getSharedPreferences("TasbihPrefs", 0).edit().putInt("ind_"+idx, 0).putInt("total_"+idx, 0).putInt("round_"+idx, 0).apply(); d.dismiss();
-                });
-                btns.addView(bNo); btns.addView(bYes); root.addView(btns); d.setContentView(root); d.show();
-            }
-
-            private void showEditTargetDialog(final View v, int idx, boolean isBn, int card, int txt, int acc) {
-                final android.app.Dialog d = new android.app.Dialog(v.getContext());
-                d.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-                LinearLayout root = new LinearLayout(v.getContext()); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(80, 80, 80, 80);
-                android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-                gd.setColor(card); gd.setCornerRadius(60f); root.setBackground(gd);
-                
-                TextView t = new TextView(v.getContext()); t.setText(isBn ? "নতুন টার্গেট দিন" : "Edit Target"); t.setTextSize(20f); t.setTextColor(android.graphics.Color.WHITE); t.setGravity(Gravity.CENTER); root.addView(t);
-                final EditText et = new EditText(v.getContext()); et.setInputType(2); et.setText(String.valueOf(tasbihList.get(idx).target)); et.setTextColor(android.graphics.Color.WHITE); root.addView(et);
-                
-                Button bOk = new Button(v.getContext()); bOk.setText(isBn ? "সেভ করুন" : "Save"); bOk.setBackgroundColor(acc); bOk.setTextColor(android.graphics.Color.WHITE);
-                bOk.setOnClickListener(v2 -> {
-                    if(!et.getText().toString().isEmpty()){
-                        tasbihList.get(idx).target = Integer.parseInt(et.getText().toString());
-                        v.getContext().getSharedPreferences("TasbihPrefs", 0).edit().putInt("target_custom_"+idx, tasbihList.get(idx).target).apply();
-                        v.invalidate(); d.dismiss();
-                    }
-                });
-                root.addView(bOk); d.setContentView(root); d.show();
-            }
-
-            private void showModernSettingsDialog(final View v, boolean isBn, int bg, int card, int txt, int acc) {
-                final android.app.Dialog d = new android.app.Dialog(v.getContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-                LinearLayout rootDia = new LinearLayout(v.getContext()); rootDia.setOrientation(LinearLayout.VERTICAL); rootDia.setBackgroundColor(bg); rootDia.setPadding(40, 80, 40, 40);
-
-                TextView t1 = new TextView(v.getContext()); t1.setText(isBn ? "তাসবিহ সেটিংস" : "Tasbih Settings"); t1.setTextColor(acc); t1.setTextSize(28); t1.setGravity(Gravity.CENTER); t1.setTypeface(Typeface.DEFAULT_BOLD); rootDia.addView(t1);
-
-                LinearLayout head = new LinearLayout(v.getContext()); head.setPadding(10, 40, 10, 20); head.setWeightSum(10f);
-                TextView hDua = new TextView(v.getContext()); hDua.setText(isBn?"দোয়া":"Dua"); hDua.setTextColor(Color.GRAY); hDua.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 6f)); hDua.setGravity(Gravity.CENTER);
-                TextView hTarg = new TextView(v.getContext()); hTarg.setText(isBn?"টার্গেট":"Target"); hTarg.setTextColor(Color.GRAY); hTarg.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 2f)); hTarg.setGravity(Gravity.CENTER);
-                TextView hSnd = new TextView(v.getContext()); hSnd.setText(isBn?"সাউন্ড":"Sound"); hSnd.setTextColor(Color.GRAY); hSnd.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 2f)); hSnd.setGravity(Gravity.CENTER);
-                head.addView(hDua); head.addView(hTarg); head.addView(hSnd); rootDia.addView(head);
-
-                ScrollView sv = new ScrollView(v.getContext());
-                LinearLayout listBody = new LinearLayout(v.getContext()); listBody.setOrientation(LinearLayout.VERTICAL);
-
-                for (int i = 0; i < tasbihList.size(); i++) {
-                    final int rowIdx = i;
-                    LinearLayout row = new LinearLayout(v.getContext()); row.setPadding(20, 40, 20, 40); row.setWeightSum(10f); row.setGravity(Gravity.CENTER_VERTICAL);
-                    android.graphics.drawable.GradientDrawable rowBg = new android.graphics.drawable.GradientDrawable(); rowBg.setColor(card); rowBg.setCornerRadius(30f); row.setBackground(rowBg);
-                    LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(-1, -2); rowParams.setMargins(0, 0, 0, 20); row.setLayoutParams(rowParams);
-
-                    TextView tvDua = new TextView(v.getContext()); tvDua.setText(tasbihList.get(rowIdx).arabic); tvDua.setTextColor(android.graphics.Color.WHITE); tvDua.setTextSize(24); tvDua.setGravity(Gravity.CENTER); tvDua.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 6f));
-                    if(arabicFont != null) tvDua.setTypeface(arabicFont);
-                    tvDua.setOnClickListener(v2 -> { currentIdx[0] = rowIdx; v.invalidate(); d.dismiss(); });
-
-                    TextView tvTarg = new TextView(v.getContext()); tvTarg.setText(String.valueOf(tasbihList.get(rowIdx).target)); tvTarg.setTextColor(acc); tvTarg.setTextSize(20); tvTarg.setGravity(Gravity.CENTER); tvTarg.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 2f));
-                    tvTarg.setOnClickListener(v3 -> { d.dismiss(); showEditTargetDialog(v, rowIdx, isBn, card, txt, acc); });
-                    
-                    TextView tvSnd = new TextView(v.getContext()); tvSnd.setText(tasbihList.get(rowIdx).soundOn ? "🔊" : "🔇"); tvSnd.setTextSize(22); tvSnd.setGravity(Gravity.CENTER); tvSnd.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 2f));
-                    tvSnd.setOnClickListener(v3 -> {
-                        tasbihList.get(rowIdx).soundOn = !tasbihList.get(rowIdx).soundOn; tvSnd.setText(tasbihList.get(rowIdx).soundOn ? "🔊" : "🔇");
-                        v.getContext().getSharedPreferences("TasbihPrefs", 0).edit().putBoolean("sound_"+rowIdx, tasbihList.get(rowIdx).soundOn).apply();
-                    });
-                    row.addView(tvDua); row.addView(tvTarg); row.addView(tvSnd); listBody.addView(row);
-                }
-                
-                Button btnAddNew = new Button(v.getContext()); btnAddNew.setText(isBn ? "+ নতুন দোয়া যুক্ত করুন" : "+ Add New Tasbih"); btnAddNew.setBackgroundColor(Color.TRANSPARENT); btnAddNew.setTextColor(acc);
-                btnAddNew.setOnClickListener(v2 -> {
-                    d.dismiss();
-                    final android.app.Dialog dAdd = new android.app.Dialog(v.getContext()); dAdd.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-                    LinearLayout rootAdd = new LinearLayout(v.getContext()); rootAdd.setOrientation(LinearLayout.VERTICAL); rootAdd.setPadding(80, 80, 80, 80);
-                    android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); gd.setColor(card); gd.setCornerRadius(60f); rootAdd.setBackground(gd);
-                    
-                    EditText etDua = new EditText(v.getContext()); etDua.setHint(isBn?"আরবী দোয়া লিখুন":"Enter Arabic Dua"); etDua.setTextColor(android.graphics.Color.WHITE); etDua.setHintTextColor(Color.GRAY); rootAdd.addView(etDua);
-                    EditText etTarget = new EditText(v.getContext()); etTarget.setHint(isBn?"টার্গেট (ঐচ্ছিক)":"Target (Optional)"); etTarget.setInputType(2); etTarget.setTextColor(android.graphics.Color.WHITE); etTarget.setHintTextColor(Color.GRAY); rootAdd.addView(etTarget);
-                    
-                    Button bSave = new Button(v.getContext()); bSave.setText(isBn?"সেভ":"Save"); bSave.setBackgroundColor(acc); bSave.setTextColor(android.graphics.Color.WHITE);
-                    bSave.setOnClickListener(v3 -> {
-                        String newDua = etDua.getText().toString(); String tStr = etTarget.getText().toString();
-                        if(!newDua.isEmpty()){
-                            int newTarg = tStr.isEmpty() ? 0 : Integer.parseInt(tStr);
-                            android.content.SharedPreferences p = v.getContext().getSharedPreferences("TasbihPrefs", 0);
-                            int cCount = p.getInt("custom_dua_count", 0);
-                            p.edit().putString("custom_dua_"+cCount, newDua).putInt("custom_target_"+cCount, newTarg).putBoolean("sound_"+tasbihList.size(), true).putInt("custom_dua_count", cCount+1).apply();
-                            tasbihList.add(new TasbihData(newDua, newTarg, true)); currentIdx[0] = tasbihList.size()-1; p.edit().putInt("lastIdx", currentIdx[0]).apply();
-                            v.invalidate(); dAdd.dismiss();
-                        }
-                    });
-                    rootAdd.addView(bSave); dAdd.setContentView(rootAdd); dAdd.show();
-                });
-                listBody.addView(btnAddNew);
-                sv.addView(listBody); rootDia.addView(sv, new LinearLayout.LayoutParams(-1, 0, 1f));
-
-                Button btnClose = new Button(v.getContext()); btnClose.setText(isBn ? "বন্ধ করুন" : "Close"); btnClose.setBackgroundColor(card); btnClose.setTextColor(android.graphics.Color.WHITE);
-                btnClose.setOnClickListener(v4 -> d.dismiss()); rootDia.addView(btnClose);
-                
-                d.setContentView(rootDia); d.show();
-            }
-        });
-
-        LinearLayout root = new LinearLayout(ctx);
-        root.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
-        root.setBackgroundColor(bgCol);
-        root.addView(circleView, new LinearLayout.LayoutParams(-1, -1));
-        return root;
-    }
-}
-package com.my.salah.tracker.app;
-
-import android.content.Context;
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.view.*;
-import android.widget.*;
-import android.content.SharedPreferences;
-import android.os.Vibrator;
-import android.util.TypedValue;
+import android.content.Context; import android.graphics.*; import android.graphics.drawable.*; 
+import android.view.*; import android.widget.*; import android.content.SharedPreferences; import android.os.Vibrator; import android.util.TypedValue;
 
 public class PremiumTasbihView extends LinearLayout {
-    private int count = 0;
-    private TextView display;
-    private View tapButton;
-    private SharedPreferences prefs;
-    private int accentColor;
+    private int count = 0; private TextView display; private View tapButton; private SharedPreferences prefs; private int accentColor;
 
     public PremiumTasbihView(Context ctx, boolean isDark, int accCol) {
-        super(ctx); 
-        this.accentColor = accCol;
-        setOrientation(LinearLayout.VERTICAL); 
-        setGravity(Gravity.CENTER); 
-        setWillNotDraw(false); // বাঁকা দাগ আকার জন্য
+        super(ctx); this.accentColor = accCol;
+        setOrientation(LinearLayout.VERTICAL); setGravity(Gravity.CENTER); setWillNotDraw(false); 
         
-        // বাম পাশে কার্ভড দাগের জন্য পর্যাপ্ত জায়গা রাখা হলো
-        setPadding(60, 2, 20, 2); 
+        // --- ফিক্স ৪: ডিসপ্লে নিচে নামানো (Top Padding 45 করা হয়েছে) ---
+        setPadding(60, 45, 20, 20); 
         
-        prefs = ctx.getSharedPreferences("TasbihPrefs", 0); 
-        count = prefs.getInt("pt_count", 0);
+        prefs = ctx.getSharedPreferences("TasbihPrefs", 0); count = prefs.getInt("pt_count", 0);
         
-        // --- 1. Beautiful Engraved Display ---
-        display = new TextView(ctx); 
-        display.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)); 
-        display.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); 
-        display.setTextColor(Color.WHITE); // ব্যাকগ্রাউন্ড ডিপ থাকবে তাই টেক্সট সাদা
+        // 1. Sleek Engraved Display
+        display = new TextView(ctx); display.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)); 
+        display.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f); display.setTextColor(Color.WHITE); 
+        GradientDrawable displayBg = new GradientDrawable(); displayBg.setColor(Color.argb(35, 0, 0, 0)); 
+        displayBg.setCornerRadius(15f); displayBg.setStroke(2, Color.argb(40, 255, 255, 255)); 
+        display.setBackground(displayBg); display.setPadding(30, 8, 30, 8); display.setGravity(Gravity.CENTER);
+        updateDisplay(); addView(display);
         
-        // প্রিমিয়াম ট্রান্সপারেন্ট গ্লাস ইনসেট লুক
-        GradientDrawable displayBg = new GradientDrawable();
-        displayBg.setColor(Color.argb(40, 0, 0, 0)); // সফট ডার্ক ওভারলে
-        displayBg.setCornerRadius(20f);
-        displayBg.setStroke(2, Color.argb(40, 255, 255, 255)); // হালকা গ্লাস হাইলাইট
+        View sp = new View(ctx); sp.setLayoutParams(new LayoutParams(1, (int)(12 * ctx.getResources().getDisplayMetrics().density))); addView(sp);
         
-        display.setBackground(displayBg);
-        display.setPadding(35, 12, 35, 12);
-        display.setGravity(Gravity.CENTER);
-        updateDisplay(); 
-        addView(display);
-        
-        // Spacer
-        View sp = new View(ctx); 
-        sp.setLayoutParams(new LayoutParams(1, (int)(18 * ctx.getResources().getDisplayMetrics().density))); 
-        addView(sp);
-        
-        // --- 2. Sleek 3D Jewel Button ---
-        tapButton = new View(ctx); 
-        float den = ctx.getResources().getDisplayMetrics().density;
+        // 2. Ultra Premium Jewel Button
+        tapButton = new View(ctx); float den = ctx.getResources().getDisplayMetrics().density;
         tapButton.setLayoutParams(new LayoutParams((int)(55 * den), (int)(55 * den)));
-        
-        LayerDrawable unpressed = createPremiumButton(false);
-        LayerDrawable pressed = createPremiumButton(true);
-        
-        tapButton.setBackground(unpressed); 
-        tapButton.setClickable(true); 
-        tapButton.setFocusable(true);
+        LayerDrawable unpressed = createPremiumButton(false), pressed = createPremiumButton(true);
+        tapButton.setBackground(unpressed); tapButton.setClickable(true); tapButton.setFocusable(true);
         
         tapButton.setOnTouchListener((v, e) -> {
-            if (e.getAction() == MotionEvent.ACTION_DOWN) { 
-                tapButton.setBackground(pressed); 
-                tapButton.animate().scaleX(0.92f).scaleY(0.92f).setDuration(50).start(); 
-            } else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) { 
-                tapButton.setBackground(unpressed); 
-                tapButton.animate().scaleX(1f).scaleY(1f).setDuration(150).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); 
-            }
+            if (e.getAction() == MotionEvent.ACTION_DOWN) { tapButton.setBackground(pressed); tapButton.setScaleX(0.92f); tapButton.setScaleY(0.92f); } 
+            else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) { tapButton.setBackground(unpressed); tapButton.animate().scaleX(1f).scaleY(1f).setDuration(100).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); }
             return false;
         });
-        
-        tapButton.setOnClickListener(v -> { 
-            count++; if(count > 99999) count = 0; 
-            updateDisplay(); vib(ctx, 25); 
-            prefs.edit().putInt("pt_count", count).apply(); 
-        });
-        
-        tapButton.setOnLongClickListener(v -> { 
-            count = 0; updateDisplay(); vib(ctx, 80); 
-            prefs.edit().putInt("pt_count", count).apply(); 
-            return true; 
-        });
-        
+        tapButton.setOnClickListener(v -> { count++; if(count > 99999) count = 0; updateDisplay(); vib(ctx, 20); prefs.edit().putInt("pt_count", count).apply(); });
+        tapButton.setOnLongClickListener(v -> { count = 0; updateDisplay(); vib(ctx, 80); prefs.edit().putInt("pt_count", count).apply(); return true; });
         addView(tapButton);
     }
     
-    @Override
-    protected void onDraw(Canvas canvas) {
+    @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        // --- ৩. প্রিমিয়াম গ্লোয়িং কার্ভড ডিভাইডার (Glowing Curved Divider) ---
-        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-        p.setStyle(Paint.Style.STROKE);
-        p.setStrokeWidth(4f);
-        
-        // ফেইড ইফেক্ট (ওপর নিচে মিলিয়ে যাবে, মাঝখানে উজ্জ্বল)
-        p.setShader(new LinearGradient(0, 0, 0, getHeight(), 
-            new int[]{Color.TRANSPARENT, Color.argb(120, 255, 255, 255), Color.TRANSPARENT}, 
-            null, Shader.TileMode.CLAMP));
-            
-        Path path = new Path();
-        path.moveTo(15, 30); // শুরু
-        path.quadTo(50, getHeight() / 2f, 15, getHeight() - 30); // সুন্দর স্মুথ বাঁক
-        canvas.drawPath(path, p);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(4f);
+        p.setShader(new LinearGradient(0, 0, 0, getHeight(), new int[]{Color.TRANSPARENT, Color.argb(120, 255, 255, 255), Color.TRANSPARENT}, null, Shader.TileMode.CLAMP));
+        Path path = new Path(); path.moveTo(15, 30); path.quadTo(45, getHeight() / 2f, 15, getHeight() - 30); canvas.drawPath(path, p);
     }
 
     private LayerDrawable createPremiumButton(boolean isPressed) {
-        // বাটনের কালার লজিক
         int light = Color.argb(255, Math.min(255, (int)(Color.red(accentColor)*1.2)), Math.min(255, (int)(Color.green(accentColor)*1.2)), Math.min(255, (int)(Color.blue(accentColor)*1.2)));
         int dark = Color.argb(255, (int)(Color.red(accentColor)*0.7), (int)(Color.green(accentColor)*0.7), (int)(Color.blue(accentColor)*0.7));
-
-        GradientDrawable shadow = new GradientDrawable();
-        shadow.setShape(GradientDrawable.OVAL);
-        shadow.setColor(Color.argb(100, 0, 0, 0)); // সফট শ্যাডো
-
-        GradientDrawable face = new GradientDrawable(GradientDrawable.Orientation.TL_BR, 
-                isPressed ? new int[]{dark, light} : new int[]{light, dark});
-        face.setShape(GradientDrawable.OVAL);
-        // সফট ইনার হাইলাইট
-        face.setStroke(2, Color.argb(60, 255, 255, 255));
-
+        GradientDrawable shadow = new GradientDrawable(); shadow.setShape(GradientDrawable.OVAL); shadow.setColor(Color.argb(80, 0, 0, 0)); 
+        GradientDrawable face = new GradientDrawable(GradientDrawable.Orientation.TL_BR, isPressed ? new int[]{dark, light} : new int[]{light, dark});
+        face.setShape(GradientDrawable.OVAL); face.setStroke(2, Color.argb(60, 255, 255, 255));
         LayerDrawable ld = new LayerDrawable(new Drawable[]{shadow, face});
-        if (isPressed) {
-            ld.setLayerInset(0, 2, 2, 0, 0);
-            ld.setLayerInset(1, 6, 6, 2, 2); // ভেতরে ডেবে যাবে
-        } else {
-            ld.setLayerInset(0, 0, 0, 8, 8); // শ্যাডো নিচে পড়বে
-            ld.setLayerInset(1, 0, 0, 8, 8); // বাটন উঁচুতে থাকবে
-        }
+        if (isPressed) { ld.setLayerInset(0, 2, 2, 0, 0); ld.setLayerInset(1, 4, 4, 2, 2); } 
+        else { ld.setLayerInset(0, 0, 0, 6, 6); ld.setLayerInset(1, 0, 0, 6, 6); }
         return ld;
     }
-
     private void updateDisplay(){ display.setText(String.format("%04d", count)); }
     private void vib(Context c, int d){ try{ ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(d); }catch(Exception e){} }
 }

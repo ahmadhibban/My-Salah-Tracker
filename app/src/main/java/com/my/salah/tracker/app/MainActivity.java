@@ -570,7 +570,8 @@ public class MainActivity extends Activity {
         TextView gText = new TextView(this); gText.setText(greetingStr); gText.setTextColor(android.graphics.Color.WHITE); gText.setTextSize(14); gText.setTypeface(Typeface.DEFAULT_BOLD);
         
         TextView pT = new TextView(this); pT.setText(lang.bnNum(countCompleted*100/6) + "%"); pT.setTag("PERCENT_TEXT"); pT.setTextColor(android.graphics.Color.WHITE); pT.setTextSize(36); pT.setTypeface(Typeface.DEFAULT_BOLD); 
-        TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]); subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
+        TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]);
+subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
         left.addView(gText); left.addView(pT); left.addView(subBtm);
         PremiumTasbihView tasbihView = new PremiumTasbihView(this, isDarkTheme, colorAccent);
         tasbihView.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 0.8f));
@@ -1169,7 +1170,7 @@ private void showMarkOptions() {
         scaleX.setRepeatCount(android.animation.ValueAnimator.INFINITE); scaleY.setRepeatCount(android.animation.ValueAnimator.INFINITE); 
         scaleX.setDuration(1000); scaleY.setDuration(1000); 
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet(); animSet.playTogether(scaleX, scaleY); animSet.start();
-        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 0);
+        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 2500);
         applyFont(main, appFonts[0], appFonts[1]); 
     }
 private void showWipeDataDialog() {
@@ -1305,4 +1306,19 @@ private void showWipeDataDialog() {
         }
     }
     
+
+    
+
+
+    
+
+
+    
+
+
+    
+
+
+    
+
 }
