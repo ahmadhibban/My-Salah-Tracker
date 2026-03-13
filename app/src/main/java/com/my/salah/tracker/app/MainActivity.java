@@ -536,7 +536,7 @@ public class MainActivity extends Activity {
         moon.setLayoutParams(mLp); hRow.addView(moon);
         android.widget.TextView dHijri = new android.widget.TextView(this); 
         try { dHijri.setText(ui.getHijriDate(sdf.parse(selectedDate[0]), sp.getInt("hijri_offset", 0))); } catch(Exception e) {}
-        dHijri.setTextColor(themeColors[2]); dHijri.setTextSize(16); dHijri.setTypeface(appFonts[1], android.graphics.Typeface.BOLD); 
+        dHijri.setTextColor(themeColors[2]); dHijri.setTextSize(13); dHijri.setTypeface(appFonts[1], android.graphics.Typeface.BOLD); 
         hRow.addView(dHijri); leftHeader.addView(hRow);
         hRow.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { calHelper.showHijri(); } });
 
@@ -563,7 +563,7 @@ public class MainActivity extends Activity {
         android.widget.TextView stBadge = new android.widget.TextView(this); 
         stBadge.setTextSize(12); stBadge.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         stBadge.setTextColor(colorAccent);
-        stBadge.setText(streakCount >= 365 ? (isBn ? "১ বছরের স্ট্রিক" : "1 YEAR STREAK") : (isBn ? lang.bnNum(streakCount) + " দিনের স্ট্রিক" : streakCount + " DAYS STREAK"));
+        stBadge.setText(streakCount >= 365 ? (isBn ? "১ বছর" : "1 YEAR") : (isBn ? lang.bnNum(streakCount) + " দিন" : streakCount + " DAYS"));
         applyNeo(stBadge, 0, 15f, 3f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); 
         stBadge.setPadding((int)(12*DENSITY), (int)(6*DENSITY), (int)(12*DENSITY), (int)(6*DENSITY)); 
         android.widget.LinearLayout.LayoutParams badgeLp = new android.widget.LinearLayout.LayoutParams(-2, -2); 
