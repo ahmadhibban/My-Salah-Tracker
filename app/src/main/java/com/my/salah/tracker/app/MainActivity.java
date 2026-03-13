@@ -438,6 +438,24 @@ public class MainActivity extends Activity {
         return new UIComponents.ProgressDrawable(d, 6, c==0?themeColors[4]:c, themeColors[4], DENSITY);
     }
 
+    
+    private void updateLivePercentage(String dK) {
+        try {
+            int nC = 0; 
+            SalahRecord currR = SalahDatabase.getDatabase(this).salahDao().getRecordByDate(dK);
+            if(currR != null) {
+                for(String pr : AppConstants.PRAYERS) { 
+                    String s = getFardStat(currR, pr); 
+                    if(s.equals("yes") || s.equals("excused")) nC++; 
+                }
+            }
+            TextView pT = getWindow().getDecorView().findViewWithTag("PERCENT_TEXT");
+            TextView subBtm = getWindow().getDecorView().findViewWithTag("SUB_TEXT");
+            if(pT != null) pT.setText(lang.bnNum(nC*100/6) + "%");
+            String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get("Just one more!"), lang.get("Purity Achieved!")}; if(subBtm != null) subBtm.setText(statusMsgs[nC]);
+        } catch(Exception e){}
+    }
+
     private void loadTodayPage() {
         final int savedScrollPos = contentArea.getParent() instanceof ScrollView ? ((ScrollView)contentArea.getParent()).getScrollY() : 0;
         contentArea.removeAllViews();
@@ -506,7 +524,7 @@ public class MainActivity extends Activity {
      
         
         header.addView(leftHeader); header.addView(rightHeader); contentArea.addView(header);
-        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
+        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(15*DENSITY), (int)(2*DENSITY), (int)(15*DENSITY), (int)(2*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
          // --- 💎 Glassmorphism Effect Applied Here ---
@@ -540,7 +558,7 @@ public class MainActivity extends Activity {
         pNeo.setLayoutParams(pNeoLp);
         pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
         pNeo.addView(pCard);
-        pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY));
+        pCard.setPadding((int)(15*DENSITY), (int)(2*DENSITY), (int)(15*DENSITY), (int)(2*DENSITY));
         
         int countCompleted = 0; 
         for(String p : AppConstants.PRAYERS) {
