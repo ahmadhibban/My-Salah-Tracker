@@ -499,7 +499,7 @@ public class MainActivity extends Activity {
             TextView pT = getWindow().getDecorView().findViewWithTag("PERCENT_TEXT");
             TextView subBtm = getWindow().getDecorView().findViewWithTag("SUB_TEXT");
             if(pT != null) pT.setText(lang.bnNum(nC*100/6) + "%");
-            String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get("Just one more!"), lang.get("Purity Achieved!")}; if(subBtm != null) subBtm.setText(statusMsgs[nC]);
+            String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get((sp.getString("app_lang", "en").equals("bn") ? "আর মাত্র ১টি বাকি!" : "Just one more!")), lang.get("Purity Achieved!")}; if(subBtm != null) subBtm.setText(statusMsgs[nC]);
         } catch(Exception e){}
     }
 
@@ -531,7 +531,7 @@ public class MainActivity extends Activity {
 
         android.widget.TextView dEn = new android.widget.TextView(this);
         try { dEn.setText(lang.getGregorian(sdf.parse(selectedDate[0]))); } catch(Exception e) {}
-        dEn.setTextColor(themeColors[3]); dEn.setTextSize(14); dEn.setTypeface(appFonts[0], android.graphics.Typeface.NORMAL);
+        dEn.setTextColor(themeColors[3]); dEn.setTextSize(14); dEn.setTypeface(appFonts[0], android.graphics.Typeface.BOLD);
         dEn.setPadding(0, 0, 0, (int)(2*DENSITY));
         leftHeader.addView(dEn);
         dEn.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(android.view.View v) { calHelper.showGregorian(); }});
@@ -617,7 +617,7 @@ public class MainActivity extends Activity {
             String status = getFardStat(todayRec, p);
             if(status.equals("yes") || status.equals("excused")) countCompleted++;
         }
-        String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get("Just one more!"), lang.get("Purity Achieved!")};
+        String[] statusMsgs = {lang.get("Start your journey"), lang.get("Great start!"), lang.get("Keep going"), lang.get("Good progress!"), lang.get("Almost done!"), lang.get((sp.getString("app_lang", "en").equals("bn") ? "আর মাত্র ১টি বাকি!" : "Just one more!")), lang.get("Purity Achieved!")};
         LinearLayout left = new LinearLayout(this); left.setOrientation(LinearLayout.VERTICAL); left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1.2f)); 
         TextView gText = new TextView(this); gText.setText(greetingStr); gText.setTextColor(android.graphics.Color.WHITE); gText.setTextSize(14); gText.setTypeface(Typeface.DEFAULT_BOLD);
         
@@ -729,7 +729,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         weekNavBox.addView(prevW); weekNavBox.addView(weekBox); weekNavBox.addView(nextW); contentArea.addView(weekNavBox);
 
         LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); actionRow.setWeightSum(2);
-        LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -2, 1f);
+        LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -1, 1f);
         markLp.setMargins((int)(16*DENSITY), (int)(4*DENSITY), (int)(8*DENSITY), (int)(4*DENSITY)); markAllBtn.setLayoutParams(markLp); 
         TextView markAllTxt = new TextView(this); markAllTxt.setTextSize(13); markAllTxt.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable bg1 = new GradientDrawable(); bg1.setCornerRadius(20f * DENSITY);
@@ -792,7 +792,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -2, 1f); todayLp.setMargins((int)(8*DENSITY), (int)(4*DENSITY), (int)(16*DENSITY), (int)(4*DENSITY)); todayBtn.setLayoutParams(todayLp); 
+        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -1, 1f); todayLp.setMargins((int)(8*DENSITY), (int)(4*DENSITY), (int)(16*DENSITY), (int)(4*DENSITY)); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg2 = new GradientDrawable(); bg2.setCornerRadius(20f * DENSITY); bg2.setColor(themeColors[1]); bg2.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(todayBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); todayBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
         View tIcon = ui.getRoundImage("img_calender", 4, Color.TRANSPARENT, colorAccent);
@@ -876,7 +876,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
 
             LinearLayout textContainer = new LinearLayout(this); textContainer.setOrientation(LinearLayout.VERTICAL); textContainer.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
             LinearLayout titleRow = new LinearLayout(this); titleRow.setOrientation(LinearLayout.HORIZONTAL); titleRow.setGravity(Gravity.CENTER_VERTICAL);
-            TextView tv = new TextView(this); tv.setText(lang.get(name)); tv.setTextColor(stat.equals("excused") ? Color.parseColor("#FF4081") : themeColors[2]); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(16); tv.setTypeface(android.graphics.Typeface.DEFAULT); tv.setSingleLine(true); titleRow.addView(tv);
+            TextView tv = new TextView(this); tv.setText(lang.get(name)); tv.setTextColor(stat.equals("excused") ? Color.parseColor("#FF4081") : themeColors[2]); tv.setTypeface(Typeface.DEFAULT_BOLD); tv.setTextSize(16); tv.setSingleLine(true); titleRow.addView(tv);
             if (isQaza && stat.equals("no")) {
                 TextView qBadge = new TextView(this);
                 qBadge.setText(lang.get("QAZA")); qBadge.setTextColor(themeColors[2]); qBadge.setTextSize(10); qBadge.setTypeface(Typeface.DEFAULT_BOLD); qBadge.setPadding((int)(8*DENSITY), (int)(3*DENSITY), (int)(8*DENSITY), (int)(3*DENSITY)); GradientDrawable qBg = new GradientDrawable(); qBg.setColor(themeColors[5]); qBg.setCornerRadius(10f*DENSITY); qBadge.setBackground(qBg);

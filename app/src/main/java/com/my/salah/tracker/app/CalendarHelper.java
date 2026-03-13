@@ -164,7 +164,7 @@ public class CalendarHelper {
     private void showYearPicker(final LinearLayout parentCard, final AlertDialog calDialog) {
         FrameLayout wrap = new FrameLayout(activity); wrap.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
         LinearLayout container = new LinearLayout(activity); container.setOrientation(LinearLayout.VERTICAL); container.setPadding((int)(25*DENSITY), (int)(25*DENSITY), (int)(25*DENSITY), (int)(25*DENSITY));
-        GradientDrawable bg = new GradientDrawable(); bg.setColor(themeColors[1]); bg.setCornerRadius(30f * DENSITY); bg.setStroke((int)(1.5f*DENSITY), themeColors[4]); container.setBackground(bg);
+        GradientDrawable bg = new GradientDrawable(); bg.setColor(themeColors[1]); bg.setCornerRadius(30f * DENSITY); // stroke removed container.setBackground(bg);
         TextView title = new TextView(activity); title.setText(lang.get("Select Year")); title.setGravity(Gravity.CENTER); title.setTextColor(themeColors[2]); title.setTextSize(18); title.setPadding(0, 0, 0, (int)(20*DENSITY)); title.setTypeface(Typeface.DEFAULT_BOLD); container.addView(title);
         ScrollView scroll = new ScrollView(activity); LinearLayout list = new LinearLayout(activity); list.setOrientation(LinearLayout.VERTICAL);
         Calendar realCurrentCal = Calendar.getInstance(); final int currentRealYear = realCurrentCal.get(Calendar.YEAR); final int currentRealMonth = realCurrentCal.get(Calendar.MONTH);
