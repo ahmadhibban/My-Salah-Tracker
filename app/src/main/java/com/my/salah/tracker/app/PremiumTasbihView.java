@@ -59,6 +59,15 @@ public class PremiumTasbihView extends LinearLayout {
         else { ld.setLayerInset(0, 0, 0, 6, 6); ld.setLayerInset(1, 0, 0, 6, 6); }
         return ld;
     }
-    private void updateDisplay(){ display.setText(String.format("%04d", count)); }
+    private void updateDisplay() {
+        String numStr = String.format("%04d", count);
+        try {
+            android.content.SharedPreferences sp = getContext().getSharedPreferences("salah_pro_final", 0);
+            if (sp.getString("app_lang", "en").equals("bn")) {
+                numStr = numStr.replace("0", "০").replace("1", "১").replace("2", "২").replace("3", "৩").replace("4", "৪").replace("5", "৫").replace("6", "৬").replace("7", "৭").replace("8", "৮").replace("9", "৯");
+            }
+        } catch(Exception e){}
+        display.setText(numStr);
+    }
     private void vib(Context c, int d){ try{ ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(d); }catch(Exception e){} }
 }
