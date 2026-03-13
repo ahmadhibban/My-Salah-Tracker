@@ -122,7 +122,7 @@ public class CalendarHelper {
                 FrameLayout cell = new FrameLayout(activity); cell.setLayoutParams(new LinearLayout.LayoutParams(0, cellHeight, 1f));
                 if (!((row == 0 && col < offset) || currentDay > totalDays)) {
                     final int dayNum = currentDay; temp.set(Calendar.DAY_OF_MONTH, dayNum); final String dKey = sdf.format(temp.getTime()); final boolean isFuture = temp.after(now); final boolean isTooOld = temp.get(Calendar.YEAR) < now.get(Calendar.YEAR) - 100;
-                    TextView tv = new TextView(activity); tv.setText(lang.bnNum(dayNum)); tv.setTextColor(isFuture ? Color.LTGRAY : themeColors[2]); tv.setTextSize(13); tv.setGravity(Gravity.CENTER);
+                    TextView tv = new TextView(activity); tv.setText(lang.bnNum(dayNum)); tv.setTextColor(isFuture ? Color.LTGRAY : themeColors[2]); tv.setTextSize(13); tv.setGravity(Gravity.CENTER); tv.setTypeface(Typeface.DEFAULT_BOLD);
                     FrameLayout.LayoutParams boxLp = new FrameLayout.LayoutParams(boxSize, boxSize); boxLp.gravity = Gravity.CENTER; tv.setLayoutParams(boxLp);
                     boolean isAllDone = true;
                     for(String p : prayers) { if(!sp.getString(dKey+"_"+p, "no").equals("yes") && !sp.getString(dKey+"_"+p, "no").equals("excused")) { isAllDone = false; break; } }
