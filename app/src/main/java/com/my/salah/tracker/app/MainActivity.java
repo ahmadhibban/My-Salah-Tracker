@@ -902,7 +902,7 @@ public class MainActivity extends Activity {
         
         TextView sub = new TextView(this);
         sub.setText(lang.get(isAlreadyExcused ? "Prayers are currently marked as excused." : "Mark today's prayers as excused. Streak will not break.")); sub.setGravity(Gravity.CENTER); sub.setTextColor(themeColors[3]);
-        sub.setTextSize(12); sub.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(sub); 
+        sub.setTextSize(11); sub.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(sub); 
         Button actionBtn = new Button(this);
         actionBtn.setText(lang.get(isAlreadyExcused ? "Remove Excused Status" : "Mark Today as Excused")); actionBtn.setAllCaps(false); actionBtn.setTextColor(android.graphics.Color.WHITE); actionBtn.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable btnBg = new GradientDrawable(); btnBg.setColor(colorAccent);
