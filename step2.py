@@ -1,26 +1,74 @@
-f = 'app/src/main/java/com/my/salah/tracker/app/MainActivity.java'
-z1 = r'''
-    private ZikrManager zikrMan = null;
-    static class ZikrManager {
-        static class TasbihData { String arabic, pron, mean; int target; TasbihData(String a, int t, String p, String m){arabic=a;target=t;pron=p;mean=m;} }
-        java.util.ArrayList<TasbihData> tasbihList = new java.util.ArrayList<>();
-        int currentIdx = 0; int[] indCounts = new int[300], indRounds = new int[300];
-        boolean soundOn = true; int beadTheme = 0; android.media.ToneGenerator toneGen; android.content.SharedPreferences prefs;
-        void init(android.content.Context ctx) {
-            try {
-                prefs = ctx.getSharedPreferences("TasbihPrefs_v10", android.content.Context.MODE_PRIVATE);
-                if(tasbihList.isEmpty()) {
-                    String[] raw = {"سُبْحَانَ اللّٰهِ|33|সুবহানাল্লাহ|আল্লাহ অতি পবিত্র", "الْحَمْدُ لِلّٰهِ|33|আলহামদুলিল্লাহ|যাবতীয় প্রশংসা আল্লাহর জন্য", "اللّٰهُ أَكْبَرُ|34|আল্লাহু আকবার|আল্লাহ সর্বশ্রেষ্ঠ", "لَا إِلٰهَ إِلَّا اللّٰهُ|0|লা ইলাহা ইল্লাল্লাহ|আল্লাহ ছাড়া কোনো ইলাহ নেই", "أَسْتَغْفِرُ اللّٰهَ|100|আস্তাগফিরুল্লাহ|আমি আল্লাহর কাছে ক্ষমা চাই"};
-                    for(String s : raw) { String[] p = s.split("\\|"); tasbihList.add(new TasbihData(p[0], Integer.parseInt(p[1]), p[2], p[3])); }
+import os, re
+
+filepath = None
+for r, d, f in os.walk('.'):
+    if 'MainActivity.java' in f and 'build' not in r:
+        filepath = os.path.join(r, 'MainActivity.java')
+        break
+
+if filepath:
+    with open(filepath, 'r', encoding='utf-8') as f:
+        c = f.read()
+
+    # পুরানো, ফালতু এবং ডুপ্লিকেট সেটিংস মুছে ফেলা
+    c = re.sub(r'mr\.addImg\([^,]+,\s*"img_moon".*?\}\s*\);\s*\}\s*\);', '', c, flags=re.DOTALL)
+    c = re.sub(r'mr\.addImg\([^,]+,\s*(?:isDarkTheme\s*\?\s*"ic_sun"\s*:\s*"ic_moon"|"ic_sun"|"ic_moon").*?\}\s*\);\s*\}\s*\);', '', c, flags=re.DOTALL)
+    c = re.sub(r'mr\.addImg\("Choose Theme".*?\}\);', '', c, flags=re.DOTALL)
+    c = re.sub(r'mr\.addImg\(lang\.get\("App Theme"\).*?\}\);', '', c, flags=re.DOTALL)
+    c = re.sub(r'// --- SETTINGS NEW START ---.*?// --- SETTINGS NEW END ---', '', c, flags=re.DOTALL)
+
+    # অরিজিনাল সিস্টেম পপ-আপ যুক্ত করা (হুবহু মিলানোর জন্য)
+    native_settings = """mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "কালার ও থিম পরিবর্তন" : "Change Color & Theme", isDarkTheme ? "ic_sun" : "ic_moon", new Runnable() {
+        @Override public void run() {
+            final boolean isBn = sp.getString("app_lang", "en").equals("bn");
+            android.app.AlertDialog.Builder tb = new android.app.AlertDialog.Builder(MainActivity.this);
+            tb.setTitle(isBn ? "নির্বাচন করুন" : "Select Option");
+            String[] ops = isBn ? new String[]{"থিম পরিবর্তন (সাদা/কালো)", "কালার পরিবর্তন করুন"} : new String[]{"Change Theme (Dark/Light)", "Change Color"};
+            tb.setItems(ops, new android.content.DialogInterface.OnClickListener() {
+                @Override public void onClick(android.content.DialogInterface dialog, int w) {
+                    if(w==0) { sp.edit().putBoolean("is_dark_mode", !isDarkTheme).apply(); }
+                    else { sp.edit().putInt("app_theme", (activeTheme + 1) % 6).apply(); }
+                    finish(); overridePendingTransition(0, 0); android.content.Intent intent = new android.content.Intent(MainActivity.this, MainActivity.class); try{intent.putExtra("RESTORE_DATE", sdf.parse(selectedDate[0]).getTime());}catch(Exception e){} startActivity(intent);
                 }
-                for(int i=0; i<tasbihList.size(); i++) { indCounts[i] = prefs.getInt("ind_"+i, 0); indRounds[i] = prefs.getInt("round_"+i, 0); tasbihList.get(i).target = prefs.getInt("target_"+i, tasbihList.get(i).target); }
-                currentIdx = prefs.getInt("lastIdx", 0); if(currentIdx >= tasbihList.size()) currentIdx = 0;
-                soundOn = prefs.getBoolean("sound_on", true); beadTheme = prefs.getInt("bead_theme", 0);
-                try{ toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100); }catch(Exception e){}
-            } catch(Exception e) {}
+            });
+            tb.show();
         }
-        void save() { if(prefs!=null) prefs.edit().putInt("ind_"+currentIdx, indCounts[currentIdx]).putInt("round_"+currentIdx, indRounds[currentIdx]).putInt("lastIdx", currentIdx).putBoolean("sound_on", soundOn).putInt("bead_theme", beadTheme).apply(); }
-    }
-'''
-open(f, 'a', encoding='utf-8').write(z1)
-print("✅ Step 2: Database Added!")
+    });
+
+    mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "তারিখ এডজাস্ট (আরবি/বাংলা)" : "Adjust Date (+/-)", "img_moon", new Runnable() {
+        @Override public void run() {
+            final boolean isBn = sp.getString("app_lang", "en").equals("bn");
+            android.app.AlertDialog.Builder tb = new android.app.AlertDialog.Builder(MainActivity.this);
+            tb.setTitle(isBn ? "ক্যালেন্ডার নির্বাচন" : "Select Calendar");
+            String[] ops = isBn ? new String[]{"আরবি তারিখ (Hijri)", "বাংলা তারিখ (Bengali)"} : new String[]{"Hijri Date", "Bengali Date"};
+            tb.setItems(ops, new android.content.DialogInterface.OnClickListener() {
+                @Override public void onClick(android.content.DialogInterface dialog, int w) {
+                    final boolean iH = (w == 0); final String pK = iH ? "hijri_offset" : "bn_date_offset";
+                    android.app.AlertDialog.Builder ib = new android.app.AlertDialog.Builder(MainActivity.this);
+                    ib.setTitle(iH ? (isBn ? "আরবি তারিখ এডজাস্ট (+/-)" : "Adjust Hijri (+/-)") : (isBn ? "বাংলা তারিখ এডজাস্ট (+/-)" : "Adjust Bengali (+/-)"));
+                    final android.widget.EditText inp = new android.widget.EditText(MainActivity.this);
+                    inp.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+                    inp.setText(String.valueOf(sp.getInt(pK, 0)));
+                    android.widget.FrameLayout fl = new android.widget.FrameLayout(MainActivity.this);
+                    fl.setPadding((int)(20*DENSITY), (int)(10*DENSITY), (int)(20*DENSITY), (int)(10*DENSITY));
+                    fl.addView(inp); ib.setView(fl);
+                    ib.setPositiveButton("OK", new android.content.DialogInterface.OnClickListener() {
+                        @Override public void onClick(android.content.DialogInterface d, int which) {
+                            try { sp.edit().putInt(pK, Integer.parseInt(inp.getText().toString())).apply(); loadTodayPage(); refreshWidget(); } catch(Exception e){}
+                        }
+                    });
+                    ib.show();
+                }
+            });
+            tb.show();
+        }
+    });
+    """
+    if "Change Color & Theme" not in c:
+        c = c.replace('mr.addImg("Advanced Statistics"', native_settings + '\n        mr.addImg("Advanced Statistics"')
+
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(c)
+    print("✅ Step 2 Done!")
+else:
+    print("❌ MainActivity.java Not Found!")
