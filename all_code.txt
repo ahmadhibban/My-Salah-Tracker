@@ -1494,9 +1494,45 @@ public class MainActivity extends Activity {
         TextView pT = new TextView(this); pT.setText(lang.bnNum(countCompleted*100/6) + "%"); pT.setTextColor(android.graphics.Color.WHITE); pT.setTextSize(36); pT.setTypeface(Typeface.DEFAULT_BOLD); 
         TextView subBtm = new TextView(this); subBtm.setText(statusMsgs[countCompleted]); subBtm.setTextColor(android.graphics.Color.WHITE); subBtm.setTextSize(12); subBtm.setAlpha(0.9f);
         left.addView(gText); left.addView(pT); left.addView(subBtm);
-        TextView artDisplay = new TextView(this); artDisplay.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 0.8f)); artDisplay.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL); artDisplay.setTextSize(40);
-        artDisplay.setText(isDayTime ? "☀️" : "🌙"); 
-        pCard.addView(left); pCard.addView(artDisplay); contentArea.addView(pNeo);
+        PremiumTasbihView tasbihView = new PremiumTasbihView(this, isDarkTheme, colorAccent);
+        tasbihView.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 0.8f));
+        // লাইট থিমের জন্য ব্রাইট গ্রেডিয়েন্ট (ডার্ক থিমে হাত দেওয়া হয়নি, অরিজিনাল থাকবে)
+        if (!isDarkTheme) {
+            int r = android.graphics.Color.red(colorAccent);
+            int g = android.graphics.Color.green(colorAccent);
+            int b = android.graphics.Color.blue(colorAccent);
+            
+            int color1 = android.graphics.Color.rgb((int)(r * 0.9), (int)(g * 0.9), (int)(b * 0.9)); 
+            int color2 = android.graphics.Color.rgb((int)(r * 0.75), (int)(g * 0.75), (int)(b * 0.75)); 
+            
+            android.graphics.drawable.GradientDrawable niceBg = new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR, 
+                new int[]{color1, color2}
+            );
+            niceBg.setCornerRadius(30f); 
+            pCard.setBackground(niceBg);
+            
+            try {
+                for(int i=0; i<left.getChildCount(); i++) {
+                    android.view.View v = left.getChildAt(i);
+                    if(v instanceof android.widget.TextView) {
+                        ((android.widget.TextView)v).setTextColor(android.graphics.Color.WHITE);
+                    } else if (v instanceof android.widget.LinearLayout) {
+                        android.widget.LinearLayout ll = (android.widget.LinearLayout) v;
+                        for(int j=0; j<ll.getChildCount(); j++) {
+                            android.view.View innerV = ll.getChildAt(j);
+                            if(innerV instanceof android.widget.TextView) {
+                                ((android.widget.TextView)innerV).setTextColor(android.graphics.Color.WHITE);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e){}
+        }
+        // ডার্ক থিমের কোনো কোড নেই, তাই আপনার আগের অরিজিনাল ডিজাইনটাই শো করবে!
+        pCard.addView(left); 
+        pCard.addView(tasbihView); 
+        contentArea.addView(pNeo);
 
         final Calendar now = Calendar.getInstance(); final Calendar[] selectedCalArr = { Calendar.getInstance() };
         try { selectedCalArr[0].setTime(sdf.parse(selectedDate[0])); } catch(Exception e){ android.util.Log.e("SalahTracker", "Error", e); }
@@ -1557,8 +1593,8 @@ public class MainActivity extends Activity {
         final boolean isCurrentWeekArr = !selectedCalArr[0].before(weekStartNow);
         nextW.setAlpha(isCurrentWeekArr ? 0.3f : 1.0f);
         nextW.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) { if(!isCurrentWeekArr) { selectedCalArr[0].add(Calendar.DATE, 7); if(selectedCalArr[0].after(Calendar.getInstance())) { selectedCalArr[0].setTime(Calendar.getInstance().getTime()); } selectedDate[0] = sdf.format(selectedCalArr[0].getTime()); loadTodayPage(); } } });
-        prevW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); prevW.setPadding(0,0,0,0); prevW.setGravity(android.view.Gravity.CENTER);
-        nextW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); nextW.setPadding(0,0,0,0); nextW.setGravity(android.view.Gravity.CENTER);
+        prevW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); prevW.setPadding(5, 2, 5, 2); prevW.setGravity(android.view.Gravity.CENTER);
+        nextW.setLayoutParams(new LinearLayout.LayoutParams((int)(34*DENSITY), (int)(34*DENSITY))); nextW.setPadding(5, 2, 5, 2); nextW.setGravity(android.view.Gravity.CENTER);
         weekNavBox.addView(prevW); weekNavBox.addView(weekBox); weekNavBox.addView(nextW); contentArea.addView(weekNavBox);
 
         LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); actionRow.setWeightSum(2);
@@ -1694,7 +1730,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams icCardLp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY)); 
             icCardLp.setMargins(0,0,(int)(15*DENSITY),0); iconView.setLayoutParams(icCardLp); 
         iconView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        iconView.setPadding(0,0,0,0);
+        iconView.setPadding(5, 2, 5, 2);
         FrameLayout iconFrame = new FrameLayout(this);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams((int)(30*DENSITY), (int)(30*DENSITY));
         flp.setMargins(0, 0, (int)(15*DENSITY), 0);
@@ -1751,7 +1787,7 @@ public class MainActivity extends Activity {
                     setFardStat(r, name, newVal); updateRoomRecord(r);
                     sp.edit().putString(key, newVal).apply(); fbHelper.save(selectedDate[0], name, newVal); 
                     
-                    v.animate().scaleX(0.95f).scaleY(0.95f).alpha(0.8f).setDuration(100).withEndAction(new Runnable() { @Override public void run() { v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(250).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); } }).start();
+                    v.animate().scaleX(0.95f).scaleY(0.95f).alpha(0.8f).setDuration(35).withEndAction(new Runnable() { @Override public void run() { v.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(120).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); } }).start();
                     if (!currentStatus) { 
                         int count = 0;
                         for(String p : AppConstants.PRAYERS) { String s = getFardStat(r, p); if(s.equals("yes") || s.equals("excused")) count++;
@@ -1759,7 +1795,7 @@ public class MainActivity extends Activity {
                         if (count == 6) { showSuccessSequence();
                         } 
                     }
-                    v.postDelayed(new Runnable() { @Override public void run() { loadTodayPage(); refreshWidget(); }}, 150);
+                    v.postDelayed(new Runnable() { @Override public void run() { loadTodayPage(); refreshWidget(); }}, 20);
                 }
             });
             card.setOnLongClickListener(new View.OnLongClickListener() {
@@ -2106,7 +2142,7 @@ private void showWipeDataDialog() {
                 final android.widget.LinearLayout row = new android.widget.LinearLayout(this); row.setOrientation(android.widget.LinearLayout.HORIZONTAL); row.setGravity(android.view.Gravity.CENTER_VERTICAL); row.setPadding((int)(10*DENSITY), (int)(12*DENSITY), (int)(10*DENSITY), (int)(12*DENSITY)); android.widget.LinearLayout.LayoutParams rowLp = new android.widget.LinearLayout.LayoutParams(-1, -2); rowLp.setMargins(0, 0, 0, (int)(10*DENSITY)); row.setLayoutParams(rowLp); final android.graphics.drawable.GradientDrawable rowBg = new android.graphics.drawable.GradientDrawable(); rowBg.setCornerRadius(15f*DENSITY); rowBg.setColor(cChecked ? themeColors[4] : android.graphics.Color.TRANSPARENT); row.setBackground(rowBg);
                 android.widget.LinearLayout tCon = new android.widget.LinearLayout(this); tCon.setOrientation(android.widget.LinearLayout.VERTICAL); tCon.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f));
                 final android.widget.TextView tv = new android.widget.TextView(this); tv.setText(cName); tv.setSingleLine(true); tv.setEllipsize(android.text.TextUtils.TruncateAt.END); tv.setTextColor(cChecked ? colorAccent : themeColors[2]); tv.setTextSize(16); tv.setTypeface(cChecked ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT); tCon.addView(tv);
-                android.widget.TextView tvR = new android.widget.TextView(this); tvR.setText(lang.bnNum(cRak) + " " + lang.get("Rakats")); tvR.setTextColor(themeColors[3]); tvR.setTextSize(12); tvR.setPadding(0,0,0,0); tCon.addView(tvR); row.addView(tCon);
+                android.widget.TextView tvR = new android.widget.TextView(this); tvR.setText(lang.bnNum(cRak) + " " + lang.get("Rakats")); tvR.setTextColor(themeColors[3]); tvR.setTextSize(12); tvR.setPadding(5, 2, 5, 2); tCon.addView(tvR); row.addView(tCon);
                 final android.view.View chk = ui.getPremiumCheckbox(cChecked ? "yes" : "no", colorAccent); row.addView(chk); list.addView(row);
                 row.setOnClickListener(new android.view.View.OnClickListener() { @Override public void onClick(final android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY); boolean cur = sp.getString(cKey, "no").equals("yes"); boolean newVal = !cur; sp.edit().putString(cKey, newVal ? "yes" : "no").apply(); fbHelper.save(selectedDate[0], prayer + "_Custom_" + cName, newVal ? "yes" : "no"); android.widget.TextView t = (android.widget.TextView) chk; android.graphics.drawable.GradientDrawable bg = (android.graphics.drawable.GradientDrawable) t.getBackground(); if(newVal) { bg.setColor(colorAccent); bg.setStroke(0, android.graphics.Color.TRANSPARENT); t.setText("✓"); t.setTextColor(android.graphics.Color.parseColor("#F1F5F9")); rowBg.setColor(themeColors[4]); tv.setTextColor(colorAccent); tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); } else { bg.setColor(android.graphics.Color.TRANSPARENT); bg.setStroke((int)(2*DENSITY), themeColors[4]); t.setText(""); rowBg.setColor(android.graphics.Color.TRANSPARENT); tv.setTextColor(themeColors[2]); tv.setTypeface(android.graphics.Typeface.DEFAULT); } } });
                 row.setOnLongClickListener(new android.view.View.OnLongClickListener() { @Override public boolean onLongClick(android.view.View v) { v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); showDeleteCustomPrayerDialog(prayer, cName, ad); return true; } });
@@ -4100,4 +4136,144 @@ public class ZikrFragment extends Fragment {
         root.addView(circleView, new LinearLayout.LayoutParams(-1, -1));
         return root;
     }
+}
+package com.my.salah.tracker.app;
+
+import android.content.Context;
+import android.graphics.*;
+import android.graphics.drawable.*;
+import android.view.*;
+import android.widget.*;
+import android.content.SharedPreferences;
+import android.os.Vibrator;
+import android.util.TypedValue;
+
+public class PremiumTasbihView extends LinearLayout {
+    private int count = 0;
+    private TextView display;
+    private View tapButton;
+    private SharedPreferences prefs;
+    private int accentColor;
+
+    public PremiumTasbihView(Context ctx, boolean isDark, int accCol) {
+        super(ctx); 
+        this.accentColor = accCol;
+        setOrientation(LinearLayout.VERTICAL); 
+        setGravity(Gravity.CENTER); 
+        setWillNotDraw(false); // বাঁকা দাগ আকার জন্য
+        
+        // বাম পাশে কার্ভড দাগের জন্য পর্যাপ্ত জায়গা রাখা হলো
+        setPadding(60, 20, 20, 20); 
+        
+        prefs = ctx.getSharedPreferences("TasbihPrefs", 0); 
+        count = prefs.getInt("pt_count", 0);
+        
+        // --- 1. Beautiful Engraved Display ---
+        display = new TextView(ctx); 
+        display.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)); 
+        display.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f); 
+        display.setTextColor(Color.WHITE); // ব্যাকগ্রাউন্ড ডিপ থাকবে তাই টেক্সট সাদা
+        
+        // প্রিমিয়াম ট্রান্সপারেন্ট গ্লাস ইনসেট লুক
+        GradientDrawable displayBg = new GradientDrawable();
+        displayBg.setColor(Color.argb(40, 0, 0, 0)); // সফট ডার্ক ওভারলে
+        displayBg.setCornerRadius(20f);
+        displayBg.setStroke(2, Color.argb(40, 255, 255, 255)); // হালকা গ্লাস হাইলাইট
+        
+        display.setBackground(displayBg);
+        display.setPadding(35, 12, 35, 12);
+        display.setGravity(Gravity.CENTER);
+        updateDisplay(); 
+        addView(display);
+        
+        // Spacer
+        View sp = new View(ctx); 
+        sp.setLayoutParams(new LayoutParams(1, (int)(18 * ctx.getResources().getDisplayMetrics().density))); 
+        addView(sp);
+        
+        // --- 2. Sleek 3D Jewel Button ---
+        tapButton = new View(ctx); 
+        float den = ctx.getResources().getDisplayMetrics().density;
+        tapButton.setLayoutParams(new LayoutParams((int)(55 * den), (int)(55 * den)));
+        
+        LayerDrawable unpressed = createPremiumButton(false);
+        LayerDrawable pressed = createPremiumButton(true);
+        
+        tapButton.setBackground(unpressed); 
+        tapButton.setClickable(true); 
+        tapButton.setFocusable(true);
+        
+        tapButton.setOnTouchListener((v, e) -> {
+            if (e.getAction() == MotionEvent.ACTION_DOWN) { 
+                tapButton.setBackground(pressed); 
+                tapButton.animate().scaleX(0.92f).scaleY(0.92f).setDuration(50).start(); 
+            } else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) { 
+                tapButton.setBackground(unpressed); 
+                tapButton.animate().scaleX(1f).scaleY(1f).setDuration(150).setInterpolator(new android.view.animation.OvershootInterpolator()).start(); 
+            }
+            return false;
+        });
+        
+        tapButton.setOnClickListener(v -> { 
+            count++; if(count > 99999) count = 0; 
+            updateDisplay(); vib(ctx, 25); 
+            prefs.edit().putInt("pt_count", count).apply(); 
+        });
+        
+        tapButton.setOnLongClickListener(v -> { 
+            count = 0; updateDisplay(); vib(ctx, 80); 
+            prefs.edit().putInt("pt_count", count).apply(); 
+            return true; 
+        });
+        
+        addView(tapButton);
+    }
+    
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        // --- ৩. প্রিমিয়াম গ্লোয়িং কার্ভড ডিভাইডার (Glowing Curved Divider) ---
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(4f);
+        
+        // ফেইড ইফেক্ট (ওপর নিচে মিলিয়ে যাবে, মাঝখানে উজ্জ্বল)
+        p.setShader(new LinearGradient(0, 0, 0, getHeight(), 
+            new int[]{Color.TRANSPARENT, Color.argb(120, 255, 255, 255), Color.TRANSPARENT}, 
+            null, Shader.TileMode.CLAMP));
+            
+        Path path = new Path();
+        path.moveTo(15, 30); // শুরু
+        path.quadTo(50, getHeight() / 2f, 15, getHeight() - 30); // সুন্দর স্মুথ বাঁক
+        canvas.drawPath(path, p);
+    }
+
+    private LayerDrawable createPremiumButton(boolean isPressed) {
+        // বাটনের কালার লজিক
+        int light = Color.argb(255, Math.min(255, (int)(Color.red(accentColor)*1.2)), Math.min(255, (int)(Color.green(accentColor)*1.2)), Math.min(255, (int)(Color.blue(accentColor)*1.2)));
+        int dark = Color.argb(255, (int)(Color.red(accentColor)*0.7), (int)(Color.green(accentColor)*0.7), (int)(Color.blue(accentColor)*0.7));
+
+        GradientDrawable shadow = new GradientDrawable();
+        shadow.setShape(GradientDrawable.OVAL);
+        shadow.setColor(Color.argb(100, 0, 0, 0)); // সফট শ্যাডো
+
+        GradientDrawable face = new GradientDrawable(GradientDrawable.Orientation.TL_BR, 
+                isPressed ? new int[]{dark, light} : new int[]{light, dark});
+        face.setShape(GradientDrawable.OVAL);
+        // সফট ইনার হাইলাইট
+        face.setStroke(2, Color.argb(60, 255, 255, 255));
+
+        LayerDrawable ld = new LayerDrawable(new Drawable[]{shadow, face});
+        if (isPressed) {
+            ld.setLayerInset(0, 2, 2, 0, 0);
+            ld.setLayerInset(1, 6, 6, 2, 2); // ভেতরে ডেবে যাবে
+        } else {
+            ld.setLayerInset(0, 0, 0, 8, 8); // শ্যাডো নিচে পড়বে
+            ld.setLayerInset(1, 0, 0, 8, 8); // বাটন উঁচুতে থাকবে
+        }
+        return ld;
+    }
+
+    private void updateDisplay(){ display.setText(String.format("%04d", count)); }
+    private void vib(Context c, int d){ try{ ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(d); }catch(Exception e){} }
 }
