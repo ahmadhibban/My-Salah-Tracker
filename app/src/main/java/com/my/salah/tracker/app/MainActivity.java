@@ -506,7 +506,7 @@ public class MainActivity extends Activity {
      
         
         header.addView(leftHeader); header.addView(rightHeader); contentArea.addView(header);
-        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(pCardPadV*DENSITY), (int)(20*DENSITY), (int)(pCardPadV*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
+        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(15*DENSITY), (int)(10*DENSITY), (int)(15*DENSITY), (int)(10*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
          // --- 💎 Glassmorphism Effect Applied Here ---
@@ -540,7 +540,7 @@ public class MainActivity extends Activity {
         pNeo.setLayoutParams(pNeoLp);
         pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
         pNeo.addView(pCard);
-        pCard.setPadding((int)(25*DENSITY), (int)(20*DENSITY), (int)(25*DENSITY), (int)(20*DENSITY));
+        pCard.setPadding((int)(15*DENSITY), (int)(10*DENSITY), (int)(15*DENSITY), (int)(10*DENSITY));
         
         int countCompleted = 0; 
         for(String p : AppConstants.PRAYERS) {
@@ -855,8 +855,7 @@ public class MainActivity extends Activity {
                         if (count == 6) { showSuccessSequence();
                         } 
                     }
-                    v.postDelayed(new Runnable() { @Override public void run() { 
-                        loadTodayPage(); refreshWidget(); }}, 20);
+                    loadTodayPage(); refreshWidget();
                 }
             });
             card.setOnLongClickListener(new View.OnLongClickListener() {
@@ -1152,7 +1151,7 @@ private void showMarkOptions() {
         scaleX.setRepeatCount(android.animation.ValueAnimator.INFINITE); scaleY.setRepeatCount(android.animation.ValueAnimator.INFINITE); 
         scaleX.setDuration(1000); scaleY.setDuration(1000); 
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet(); animSet.playTogether(scaleX, scaleY); animSet.start();
-        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 1000);
+        new Handler().postDelayed(new Runnable() { @Override public void run() { main.animate().scaleX(0.8f).scaleY(0.8f).alpha(0f).setDuration(200).withEndAction(new Runnable() { @Override public void run() { root.removeView(main); } }).start(); } }, 0);
         applyFont(main, appFonts[0], appFonts[1]); 
     }
 private void showWipeDataDialog() {
