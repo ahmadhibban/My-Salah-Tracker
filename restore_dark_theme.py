@@ -3,31 +3,32 @@ import re
 
 def main():
     target_dir = None
-    for root, dirs, files in os.walk('.'):
-        if 'Android/data' in root or '.git' in root: continue
-        if 'MainActivity.java' in files: target_dir = root; break
-    if not target_dir:
-        for root, dirs, files in os.walk('/storage/emulated/0/'):
+    search_paths = ['.', '/storage/emulated/0/AndroidIDEProjects', '/storage/emulated/0/']
+    
+    for root_path in search_paths:
+        if not os.path.exists(root_path): continue
+        for root, dirs, files in os.walk(root_path):
             if 'Android/data' in root or '.git' in root: continue
-            if 'MainActivity.java' in files: target_dir = root; break
+            if 'MainActivity.java' in files: 
+                target_dir = root
+                break
+        if target_dir: break
 
     if target_dir:
         file_path = os.path.join(target_dir, 'MainActivity.java')
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # আমার আগের সব উল্টাপাল্টা কালার লজিক মুছে ফেলা হচ্ছে
-        content = re.sub(r'\s*// --- নতুন: লাইট থিমে গাঢ় গ্রেডিয়েন্ট ---.*?pCard\.addView\(left\);', '\n        pCard.addView(left);', content, flags=re.DOTALL)
-        content = re.sub(r'\s*// --- মাস্টারপিস ডিপ গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড ---.*?pCard\.addView\(left\);', '\n        pCard.addView(left);', content, flags=re.DOTALL)
-
-        perfect_color_code = """
-        // --- পারফেক্ট কার্ড ব্যাকগ্রাউন্ড (ইউজারের ছবি অনুযায়ী) ---
+        # আমার আগের করা ডার্ক থিমের সব ভুল কোড খুঁজে বের করে ডিলিট করা হচ্ছে
+        pattern = r'// --- পারফেক্ট কার্ড ব্যাকগ্রাউন্ড.*?pCard\.addView\(left\);'
+        
+        clean_code = """
+        // লাইট থিমের জন্য ব্রাইট গ্রেডিয়েন্ট (ডার্ক থিমে হাত দেওয়া হয়নি, অরিজিনাল থাকবে)
         if (!isDarkTheme) {
             int r = android.graphics.Color.red(colorAccent);
             int g = android.graphics.Color.green(colorAccent);
             int b = android.graphics.Color.blue(colorAccent);
             
-            // প্রথমবারের মতো পারফেক্ট ব্রাইট গ্রেডিয়েন্ট (অতিরিক্ত কালো নয়)
             int color1 = android.graphics.Color.rgb((int)(r * 0.9), (int)(g * 0.9), (int)(b * 0.9)); 
             int color2 = android.graphics.Color.rgb((int)(r * 0.75), (int)(g * 0.75), (int)(b * 0.75)); 
             
@@ -38,7 +39,6 @@ def main():
             niceBg.setCornerRadius(30f); 
             pCard.setBackground(niceBg);
             
-            // লাইট থিমে কার্ড কালারফুল তাই টেক্সট সাদা
             try {
                 for(int i=0; i<left.getChildCount(); i++) {
                     android.view.View v = left.getChildAt(i);
@@ -55,19 +55,17 @@ def main():
                     }
                 }
             } catch (Exception e){}
-        } else {
-            // ডার্ক থিমে কোনো পরিবর্তন নেই, একদম অরিজিনাল লুক!
-            pCard.setBackground(null);
         }
-        
+        // ডার্ক থিমের কোনো কোড নেই, তাই আপনার আগের অরিজিনাল ডিজাইনটাই শো করবে!
         pCard.addView(left);"""
-        
-        # নতুন কোড বসানো হচ্ছে
-        content = content.replace("pCard.addView(left);", perfect_color_code.strip())
-        
-        with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        print("✅ পারফেক্ট! ডার্ক থিম আগের মত অরিজিনাল করা হয়েছে এবং লাইট থিমে পারফেক্ট গ্রেডিয়েন্ট দেওয়া হয়েছে।")
+
+        if re.search(pattern, content, re.DOTALL):
+            content = re.sub(pattern, clean_code.strip(), content, flags=re.DOTALL)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print("✅ ডার্ক থিমের কালো ব্যাকগ্রাউন্ড রিমুভ করা হয়েছে! আপনার অরিজিনাল ডিজাইন রিস্টোর হয়েছে।")
+        else:
+            print("⚠️ আগের কোড ব্লকটি পাওয়া যায়নি।")
     else:
         print("❌ MainActivity.java পাওয়া যায়নি।")
 
