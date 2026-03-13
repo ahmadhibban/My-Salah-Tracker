@@ -506,7 +506,7 @@ public class MainActivity extends Activity {
      
         
         header.addView(leftHeader); header.addView(rightHeader); contentArea.addView(header);
-        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(15*DENSITY), (int)(10*DENSITY), (int)(15*DENSITY), (int)(10*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
+        LinearLayout pCard = new LinearLayout(this); pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY)); LinearLayout.LayoutParams pcLp = new LinearLayout.LayoutParams(-1, -2); pcLp.setMargins((int)(20*DENSITY), 0, (int)(20*DENSITY), (int)(pCardMarB*DENSITY)); pCard.setLayoutParams(pcLp);
         pCard.setOrientation(LinearLayout.HORIZONTAL); pCard.setGravity(Gravity.CENTER_VERTICAL);
         int[] pColors = isDayTime ? new int[]{Color.parseColor("#FF9500"), Color.parseColor("#FFCC00")} : new int[]{Color.parseColor("#1A2980"), Color.parseColor("#26D0CE")};
          // --- 💎 Glassmorphism Effect Applied Here ---
@@ -540,7 +540,7 @@ public class MainActivity extends Activity {
         pNeo.setLayoutParams(pNeoLp);
         pCard.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
         pNeo.addView(pCard);
-        pCard.setPadding((int)(15*DENSITY), (int)(10*DENSITY), (int)(15*DENSITY), (int)(10*DENSITY));
+        pCard.setPadding((int)(20*DENSITY), (int)(5*DENSITY), (int)(20*DENSITY), (int)(5*DENSITY));
         
         int countCompleted = 0; 
         for(String p : AppConstants.PRAYERS) {
