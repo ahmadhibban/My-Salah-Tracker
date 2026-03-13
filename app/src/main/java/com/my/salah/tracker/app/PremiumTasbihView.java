@@ -24,7 +24,7 @@ public class PremiumTasbihView extends LinearLayout {
         setWillNotDraw(false); // বাঁকা দাগ আকার জন্য
         
         // বাম পাশে কার্ভড দাগের জন্য পর্যাপ্ত জায়গা রাখা হলো
-        setPadding(60, 20, 20, 20); 
+        setPadding(60, 2, 20, 2); 
         
         prefs = ctx.getSharedPreferences("TasbihPrefs", 0); 
         count = prefs.getInt("pt_count", 0);
