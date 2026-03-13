@@ -324,7 +324,7 @@ public class StatsHelper {
                 tDone+=d; tExc+=e; tSun+=s;
             }
             float fVal = d+e;
-            fE.add(new com.github.mikephil.charting.data.BarEntry(i-0.2f, fVal));
+            fE.add(new com.github.mikephil.charting.data.BarEntry((Math.min(6f, s*(6f/10f)) == 0) ? i : i - 0.2f, fVal));
             sE.add(new com.github.mikephil.charting.data.BarEntry(i+0.2f, Math.min(6f, s*(6f/10f))));
             fC.add(fVal==0?android.graphics.Color.TRANSPARENT:((MainActivity)activity).getStatusColor(dK));
             lbls[i] = isWeekly ? new java.text.SimpleDateFormat("E", java.util.Locale.US).format(startCal.getTime()).substring(0,1) : (isBn?lang.bnNum(i+1):""+(i+1));

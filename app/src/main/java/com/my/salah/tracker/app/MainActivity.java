@@ -856,35 +856,7 @@ public class MainActivity extends Activity {
                         } 
                     }
                     v.postDelayed(new Runnable() { @Override public void run() { 
-                        soup.neumorphism.NeumorphCardView chkCard = (soup.neumorphism.NeumorphCardView) chk;
-                        chkCard.setShapeType(newVal.equals("yes") ? 0 : 1);
-                        chkCard.setShadowElevation((newVal.equals("yes") ? 2f : 5.5f) * DENSITY);
-                        chkCard.removeAllViews();
-                        if (newVal.equals("yes")) {
-                            TextView inner = new TextView(MainActivity.this);
-                            inner.setText("✓");
-                            inner.setTextColor(colorAccent);
-                            inner.setTextSize(18);
-                            inner.setTypeface(null, Typeface.BOLD);
-                            inner.setGravity(Gravity.CENTER);
-                            inner.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
-                            chkCard.addView(inner);
-                        }
-                        
-                        TextView pText = getWindow().getDecorView().findViewWithTag("PERCENT_TEXT");
-                        TextView sText = getWindow().getDecorView().findViewWithTag("SUB_TEXT");
-                        if (pText != null) {
-                            int nC = 0;
-                            SalahRecord nR = getRoomRecord(selectedDate[0]);
-                            for(String pr : AppConstants.PRAYERS) {
-                                String s = getFardStat(nR, pr);
-                                if(s.equals("yes") || s.equals("excused")) nC++;
-                            }
-                            pText.setText(lang.bnNum(nC*100/6) + "%");
-                            if(sText != null) sText.setText(statusMsgs[nC]);
-                        }
-                        refreshWidget(); 
-                    }}, 20);
+                        loadTodayPage(); refreshWidget(); }}, 20);
                 }
             });
             card.setOnLongClickListener(new View.OnLongClickListener() {
