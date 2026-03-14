@@ -1,11 +1,13 @@
-package com.my.salah.tracker.app;
+import os, re
 
-public class AppConstants {
-    // নামাজের নামগুলো
-    public static final String[] PRAYERS = {"Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", "Witr"};
-    
-    // সুন্নাহর লিস্ট
-    
+for r, d, f in os.walk('.'):
+    if 'build' in r: continue
+    if 'AppConstants.java' in f:
+        p = os.path.join(r, 'AppConstants.java')
+        with open(p, 'r', encoding='utf-8') as file: c = file.read()
+        
+        # নতুন ডেটাগুলো AppConstants এ যোগ করা হচ্ছে
+        new_constants = '''
     // নতুন ১০টি সুন্নত/নফলের ডিসপ্লে নাম
     public static final String[] EXTRA_PRAYERS_BN = {
         "ফজরের পূর্বের সুন্নত", "ইশরাক", "চাশত", 
@@ -31,13 +33,11 @@ public class AppConstants {
     };
     // ডিফল্ট রাকাত সংখ্যা
     public static final int[] EXTRA_DEF_RAKAT = { 2, 4, 4, 4, 2, 4, 2, 6, 2, 4 };
+'''
+        # যদি আগে থেকে যোগ করা না থাকে, তবে যোগ করবে
+        if 'EXTRA_PRAYERS_BN' not in c:
+            c = c.replace('public static final String[][] SUNNAHS = {', new_constants + '\n    public static final String[][] SUNNAHS = {')
+            
+        with open(p, 'w', encoding='utf-8') as file: file.write(c)
 
-    public static final String[][] SUNNAHS = { 
-        {"2 Rakat Sunnah (Before)", "4 Rakat Ishraq", "4 Rakat Chasht"}, 
-        {"4 Rakat Sunnah (Before)", "2 Rakat Sunnah (After)"}, 
-        {"4 Rakat Sunnah (Before)"}, 
-        {"2 Rakat Sunnah (After)", "6 Rakat Awabeen"}, 
-        {"2 Rakat Sunnah (After)"}, 
-        {"4 Rakat Tahajjud"} 
-    };
-}
+print("✅ ধাপ ১: AppConstants এ নতুন ডেটা এবং পুরনো ডেটাবেস ম্যাপ সফলভাবে যুক্ত হয়েছে!")
