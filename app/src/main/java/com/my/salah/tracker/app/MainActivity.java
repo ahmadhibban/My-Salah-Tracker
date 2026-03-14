@@ -879,7 +879,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         weekNavBox.addView(prevW); weekNavBox.addView(weekBox); weekNavBox.addView(nextW); contentArea.addView(weekNavBox);
 
         LinearLayout actionRow = new LinearLayout(this); actionRow.setOrientation(LinearLayout.HORIZONTAL); actionRow.setGravity(Gravity.CENTER); actionRow.setPadding((int)(20*DENSITY), 0, (int)(20*DENSITY), 0); actionRow.setWeightSum(2);
-        LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -1, 1f);
+        LinearLayout markAllBtn = new LinearLayout(this); markAllBtn.setGravity(Gravity.CENTER); markAllBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY)); LinearLayout.LayoutParams markLp = new LinearLayout.LayoutParams(0, -1, 1f); markLp.setMargins(0, (int)(15*DENSITY), (int)(15*DENSITY), (int)(15*DENSITY));
         markLp.setMargins((int)(16*DENSITY), (int)(4*DENSITY), (int)(8*DENSITY), (int)(4*DENSITY)); markAllBtn.setLayoutParams(markLp); 
         TextView markAllTxt = new TextView(this); markAllTxt.setTextSize(13); markAllTxt.setTypeface(Typeface.DEFAULT_BOLD); 
         GradientDrawable bg1 = new GradientDrawable(); bg1.setCornerRadius(20f * DENSITY);
@@ -942,7 +942,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
         actionRow.addView(markAllBtn);
 
         LinearLayout todayBtn = new LinearLayout(this); todayBtn.setGravity(Gravity.CENTER); todayBtn.setPadding(0, (int)(12*DENSITY), 0, (int)(12*DENSITY));
-        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -1, 1f); todayLp.setMargins((int)(8*DENSITY), (int)(4*DENSITY), (int)(16*DENSITY), (int)(4*DENSITY)); todayBtn.setLayoutParams(todayLp); 
+        LinearLayout.LayoutParams todayLp = new LinearLayout.LayoutParams(0, -1, 1f); todayLp.setMargins(0, (int)(15*DENSITY), 0, (int)(15*DENSITY)); todayLp.setMargins((int)(8*DENSITY), (int)(4*DENSITY), (int)(16*DENSITY), (int)(4*DENSITY)); todayBtn.setLayoutParams(todayLp); 
         TextView todayTxt = new TextView(this); todayTxt.setTextSize(13); todayTxt.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg2 = new GradientDrawable(); bg2.setCornerRadius(20f * DENSITY); bg2.setColor(themeColors[1]); bg2.setStroke((int)(1.5f*DENSITY), themeColors[4]); applyNeo(todayBtn, 0, 12f, 4f, isDarkTheme ? android.graphics.Color.parseColor("#1C1C1E") : android.graphics.Color.parseColor("#E2E8F0"), isDarkTheme); todayBtn.setPadding((int)(16*DENSITY), (int)(10*DENSITY), (int)(16*DENSITY), (int)(10*DENSITY)); 
         View tIcon = ui.getRoundImage("img_calender", 4, Color.TRANSPARENT, colorAccent);
@@ -1040,7 +1040,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
             if (!stat.equals("excused")) {
                 TextView jamaatBtn = new TextView(this);
                 final String jKey = selectedDate[0] + "_" + name + "_jamaat";
-                String jStat = sp.getString(jKey, "jamaat"); // "jamaat" or "alone"
+                String jStat = sp.getString(jKey, name.equals("Witr") ? "alone" : "jamaat"); // "jamaat" or "alone"
                 boolean isDone = stat.equals("yes");
                 
                 String sText = jStat.equals("jamaat") ? (isBn ? "জামাতের সাথে" : "Jamaat") : (isBn ? "একাকী" : "Alone");
@@ -1174,7 +1174,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
             sTxtCon.setOrientation(android.widget.LinearLayout.VERTICAL);
             sTxtCon.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f));
             android.widget.TextView sTv = new android.widget.TextView(MainActivity.this);
-            sTv.setText(cardTitle);
+            sTv.setText(android.text.Html.fromHtml(cardTitle.replace("\n", "<br>").replace("(", "<small>(").replace(")", ")</small>")));
             sTv.setTextColor(themeColors[2]);
             sTv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
             sTv.setTextSize(16);
@@ -1437,7 +1437,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
                 android.widget.LinearLayout main = new android.widget.LinearLayout(MainActivity.this); main.setOrientation(android.widget.LinearLayout.VERTICAL); main.setPadding((int)(25*DENSITY), (int)(30*DENSITY), (int)(25*DENSITY), (int)(30*DENSITY));
                 android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable(); gd.setColor(themeColors[1]); gd.setCornerRadius(20f * DENSITY); main.setBackground(gd);
                 android.widget.TextView title = new android.widget.TextView(MainActivity.this); title.setText(isBn ? "নির্বাচন করুন" : "Select Option"); title.setTextColor(themeColors[2]); title.setTextSize(18); title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); title.setPadding(0, 0, 0, (int)(20*DENSITY)); main.addView(title);
-                String[] copts = isBn ? new String[]{"থিম নির্বাচন করুন", "ক্যালেন্ডার নির্বাচন", "কাজা নামাজ"} : new String[]{"Choose Theme", "Choose Calendar", "Qaza Prayers"};
+                String[] copts = isBn ? new String[]{"থিম নির্বাচন করুন", "ক্যালেন্ডার নির্বাচন"} : new String[]{"Choose Theme", "Choose Calendar"};
                 final android.app.AlertDialog ad = new android.app.AlertDialog.Builder(MainActivity.this).setView(wrap).create();
                 for(int i=0; i<copts.length; i++) {
                     final int w = i;
@@ -1621,7 +1621,7 @@ private void showMarkOptions() {
                 SalahRecord r = getRoomRecord(selectedDate[0]);
                 for(int i=0; i<AppConstants.PRAYERS.length; i++) { 
                     setFardStat(r, AppConstants.PRAYERS[i], "yes"); setQazaStat(r, AppConstants.PRAYERS[i], false);
-                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "yes").apply(); sp.edit().putBoolean(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_qaza", false).apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "yes"); 
+                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "yes").apply(); sp.edit().putBoolean(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_qaza", false).apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "yes"); for(int sIdx=0; sIdx<AppConstants.EXTRA_DB_KEYS.length; sIdx++) { sp.edit().putString(selectedDate[0] + "_" + AppConstants.EXTRA_DB_KEYS[sIdx], "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.EXTRA_DB_KEYS[sIdx], "yes"); } 
                     for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "yes"); } 
                 } 
                 updateRoomRecord(r);
@@ -1666,7 +1666,7 @@ private void showMarkOptions() {
                 SalahRecord r = getRoomRecord(selectedDate[0]);
                 for(int i=0; i<AppConstants.PRAYERS.length; i++) { 
                     setFardStat(r, AppConstants.PRAYERS[i], "no");
-                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "no"); 
+                    sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i], "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i], "no"); for(int sIdx=0; sIdx<AppConstants.EXTRA_DB_KEYS.length; sIdx++) { sp.edit().putString(selectedDate[0] + "_" + AppConstants.EXTRA_DB_KEYS[sIdx], "no").apply(); fbHelper.save(selectedDate[0], AppConstants.EXTRA_DB_KEYS[sIdx], "no"); } 
                     for(String sName : AppConstants.SUNNAHS[i]) { sp.edit().putString(selectedDate[0]+"_"+AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no").apply(); fbHelper.save(selectedDate[0], AppConstants.PRAYERS[i]+"_Sunnah_"+sName, "no"); } 
                 } 
                 updateRoomRecord(r);
