@@ -6,19 +6,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DataMigrationHelper {
+public class DataMigrationHelper
+{
+    public static void migrateOldDataToRoom(final Context context)
+    {
+        final SharedPreferences sp =
+            context.getSharedPreferences("salah_pro_final", Context.MODE_PRIVATE);
 
-    public static void migrateOldDataToRoom(final Context context) {
-        final SharedPreferences sp = context.getSharedPreferences("salah_pro_final", Context.MODE_PRIVATE);
-        
         // যদি আগে থেকেই ট্রান্সফার হয়ে থাকে, তবে আর কিছুই করবে না
         boolean isMigrated = sp.getBoolean("is_migrated_to_room_v1", false);
-        if (isMigrated) return;
+        if (isMigrated)
+            return;
 
         // ব্যাকগ্রাউন্ড থ্রেডে ডেটা ট্রান্সফার করবে যাতে অ্যাপ হ্যাং না করে
         SalahDatabase.databaseWriteExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run()
+            {
                 SalahDao dao = SalahDatabase.getDatabase(context).salahDao();
                 Map<String, ?> allEntries = sp.getAll();
                 Set<String> uniqueDates = new HashSet<>();
@@ -34,7 +37,7 @@ public class DataMigrationHelper {
                 // খুঁজে পাওয়া তারিখগুলোর ডেটা Room Database-এ সেভ করা
                 for (String date : uniqueDates) {
                     SalahRecord record = new SalahRecord(date);
-                    
+
                     // নামাজের স্ট্যাটাস
                     record.fajr = sp.getString(date + "_Fajr", "no");
                     record.dhuhr = sp.getString(date + "_Dhuhr", "no");
