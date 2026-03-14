@@ -1,4 +1,6 @@
-package com.my.salah.tracker.app;
+import os
+
+new_code = """package com.my.salah.tracker.app;
 
 public class AppConstants {
     // নামাজের নামগুলো
@@ -6,19 +8,19 @@ public class AppConstants {
     
     // নতুন ১০টি সুন্নত/নফলের ডিসপ্লে নাম
     public static final String[] EXTRA_PRAYERS_BN = {
-        "ফজরের সুন্নত\n(পূর্বে)", "ইশরাক", "চাশত", 
-        "যোহরের সুন্নত\n(পূর্বে)", "যোহরের সুন্নত\n(পরে)", 
-        "আসরের সুন্নত\n(পূর্বে)", 
-        "মাগরিবের সুন্নত\n(পরে)", "আওয়াবীন", 
-        "এশার সুন্নত\n(পরে)", "তাহাজ্জুদ"
+        "ফজরের সুন্নত\\n(পূর্বে)", "ইশরাক", "চাশত", 
+        "যোহরের সুন্নত\\n(পূর্বে)", "যোহরের সুন্নত\\n(পরে)", 
+        "আসরের সুন্নত\\n(পূর্বে)", 
+        "মাগরিবের সুন্নত\\n(পরে)", "আওয়াবীন", 
+        "এশার সুন্নত\\n(পরে)", "তাহাজ্জুদ"
     };
     
     public static final String[] EXTRA_PRAYERS_EN = {
-        "Sunnah\n(Before Fajr)", "Ishraq", "Chasht", 
-        "Sunnah\n(Before Dhuhr)", "Sunnah\n(After Dhuhr)", 
-        "Sunnah\n(Before Asr)", 
-        "Sunnah\n(After Maghrib)", "Awabeen", 
-        "Sunnah\n(After Isha)", "Tahajjud"
+        "Sunnah\\n(Before Fajr)", "Ishraq", "Chasht", 
+        "Sunnah\\n(Before Dhuhr)", "Sunnah\\n(After Dhuhr)", 
+        "Sunnah\\n(Before Asr)", 
+        "Sunnah\\n(After Maghrib)", "Awabeen", 
+        "Sunnah\\n(After Isha)", "Tahajjud"
     };
     
     // পুরনো ডেটাবেস Key (যাতে আগের ডেটা না হারায়)
@@ -43,3 +45,13 @@ public class AppConstants {
         {"4 Rakat Tahajjud"} 
     };
 }
+"""
+
+for r, d, f in os.walk('.'):
+    if 'build' in r: continue
+    if 'AppConstants.java' in f:
+        p = os.path.join(r, 'AppConstants.java')
+        with open(p, 'w', encoding='utf-8') as file:
+            file.write(new_code)
+        print("✅ AppConstants.java একদম ফ্রেশ এবং ক্লিনভাবে লেখা হয়েছে!")
+        break

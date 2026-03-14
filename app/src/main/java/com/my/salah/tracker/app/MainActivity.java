@@ -1178,7 +1178,7 @@ subBtm.setTag("SUB_TEXT"); subBtm.setTextColor(android.graphics.Color.WHITE); su
             sTv.setTextColor(themeColors[2]);
             sTv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
             sTv.setTextSize(16);
-            sTv.setSingleLine(true);
+            sTv.setSingleLine(false); sTv.setMaxLines(2);
             sTxtCon.addView(sTv);
             sInner.addView(sTxtCon);
 
