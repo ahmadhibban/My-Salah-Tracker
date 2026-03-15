@@ -2875,7 +2875,9 @@ public class MainActivity extends Activity
         mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "ব্যাকআপ এবং সিঙ্ক" : "Backup & Sync", "img_cloud", new Runnable() {
             @Override public void run()
             {
-                showPremiumSyncSettingsDialog();
+                backupHelper.showProfileDialog(new Runnable() {
+                    @Override public void run() { loadTodayPage(); refreshWidget(); }
+                });
             }
         });
         mr.addImg("Change Language", "img_lang", new Runnable() {
@@ -4634,7 +4636,9 @@ public class MainActivity extends Activity
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-            showPremiumSyncSettingsDialog();
+            backupHelper.showProfileDialog(new Runnable() {
+                    @Override public void run() { loadTodayPage(); refreshWidget(); }
+                });
         });
 
         // অন্যান্য বাটনগুলোর জন্য (আপাতত টোস্ট মেসেজ)

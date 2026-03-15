@@ -5,9 +5,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
+        
     <application
         android:allowBackup="true"
         android:icon="@drawable/app_icon"
@@ -4419,7 +4417,11 @@ public class MainActivity extends Activity
                                 }
                                 ad.dismiss();
                                 finish();
-                                overridePendingTransition(0, 0);
+                                if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
                                 android.content.Intent intent = new android.content.Intent(
                                     MainActivity.this, MainActivity.class);
                                 try {
@@ -4647,16 +4649,10 @@ public class MainActivity extends Activity
                 statsHelper.showStatsOptionsDialog();
             }
         });
-        mr.addImg("Backup & Sync", "img_cloud", new Runnable() {
+        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "ব্যাকআপ এবং সিঙ্ক" : "Backup & Sync", "img_cloud", new Runnable() {
             @Override public void run()
             {
-                backupHelper.showProfileDialog(new Runnable() {
-                    @Override public void run()
-                    {
-                        loadTodayPage();
-                        refreshWidget();
-                    }
-                });
+                showPremiumSyncSettingsDialog();
             }
         });
         mr.addImg("Change Language", "img_lang", new Runnable() {
@@ -4671,11 +4667,16 @@ public class MainActivity extends Activity
                 } catch (Exception e) {
                 }
                 startActivity(intent);
-                overridePendingTransition(0, 0);
+                if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
             }
         });
-        // mr.addImg("View Qaza List", "img_custom_qaza", new Runnable() { @Override
-        // public void run() { showQazaListDialog(); }});
+        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "কাজা নামাজের তালিকা" : "View Qaza List", "img_custom_qaza", new Runnable() {
+            @Override public void run() { showQazaListDialog(); }
+        });
 
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int) (320 * DENSITY), -2);
         flp.gravity = Gravity.CENTER;
@@ -5123,7 +5124,7 @@ public class MainActivity extends Activity
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet();
         animSet.playTogether(scaleX, scaleY);
         animSet.start();
-        new Handler().postDelayed(new Runnable() {
+        new Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override public void run()
             {
                 main.animate()
@@ -6375,6 +6376,61 @@ public class MainActivity extends Activity
         applyFont(yWrap, appFonts[0], appFonts[1]);
         yAd.show();
     }
+
+    private void showPremiumSyncSettingsDialog() {
+        android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.setContentView(R.layout.dialog_premium_settings);
+        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        android.widget.TextView tvEmail = dialog.findViewById(R.id.tv_current_email);
+        android.widget.Switch switchSync = dialog.findViewById(R.id.switch_auto_sync);
+        
+        android.widget.Button btnChangeEmail = dialog.findViewById(R.id.btn_change_email);
+        android.widget.Button btnExportJson = dialog.findViewById(R.id.btn_export_json);
+        android.widget.Button btnImportJson = dialog.findViewById(R.id.btn_import_json);
+        android.widget.Button btnWipeCloud = dialog.findViewById(R.id.btn_wipe_cloud);
+        android.widget.Button btnWipeAll = dialog.findViewById(R.id.btn_wipe_all);
+
+        // ডেমো ডাটা (পরে আপনার আসল লজিক বসবে)
+        String currentEmail = sp.getString("user_email", "Not connected");
+        tvEmail.setText("Current Email: " + currentEmail);
+        switchSync.setChecked(sp.getBoolean("auto_sync", true));
+
+        // ডিলিট বাটনের আসল লজিক যুক্ত করা হলো
+        btnWipeAll.setOnClickListener(v -> {
+            dialog.dismiss();
+            new android.app.AlertDialog.Builder(MainActivity.this)
+                .setTitle("⚠️ Delete All Data")
+                .setMessage("Are you sure? This will wipe your history, settings, and start fresh.")
+                .setPositiveButton("Yes, Delete", (d, w) -> {
+                    android.widget.Toast.makeText(MainActivity.this, "Wiping data...", android.widget.Toast.LENGTH_SHORT).show();
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        ((android.app.ActivityManager) getSystemService(android.content.Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+            showPremiumSyncSettingsDialog();
+        });
+
+        // অন্যান্য বাটনগুলোর জন্য (আপাতত টোস্ট মেসেজ)
+        btnChangeEmail.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "Login / Change Email clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnExportJson.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "JSON Export clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnImportJson.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "JSON Import clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnWipeCloud.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "Wipe Cloud clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
+    }
+
 }--- FILE: app/src/main/java/com/my/salah/tracker/app/MidnightWorker.java ---
 package com.my.salah.tracker.app;
 
@@ -9225,7 +9281,152 @@ public class UIComponents
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</RelativeLayout>--- FILE: app/src/main/res/xml/data_extraction_rules.xml ---
+</RelativeLayout>--- FILE: app/src/main/res/layout/dialog_premium_settings.xml ---
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:scrollbars="none"
+    android:background="@android:color/transparent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings &amp; Backup"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_glass_dark"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cloud Account"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/tv_current_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Not connected"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp" />
+
+            <Switch
+                android:id="@+id/switch_auto_sync"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Auto Sync"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btn_change_email"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Change Email / Login"
+                android:background="@drawable/bg_btn_normal"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_glass_dark"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Local Backup (JSON)"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Button
+                    android:id="@+id/btn_export_json"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:text="Export"
+                    android:background="@drawable/bg_btn_normal"
+                    android:layout_marginEnd="8dp"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btn_import_json"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:text="Import"
+                    android:background="@drawable/bg_btn_normal"
+                    android:layout_marginStart="8dp"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_glass_dark"
+            android:padding="20dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Danger Zone"
+                android:textColor="#FF4444"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
+
+            <Button
+                android:id="@+id/btn_wipe_cloud"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Wipe Cloud Data"
+                android:textColor="#FF4444"
+                android:background="@drawable/bg_btn_danger"
+                android:layout_marginBottom="12dp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_wipe_all"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Delete All Data &amp; Start Fresh"
+                android:textColor="#FF4444"
+                android:background="@drawable/bg_btn_danger"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>--- FILE: app/src/main/res/xml/data_extraction_rules.xml ---
 <?xml version="1.0" encoding="utf-8"?><!--
    Sample data extraction rules file; uncomment and customize as necessary.
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
@@ -9534,6 +9735,18 @@ public class UIComponents
     <corners android:radius="24dp" />
     <stroke android:width="2dp" android:color="#FFFFFF" />
     <gradient android:angle="135" android:startColor="#E6FFFFFF" android:centerColor="#A0FFFFFF" android:endColor="#C8FFFFFF" />
+</shape>--- FILE: app/src/main/res/drawable/bg_btn_danger.xml ---
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="16dp" />
+    <solid android:color="#1AFF4444" />
+    <stroke android:width="1dp" android:color="#80FF4444" />
+</shape>--- FILE: app/src/main/res/drawable/bg_btn_normal.xml ---
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="16dp" />
+    <solid android:color="#20888888" />
+    <stroke android:width="1dp" android:color="#40888888" />
 </shape>--- FILE: app/src/main/res/menu/bottom_nav_menu.xml ---
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">

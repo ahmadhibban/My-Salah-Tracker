@@ -34,19 +34,45 @@ to this project's gradle.properties.
 > Task :app:processDebugResources UP-TO-DATE
 
 > Task :app:compileDebugJavaWithJavac
-/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/MainActivity.java:4624: error: cannot find symbol
-        String currentEmail = prefs.getString("user_email", "Not connected");
-                              ^
-  symbol:   variable prefs
-  location: class MainActivity
-/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/MainActivity.java:4626: error: cannot find symbol
-        switchSync.setChecked(prefs.getBoolean("auto_sync", true));
-                              ^
-  symbol:   variable prefs
-  location: class MainActivity
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:211: error: cannot find symbol
+        android.widget.TextView dangerTitle = new android.widget.TextView(context);
+                                                                          ^
+  symbol:   variable context
+  location: class BackupHelper
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:219: error: cannot find symbol
+        android.widget.LinearLayout dangerSection = new android.widget.LinearLayout(context);
+                                                                                    ^
+  symbol:   variable context
+  location: class BackupHelper
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:227: error: cannot find symbol
+        android.widget.Button btnWipeLocal = new android.widget.Button(context);
+                                                                       ^
+  symbol:   variable context
+  location: class BackupHelper
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:240: error: cannot find symbol
+        android.widget.Button btnWipeCloud = new android.widget.Button(context);
+                                                                       ^
+  symbol:   variable context
+  location: class BackupHelper
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:251: error: cannot find symbol
+                new android.app.AlertDialog.Builder(context)
+                                                    ^
+  symbol: variable context
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:255: error: cannot find symbol
+                        android.widget.Toast.makeText(context, "Wiping all data...", android.widget.Toast.LENGTH_SHORT).show();
+                                                      ^
+  symbol: variable context
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:257: error: cannot find symbol
+                            ((android.app.ActivityManager) context.getSystemService(android.content.Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+                                                           ^
+  symbol: variable context
+/storage/emulated/0/AndroidIDEProjects/MySalahTracker/app/src/main/java/com/my/salah/tracker/app/BackupHelper.java:267: error: cannot find symbol
+                 android.widget.Toast.makeText(context, "Cloud Wipe logic will be connected soon!", android.widget.Toast.LENGTH_SHORT).show();
+                                               ^
+  symbol: variable context
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
-2 errors
+8 errors
 
 > Task :app:compileDebugJavaWithJavac FAILED
 
@@ -60,5 +86,5 @@ Execution failed for task ':app:compileDebugJavaWithJavac'.
 > Run with --info option to get more log output.
 > Run with --scan to get full insights.
 
-BUILD FAILED in 14s
+BUILD FAILED in 16s
 14 actionable tasks: 1 executed, 13 up-to-date
