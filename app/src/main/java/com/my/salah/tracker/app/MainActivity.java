@@ -2640,7 +2640,11 @@ public class MainActivity extends Activity
                                 }
                                 ad.dismiss();
                                 finish();
-                                overridePendingTransition(0, 0);
+                                if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
                                 android.content.Intent intent = new android.content.Intent(
                                     MainActivity.this, MainActivity.class);
                                 try {
@@ -2892,7 +2896,11 @@ public class MainActivity extends Activity
                 } catch (Exception e) {
                 }
                 startActivity(intent);
-                overridePendingTransition(0, 0);
+                if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
             }
         });
         // mr.addImg("View Qaza List", "img_custom_qaza", new Runnable() { @Override
@@ -3344,7 +3352,7 @@ public class MainActivity extends Activity
         android.animation.AnimatorSet animSet = new android.animation.AnimatorSet();
         animSet.playTogether(scaleX, scaleY);
         animSet.start();
-        new Handler().postDelayed(new Runnable() {
+        new Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override public void run()
             {
                 main.animate()
@@ -4596,4 +4604,59 @@ public class MainActivity extends Activity
         applyFont(yWrap, appFonts[0], appFonts[1]);
         yAd.show();
     }
+
+    private void showPremiumSyncSettingsDialog() {
+        android.app.Dialog dialog = new android.app.Dialog(this);
+        dialog.setContentView(R.layout.dialog_premium_settings);
+        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        android.widget.TextView tvEmail = dialog.findViewById(R.id.tv_current_email);
+        android.widget.Switch switchSync = dialog.findViewById(R.id.switch_auto_sync);
+        
+        android.widget.Button btnChangeEmail = dialog.findViewById(R.id.btn_change_email);
+        android.widget.Button btnExportJson = dialog.findViewById(R.id.btn_export_json);
+        android.widget.Button btnImportJson = dialog.findViewById(R.id.btn_import_json);
+        android.widget.Button btnWipeCloud = dialog.findViewById(R.id.btn_wipe_cloud);
+        android.widget.Button btnWipeAll = dialog.findViewById(R.id.btn_wipe_all);
+
+        // ডেমো ডাটা (পরে আপনার আসল লজিক বসবে)
+        String currentEmail = sp.getString("user_email", "Not connected");
+        tvEmail.setText("Current Email: " + currentEmail);
+        switchSync.setChecked(sp.getBoolean("auto_sync", true));
+
+        // ডিলিট বাটনের আসল লজিক যুক্ত করা হলো
+        btnWipeAll.setOnClickListener(v -> {
+            dialog.dismiss();
+            new android.app.AlertDialog.Builder(MainActivity.this)
+                .setTitle("⚠️ Delete All Data")
+                .setMessage("Are you sure? This will wipe your history, settings, and start fresh.")
+                .setPositiveButton("Yes, Delete", (d, w) -> {
+                    android.widget.Toast.makeText(MainActivity.this, "Wiping data...", android.widget.Toast.LENGTH_SHORT).show();
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        ((android.app.ActivityManager) getSystemService(android.content.Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+            showPremiumSyncSettingsDialog();
+        });
+
+        // অন্যান্য বাটনগুলোর জন্য (আপাতত টোস্ট মেসেজ)
+        btnChangeEmail.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "Login / Change Email clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnExportJson.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "JSON Export clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnImportJson.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "JSON Import clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+        btnWipeCloud.setOnClickListener(v -> {
+            android.widget.Toast.makeText(this, "Wipe Cloud clicked", android.widget.Toast.LENGTH_SHORT).show();
+        });
+
+        dialog.show();
+    }
+
 }
