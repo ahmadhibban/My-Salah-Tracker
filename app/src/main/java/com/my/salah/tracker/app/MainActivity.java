@@ -2872,16 +2872,10 @@ public class MainActivity extends Activity
                 statsHelper.showStatsOptionsDialog();
             }
         });
-        mr.addImg("Backup & Sync", "img_cloud", new Runnable() {
+        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "ব্যাকআপ এবং সিঙ্ক" : "Backup & Sync", "img_cloud", new Runnable() {
             @Override public void run()
             {
-                backupHelper.showProfileDialog(new Runnable() {
-                    @Override public void run()
-                    {
-                        loadTodayPage();
-                        refreshWidget();
-                    }
-                });
+                showPremiumSyncSettingsDialog();
             }
         });
         mr.addImg("Change Language", "img_lang", new Runnable() {
@@ -2903,8 +2897,9 @@ public class MainActivity extends Activity
         }
             }
         });
-        // mr.addImg("View Qaza List", "img_custom_qaza", new Runnable() { @Override
-        // public void run() { showQazaListDialog(); }});
+        mr.addImg(sp.getString("app_lang", "en").equals("bn") ? "কাজা নামাজের তালিকা" : "View Qaza List", "img_custom_qaza", new Runnable() {
+            @Override public void run() { showQazaListDialog(); }
+        });
 
         FrameLayout.LayoutParams flp = new FrameLayout.LayoutParams((int) (320 * DENSITY), -2);
         flp.gravity = Gravity.CENTER;
