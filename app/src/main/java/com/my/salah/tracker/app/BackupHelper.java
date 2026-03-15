@@ -209,63 +209,44 @@ public class BackupHelper
         
         // --- DANGER ZONE START ---
         android.widget.TextView dangerTitle = new android.widget.TextView(activity);
-        dangerTitle.setText("Danger Zone");
+        dangerTitle.setText(lang.get("Danger Zone"));
         dangerTitle.setTextColor(android.graphics.Color.parseColor("#FF5252"));
-        dangerTitle.setTextSize(18);
-        dangerTitle.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        dangerTitle.setPadding(0, (int) (20 * DENSITY), 0, (int) (10 * DENSITY));
+        dangerTitle.setTextSize(16);
+        dangerTitle.setTypeface(tfBold);
+        dangerTitle.setPadding(0, (int) (25 * DENSITY), 0, (int) (15 * DENSITY));
         main.addView(dangerTitle);
 
-        android.widget.LinearLayout dangerSection = new android.widget.LinearLayout(activity);
-        dangerSection.setOrientation(android.widget.LinearLayout.VERTICAL);
-        dangerSection.setPadding((int) (15 * DENSITY), (int) (15 * DENSITY), (int) (15 * DENSITY), (int) (15 * DENSITY));
-        android.graphics.drawable.GradientDrawable dBg = new android.graphics.drawable.GradientDrawable();
-        dBg.setColor(themeColors[4]);
-        dBg.setCornerRadius(15f * DENSITY);
-        dangerSection.setBackground(dBg);
+        android.widget.LinearLayout btnWipeLocal = new android.widget.LinearLayout(activity);
+        btnWipeLocal.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        btnWipeLocal.setGravity(android.view.Gravity.CENTER);
+        btnWipeLocal.setPadding((int) (15 * DENSITY), (int) (15 * DENSITY), (int) (15 * DENSITY), (int) (15 * DENSITY));
+        android.graphics.drawable.GradientDrawable wBg1 = new android.graphics.drawable.GradientDrawable();
+        wBg1.setColor(android.graphics.Color.parseColor("#1AFF4444"));
+        wBg1.setCornerRadius(15f * DENSITY);
+        btnWipeLocal.setBackground(wBg1);
+        android.widget.LinearLayout.LayoutParams wLp1 = new android.widget.LinearLayout.LayoutParams(-1, -2);
+        wLp1.setMargins(0, 0, 0, (int) (12 * DENSITY));
+        btnWipeLocal.setLayoutParams(wLp1);
+        android.widget.TextView txtWipeLocal = new android.widget.TextView(activity);
+        txtWipeLocal.setText("Delete All Data & Start Fresh");
+        txtWipeLocal.setTextColor(android.graphics.Color.parseColor("#FF5252"));
+        txtWipeLocal.setTypeface(tfBold);
+        txtWipeLocal.setTextSize(15);
+        btnWipeLocal.addView(txtWipeLocal);
+        main.addView(btnWipeLocal);
 
-        android.widget.Button btnWipeLocal = new android.widget.Button(activity);
-        btnWipeLocal.setText("Delete All Local Data & Start Fresh");
-        btnWipeLocal.setTextColor(android.graphics.Color.parseColor("#FF5252"));
-        btnWipeLocal.setAllCaps(false);
-        android.graphics.drawable.GradientDrawable wBg = new android.graphics.drawable.GradientDrawable();
-        wBg.setColor(android.graphics.Color.parseColor("#1AFF4444"));
-        wBg.setStroke((int)(1*DENSITY), android.graphics.Color.parseColor("#80FF4444"));
-        wBg.setCornerRadius(15f * DENSITY);
-        btnWipeLocal.setBackground(wBg);
-        android.widget.LinearLayout.LayoutParams wLp = new android.widget.LinearLayout.LayoutParams(-1, (int) (55 * DENSITY));
-        wLp.setMargins(0, 0, 0, (int) (10 * DENSITY));
-        dangerSection.addView(btnWipeLocal, wLp);
-
-        android.widget.Button btnWipeCloud = new android.widget.Button(activity);
-        btnWipeCloud.setText("Wipe Cloud Data");
-        btnWipeCloud.setTextColor(android.graphics.Color.parseColor("#FF5252"));
-        btnWipeCloud.setAllCaps(false);
-        btnWipeCloud.setBackground(wBg);
-        dangerSection.addView(btnWipeCloud, new android.widget.LinearLayout.LayoutParams(-1, (int) (55 * DENSITY)));
-
-        main.addView(dangerSection);
-
-        btnWipeLocal.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                new android.app.AlertDialog.Builder(activity)
-                    .setTitle("⚠️ Delete All Data")
-                    .setMessage("Are you sure? This will wipe your history, settings, and start fresh. This action cannot be undone.")
-                    .setPositiveButton("Yes, Delete", (d, w) -> {
-                        android.widget.Toast.makeText(activity, "Wiping all data...", android.widget.Toast.LENGTH_SHORT).show();
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                            ((android.app.ActivityManager) activity.getSystemService(android.content.Context.ACTIVITY_SERVICE)).clearApplicationUserData();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            }
-        });
-
-        btnWipeCloud.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override public void onClick(android.view.View v) {
-                 android.widget.Toast.makeText(activity, "Cloud Wipe logic will be connected soon!", android.widget.Toast.LENGTH_SHORT).show();
-            }
+        btnWipeLocal.setOnClickListener(v -> {
+            new android.app.AlertDialog.Builder(activity)
+                .setTitle("⚠️ Delete All Data")
+                .setMessage("Are you sure? This will wipe your history, settings, and start fresh. This action cannot be undone.")
+                .setPositiveButton("Yes, Delete", (d, w) -> {
+                    android.widget.Toast.makeText(activity, "Wiping all data...", android.widget.Toast.LENGTH_SHORT).show();
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                        ((android.app.ActivityManager) activity.getSystemService(android.content.Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
         });
         // --- DANGER ZONE END ---
 
