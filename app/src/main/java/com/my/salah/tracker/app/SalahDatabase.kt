@@ -24,47 +24,74 @@ data class SalahRecord(
     var asr_qaza: Boolean = false,
     var maghrib_qaza: Boolean = false,
     var isha_qaza: Boolean = false,
-    var witr_qaza: Boolean = false
+    var witr_qaza: Boolean = false,
+    var fajr_jamaat: String = "yes",
+    var dhuhr_jamaat: String = "yes",
+    var asr_jamaat: String = "yes",
+    var maghrib_jamaat: String = "yes",
+    var isha_jamaat: String = "yes",
+    var witr_jamaat: String = "yes"
 ) {
-    fun getFardStat(p: String): String = when (p) {
-        "Fajr" -> fajr
-        "Dhuhr" -> dhuhr
-        "Asr" -> asr
-        "Maghrib" -> maghrib
-        "Isha" -> isha
-        "Witr" -> witr
+    fun getFardStat(p: String): String = when (p.lowercase(java.util.Locale.US)) {
+        "fajr" -> fajr
+        "dhuhr" -> dhuhr
+        "asr" -> asr
+        "maghrib" -> maghrib
+        "isha" -> isha
+        "witr" -> witr
         else -> "no"
     }
 
     fun setFardStat(p: String, s: String) {
-        when (p) {
-            "Fajr" -> fajr = s
-            "Dhuhr" -> dhuhr = s
-            "Asr" -> asr = s
-            "Maghrib" -> maghrib = s
-            "Isha" -> isha = s
-            "Witr" -> witr = s
+        when (p.lowercase(java.util.Locale.US)) {
+            "fajr" -> fajr = s
+            "dhuhr" -> dhuhr = s
+            "asr" -> asr = s
+            "maghrib" -> maghrib = s
+            "isha" -> isha = s
+            "witr" -> witr = s
         }
     }
 
-    fun getQazaStat(p: String): Boolean = when (p) {
-        "Fajr" -> fajr_qaza
-        "Dhuhr" -> dhuhr_qaza
-        "Asr" -> asr_qaza
-        "Maghrib" -> maghrib_qaza
-        "Isha" -> isha_qaza
-        "Witr" -> witr_qaza
+    fun getJamaatStat(p: String): String = when (p.lowercase(java.util.Locale.US)) {
+        "fajr" -> fajr_jamaat
+        "dhuhr" -> dhuhr_jamaat
+        "asr" -> asr_jamaat
+        "maghrib" -> maghrib_jamaat
+        "isha" -> isha_jamaat
+        "witr" -> witr_jamaat
+        else -> "yes"
+    }
+
+    fun setJamaatStat(p: String, s: String) {
+        when (p.lowercase(java.util.Locale.US)) {
+            "fajr" -> fajr_jamaat = s
+            "dhuhr" -> dhuhr_jamaat = s
+            "asr" -> asr_jamaat = s
+            "maghrib" -> maghrib_jamaat = s
+            "isha" -> isha_jamaat = s
+            "witr" -> witr_jamaat = s
+        }
+    }
+
+    fun getQazaStat(p: String): Boolean = when (p.lowercase(java.util.Locale.US)) {
+        "fajr" -> fajr_qaza
+        "dhuhr" -> dhuhr_qaza
+        "asr" -> asr_qaza
+        "maghrib" -> maghrib_qaza
+        "isha" -> isha_qaza
+        "witr" -> witr_qaza
         else -> false
     }
 
     fun setQazaStat(p: String, q: Boolean) {
-        when (p) {
-            "Fajr" -> fajr_qaza = q
-            "Dhuhr" -> dhuhr_qaza = q
-            "Asr" -> asr_qaza = q
-            "Maghrib" -> maghrib_qaza = q
-            "Isha" -> isha_qaza = q
-            "Witr" -> witr_qaza = q
+        when (p.lowercase(java.util.Locale.US)) {
+            "fajr" -> fajr_qaza = q
+            "dhuhr" -> dhuhr_qaza = q
+            "asr" -> asr_qaza = q
+            "maghrib" -> maghrib_qaza = q
+            "isha" -> isha_qaza = q
+            "witr" -> witr_qaza = q
         }
     }
 
@@ -173,13 +200,34 @@ class SalahDatabase private constructor(context: Context) : SQLiteOpenHelper(con
                 asr_qaza INTEGER NOT NULL,
                 maghrib_qaza INTEGER NOT NULL,
                 isha_qaza INTEGER NOT NULL,
-                witr_qaza INTEGER NOT NULL
+                witr_qaza INTEGER NOT NULL,
+                fajr_jamaat TEXT DEFAULT 'yes',
+                dhuhr_jamaat TEXT DEFAULT 'yes',
+                asr_jamaat TEXT DEFAULT 'yes',
+                maghrib_jamaat TEXT DEFAULT 'yes',
+                isha_jamaat TEXT DEFAULT 'yes',
+                witr_jamaat TEXT DEFAULT 'yes'
             )
             """.trimIndent()
         )
     }
 
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        val cols = arrayOf("fajr_jamaat", "dhuhr_jamaat", "asr_jamaat", "maghrib_jamaat", "isha_jamaat", "witr_jamaat")
+        for (col in cols) {
+            try {
+                db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $col TEXT DEFAULT 'yes'")
+            } catch (_: Exception) {}
+        }
+    }
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    }
+
+    private fun getSafeString(c: Cursor, col: String, defaultVal: String): String {
+        val idx = c.getColumnIndex(col)
+        return if (idx != -1 && !c.isNull(idx)) c.getString(idx) else defaultVal
     }
 
     private fun cursorToRecord(c: Cursor): SalahRecord {
@@ -196,7 +244,13 @@ class SalahDatabase private constructor(context: Context) : SQLiteOpenHelper(con
             asr_qaza = c.getInt(c.getColumnIndexOrThrow("asr_qaza")) == 1,
             maghrib_qaza = c.getInt(c.getColumnIndexOrThrow("maghrib_qaza")) == 1,
             isha_qaza = c.getInt(c.getColumnIndexOrThrow("isha_qaza")) == 1,
-            witr_qaza = c.getInt(c.getColumnIndexOrThrow("witr_qaza")) == 1
+            witr_qaza = c.getInt(c.getColumnIndexOrThrow("witr_qaza")) == 1,
+            fajr_jamaat = getSafeString(c, "fajr_jamaat", "yes"),
+            dhuhr_jamaat = getSafeString(c, "dhuhr_jamaat", "yes"),
+            asr_jamaat = getSafeString(c, "asr_jamaat", "yes"),
+            maghrib_jamaat = getSafeString(c, "maghrib_jamaat", "yes"),
+            isha_jamaat = getSafeString(c, "isha_jamaat", "yes"),
+            witr_jamaat = getSafeString(c, "witr_jamaat", "yes")
         )
     }
 
@@ -215,6 +269,12 @@ class SalahDatabase private constructor(context: Context) : SQLiteOpenHelper(con
             put("maghrib_qaza", if (r.maghrib_qaza) 1 else 0)
             put("isha_qaza", if (r.isha_qaza) 1 else 0)
             put("witr_qaza", if (r.witr_qaza) 1 else 0)
+            put("fajr_jamaat", r.fajr_jamaat)
+            put("dhuhr_jamaat", r.dhuhr_jamaat)
+            put("asr_jamaat", r.asr_jamaat)
+            put("maghrib_jamaat", r.maghrib_jamaat)
+            put("isha_jamaat", r.isha_jamaat)
+            put("witr_jamaat", r.witr_jamaat)
         }
     }
 

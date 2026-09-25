@@ -1,9 +1,6 @@
 package com.my.salah.tracker.app
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -18,7 +15,7 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 /**
- * Worker to refresh widget and date pointer every midnight.
+ * Worker to refresh date pointer every midnight.
  */
 class MidnightWorker(
     context: Context,
@@ -28,16 +25,7 @@ class MidnightWorker(
     override fun doWork(): Result {
         val context = applicationContext
 
-        // ১. উইজেটকে ব্রডকাস্ট পাঠিয়ে রিফ্রেশ করা (নতুন দিনের ফাঁকা উইজেট দেখাবে)
-        val intent = Intent(context, SalahWidget::class.java).apply {
-            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            val ids = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, SalahWidget::class.java))
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-        }
-        context.sendBroadcast(intent)
-
-        // ২. আগামীকালের জন্য নিজেকে আবার শিডিউল করা
+        // আগামীকালের জন্য নিজেকে আবার শিডিউল করা
         scheduleNextMidnight(context)
 
         return Result.success()
@@ -88,14 +76,22 @@ class SyncWorker(
         val safeEmail = email.replace(".", "_dot_").replace("@", "_at_")
         val items = queue.split(",")
         val dbUrl = "https://mysalahtracker-49a76-default-rtdb.firebaseio.com/users/"
+        val prayerList = listOf("fajr", "dhuhr", "asr", "maghrib", "isha", "witr")
         var allSuccess = true
 
         for (item in items) {
             if (item.trim().isEmpty()) continue
             val parts = item.split("|")
             if (parts.size == 3) {
+                val dateKey = parts[0]
+                val prayerName = parts[1]
+                val status = parts[2]
+                val isTrue = status.equals("yes", ignoreCase = true) || status.equals("true", ignoreCase = true)
+                val pLower = prayerName.lowercase(java.util.Locale.US)
+
                 try {
-                    val url = URL("$dbUrl$safeEmail/${parts[0]}_${parts[1]}.json")
+                    // 1. Flat key
+                    val url = URL("$dbUrl$safeEmail/${dateKey}_$prayerName.json")
                     val con = (url.openConnection() as HttpURLConnection).apply {
                         connectTimeout = 5000
                         readTimeout = 5000
@@ -104,10 +100,42 @@ class SyncWorker(
                         doOutput = true
                     }
                     con.outputStream.use { os ->
-                        os.write("\"${parts[2]}\"".toByteArray())
+                        os.write("\"$status\"".toByteArray())
                     }
-                    if (con.responseCode != 200) allSuccess = false
-                } catch (e: Exception) {
+                    if (con.responseCode !in 200..299) allSuccess = false
+
+                    // 2. Nested web key
+                    val webUrlStr = when {
+                        pLower.endsWith("_jamaat") -> {
+                            val prayer = pLower.substringBefore("_jamaat")
+                            "$dbUrl$safeEmail/db/$dateKey/jamaat/$prayer.json"
+                        }
+                        prayerList.contains(pLower) -> {
+                            "$dbUrl$safeEmail/db/$dateKey/core/$pLower.json"
+                        }
+                        else -> {
+                            val subParts = pLower.split("_", limit = 2)
+                            val prayer = subParts[0]
+                            val sub = if (subParts.size > 1) subParts[1] else prayer
+                            if (listOf("asr", "isha", "witr").contains(prayer)) {
+                                "$dbUrl$safeEmail/db/$dateKey/sunnah/$prayer.json"
+                            } else {
+                                "$dbUrl$safeEmail/db/$dateKey/extras/$prayer/$sub.json"
+                            }
+                        }
+                    }
+                    val webCon = (URL(webUrlStr).openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 5000
+                        readTimeout = 5000
+                        requestMethod = "PUT"
+                        setRequestProperty("Content-Type", "application/json")
+                        doOutput = true
+                    }
+                    webCon.outputStream.use { os ->
+                        os.write(isTrue.toString().toByteArray())
+                    }
+                    webCon.responseCode
+                } catch (_: Exception) {
                     allSuccess = false
                     break
                 }
@@ -115,7 +143,7 @@ class SyncWorker(
         }
 
         if (allSuccess) {
-            sp.edit().remove("offline_q").apply()
+            sp.edit().remove("offline_q").putLong("last_sync", System.currentTimeMillis()).apply()
             return Result.success()
         }
         return Result.retry()
