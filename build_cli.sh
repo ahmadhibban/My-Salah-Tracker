@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # CLI Build Script for My Salah Tracker (No Gradle Required)
-# Compatible with Termux, AndroidIDE Terminal & Linux/macOS
+# Author: Ahmad Hibban
 # ==============================================================================
 
 set -e
